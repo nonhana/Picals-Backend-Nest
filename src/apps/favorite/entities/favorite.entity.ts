@@ -14,7 +14,7 @@ import {
 } from 'typeorm';
 
 @Entity({
-  name: 'users',
+  name: 'favorites',
 })
 export class Favorite {
   @PrimaryColumn({

@@ -29,8 +29,8 @@ export class LoginUserDto {
   @IsNotEmpty({
     message: '密码不能为空',
   })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[\s\S]{6,}$/, {
-    message: '密码必须包含大小写字母和数字',
+  @Matches(/^(?=.*[A-Za-z])(?=.*\d)[\s\S]{6,}$/, {
+    message: '密码必须包含字母和数字',
   })
   password: string;
 }

@@ -11,4 +11,8 @@ export const errorMessages: Map<number, string> = new Map([
   [10106, 'Invalid token'],
   [10107, 'Token expired, please log in again'],
   [10108, 'You have sent a verification code, please wait'],
+
+  // 分页相关错误
+  [10201, 'Page number must be greater than 0'],
+  [10202, 'Page size must be greater than 0'],
 ]);

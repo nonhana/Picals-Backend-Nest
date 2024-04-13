@@ -15,12 +15,12 @@ import { ConfigService } from '@nestjs/config';
 import { EmailService } from 'src/email/email.service';
 import { UserDetailInfo } from './vo/detail.vo';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { Request } from 'express';
 import { AuthenticatedRequest } from 'src/guards/auth.guard';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  @Inject(UserService)
+  private readonly userService: UserService;
 
   @Inject(JwtService)
   private readonly jwtService: JwtService;
@@ -160,6 +160,18 @@ export class UserController {
   @Get('favorites') // 获取用户收藏夹
   async getFavorites(@Req() req: AuthenticatedRequest) {
     const { id } = req.userInfo;
-    const user = await this.userService.getUserInfo(id);
+    return await this.userService.getUserFavorites(id);
+  }
+
+  @Get('history') // 分页获取用户的浏览记录
+  async getHistory(
+    @Query('pageSize') size: number,
+    @Query('current') current: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    if (current <= 0) throw new hanaError(10201);
+    if (size <= 0) throw new hanaError(10202);
+    const { id } = req.userInfo;
+    return await this.userService.getHistoryInPages(id, current, size);
   }
 }

@@ -24,6 +24,8 @@ import type { RedisClientOptions } from 'redis';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Favorite } from './apps/favorite/entities/favorite.entity';
+import { PaginationService } from './pagination/pagination.service';
+import { PaginationModule } from './pagination/pagination.module';
 
 @Module({
   imports: [
@@ -41,7 +43,7 @@ import { Favorite } from './apps/favorite/entities/favorite.entity';
           password: configService.get('MYSQL_PASS'),
           database: configService.get('MYSQL_DB'),
           synchronize: true,
-          logging: true,
+          logging: false,
           entities: [
             User,
             Illustrator,
@@ -91,6 +93,7 @@ import { Favorite } from './apps/favorite/entities/favorite.entity';
     HistoryModule,
     EmailModule,
     FavoriteModule,
+    PaginationModule,
   ],
   providers: [
     // 全局错误过滤器
@@ -113,6 +116,7 @@ import { Favorite } from './apps/favorite/entities/favorite.entity';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    PaginationService,
   ],
 })
 export class AppModule {}
