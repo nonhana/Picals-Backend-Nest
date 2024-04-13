@@ -9,7 +9,6 @@ import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { TOKEN_WHITE_LIST } from 'src/utils/constants';
 import { hanaError } from 'src/error/hanaError';
-import { errorMessages } from 'src/error/errorList';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -28,7 +27,7 @@ export class AuthGuard implements CanActivate {
     const authorization = request.headers.authorization || '';
     const bearer = authorization.split(' ');
     if (!bearer || bearer.length < 2) {
-      throw new hanaError(10106, errorMessages.get(10106));
+      throw new hanaError(10106);
     }
     const token = bearer[1];
     try {
@@ -36,7 +35,7 @@ export class AuthGuard implements CanActivate {
       (request as any).user = info;
       return true;
     } catch (error) {
-      throw new hanaError(10107, errorMessages.get(10107));
+      throw new hanaError(10107);
     }
   }
 }

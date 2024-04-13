@@ -3,11 +3,10 @@ import { UserService } from './user.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto, RegisterUserDto, UpdateUserDto } from './dto';
 import { hanaError } from 'src/error/hanaError';
-import { errorMessages } from 'src/error/errorList';
-import { RedisService } from 'src/redis/redis.service';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from 'src/email/email.service';
 import { UserDetailInfo } from './vo/detail.vo';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Controller('user')
 export class UserController {
@@ -16,8 +15,8 @@ export class UserController {
   @Inject(JwtService)
   private readonly jwtService: JwtService;
 
-  @Inject(RedisService)
-  private readonly redisService: RedisService;
+  @Inject(CACHE_MANAGER)
+  private readonly cacheManager: Cache;
 
   @Inject(ConfigService)
   private readonly configService: ConfigService;
@@ -29,12 +28,12 @@ export class UserController {
   async verification(@Query('email') email: string) {
     const code = Math.random().toString().slice(-6);
 
-    if (await this.redisService.get(`sent_captcha_${email}`)) {
-      throw new hanaError(10108, errorMessages.get(10108));
+    if (await this.cacheManager.get(`sent_captcha_${email}`)) {
+      throw new hanaError(10108);
     }
 
-    await this.redisService.set(`sent_captcha_${email}`, email, 60);
-    await this.redisService.set(`captcha_${email}`, code, 60 * 5);
+    await this.cacheManager.set(`sent_captcha_${email}`, email, 1000 * 60);
+    await this.cacheManager.set(`captcha_${email}`, code, 1000 * 60 * 5);
 
     await this.emailService.sendEmail({
       to: email,
@@ -56,7 +55,7 @@ export class UserController {
       });
       return token;
     }
-    throw new hanaError(10101, errorMessages.get(10101));
+    throw new hanaError(10101);
   }
 
   @Post('/register') // 用户注册
@@ -66,19 +65,19 @@ export class UserController {
     // 测试环境不需要验证码
     if (this.configService.get('NODE_ENV') === 'development') {
       if (verification_code !== this.configService.get('CAPTCHA_SECRET')) {
-        throw new hanaError(10103, errorMessages.get(10103));
+        throw new hanaError(10103);
       }
       await this.userService.register(email, password);
       return '注册成功！';
     }
 
-    const cacheCode = await this.redisService.get(`captcha_${email}`);
+    const cacheCode = await this.cacheManager.get(`captcha_${email}`);
     if (!cacheCode || cacheCode !== verification_code) {
-      throw new hanaError(10103, errorMessages.get(10103));
+      throw new hanaError(10103);
     }
     await this.userService.register(email, password);
-    await this.redisService.del(`captcha_${email}`);
-    await this.redisService.del(`sent_captcha_${email}`);
+    await this.cacheManager.del(`captcha_${email}`);
+    await this.cacheManager.del(`sent_captcha_${email}`);
     return '注册成功！';
   }
 
@@ -108,19 +107,19 @@ export class UserController {
 
     if (this.configService.get('NODE_ENV') === 'development') {
       if (verification_code !== this.configService.get('CAPTCHA_SECRET')) {
-        throw new hanaError(10103, errorMessages.get(10103));
+        throw new hanaError(10103);
       }
       await this.userService.updateUserPassword(id, password);
       return '注册成功！';
     }
 
-    const cacheCode = await this.redisService.get(`captcha_${email}`);
+    const cacheCode = await this.cacheManager.get(`captcha_${email}`);
     if (!cacheCode || cacheCode !== verification_code) {
-      throw new hanaError(10103, errorMessages.get(10103));
+      throw new hanaError(10103);
     }
     await this.userService.updateUserPassword(id, password);
-    await this.redisService.del(`captcha_${email}`);
-    await this.redisService.del(`sent_captcha_${email}`);
+    await this.cacheManager.del(`captcha_${email}`);
+    await this.cacheManager.del(`sent_captcha_${email}`);
     return '更新成功！';
   }
 
@@ -132,19 +131,19 @@ export class UserController {
   ) {
     if (this.configService.get('NODE_ENV') === 'development') {
       if (verification_code !== this.configService.get('CAPTCHA_SECRET')) {
-        throw new hanaError(10103, errorMessages.get(10103));
+        throw new hanaError(10103);
       }
       await this.userService.updateUserInfo(id, { email });
       return '更新成功！';
     }
 
-    const cacheCode = await this.redisService.get(`captcha_${email}`);
+    const cacheCode = await this.cacheManager.get(`captcha_${email}`);
     if (!cacheCode || cacheCode !== verification_code) {
-      throw new hanaError(10103, errorMessages.get(10103));
+      throw new hanaError(10103);
     }
     await this.userService.updateUserInfo(id, { email });
-    await this.redisService.del(`captcha_${email}`);
-    await this.redisService.del(`sent_captcha_${email}`);
+    await this.cacheManager.del(`captcha_${email}`);
+    await this.cacheManager.del(`sent_captcha_${email}`);
     return '更新成功！';
   }
 }

@@ -1,7 +1,6 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ErrorFilter } from './error/error.filter';
-import { HanaErrorFilter } from './error/hana-error.filter';
 import { ResponseInterceptor } from './interceptors/response.interceptor';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -21,8 +20,10 @@ import { History } from './apps/history/entities/history.entity';
 import { SearchHistory } from './apps/search-history/entities/search-history.entity';
 import { Comment } from './apps/comment/entities/comment.entity';
 import { AuthGuard } from './guards/auth.guard';
-import { RedisModule } from './redis/redis.module';
 import { EmailModule } from './email/email.module';
+import type { RedisClientOptions } from 'redis';
+import { redisStore } from 'cache-manager-redis-yet';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -71,6 +72,17 @@ import { EmailModule } from './email/email.module';
       },
       inject: [ConfigService],
     }),
+    CacheModule.registerAsync<RedisClientOptions>({
+      isGlobal: true,
+      useFactory(configService: ConfigService) {
+        return {
+          store: redisStore,
+          url: configService.get('REDIS_SERVER_URL'),
+          database: configService.get('REDIS_DB'),
+        };
+      },
+      inject: [ConfigService],
+    }),
     UserModule,
     IllustratorModule,
     IllustrationModule,
@@ -78,20 +90,13 @@ import { EmailModule } from './email/email.module';
     CommentModule,
     HistoryModule,
     SearchHistoryModule,
-    RedisModule,
     EmailModule,
   ],
-  controllers: [],
   providers: [
-    // 全局错误过滤器（一般异常，由框架主动抛出）
+    // 全局错误过滤器
     {
       provide: APP_FILTER,
       useClass: ErrorFilter,
-    },
-    // 全局错误过滤器（自定义异常，由用户主动抛出）
-    {
-      provide: APP_FILTER,
-      useClass: HanaErrorFilter,
     },
     // 全局拦截器，统一返回格式
     {
