@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Inject, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Inject,
+  Get,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto, RegisterUserDto, UpdateUserDto } from './dto';
@@ -7,6 +15,8 @@ import { ConfigService } from '@nestjs/config';
 import { EmailService } from 'src/email/email.service';
 import { UserDetailInfo } from './vo/detail.vo';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { Request } from 'express';
+import { AuthenticatedRequest } from 'src/guards/auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -24,7 +34,7 @@ export class UserController {
   @Inject(EmailService)
   private readonly emailService: EmailService;
 
-  @Get('/register-captcha') // 发送验证码
+  @Get('register-captcha') // 发送验证码
   async verification(@Query('email') email: string) {
     const code = Math.random().toString().slice(-6);
 
@@ -44,7 +54,7 @@ export class UserController {
     return '验证码发送成功！';
   }
 
-  @Get('/login') // 用户登录
+  @Get('login') // 用户登录
   async login(@Query() loginUserDto: LoginUserDto) {
     const user = await this.userService.login(loginUserDto);
     if (user) {
@@ -58,7 +68,7 @@ export class UserController {
     throw new hanaError(10101);
   }
 
-  @Post('/register') // 用户注册
+  @Post('register') // 用户注册
   async register(@Body() registerUserDto: RegisterUserDto) {
     const { email, verification_code, password } = registerUserDto;
 
@@ -81,14 +91,14 @@ export class UserController {
     return '注册成功！';
   }
 
-  @Get('/detail') // 获取用户信息
+  @Get('detail') // 获取用户信息
   async getUserInfo(@Query('id') id: string) {
     const user = await this.userService.getUserInfo(id);
     const vo = new UserDetailInfo(user);
     return vo;
   }
 
-  @Post('/update') // 更新用户信息
+  @Post('update') // 更新用户信息
   async updateUserInfo(
     @Query('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -97,7 +107,7 @@ export class UserController {
     return '更新成功！';
   }
 
-  @Post('/update-password') // 更新用户密码
+  @Post('update-password') // 更新用户密码
   async updatePassword(
     @Query('id') id: string,
     @Body('password') password: string,
@@ -123,7 +133,7 @@ export class UserController {
     return '更新成功！';
   }
 
-  @Post('/update-email') // 更新用户邮箱
+  @Post('update-email') // 更新用户邮箱
   async updateEmail(
     @Query('id') id: string,
     @Body('email') email: string,
@@ -145,5 +155,11 @@ export class UserController {
     await this.cacheManager.del(`captcha_${email}`);
     await this.cacheManager.del(`sent_captcha_${email}`);
     return '更新成功！';
+  }
+
+  @Get('favorites') // 获取用户收藏夹
+  async getFavorites(@Req() req: AuthenticatedRequest) {
+    const { id } = req.userInfo;
+    const user = await this.userService.getUserInfo(id);
   }
 }

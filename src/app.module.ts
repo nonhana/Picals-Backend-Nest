@@ -15,15 +15,15 @@ import { LabelModule } from './apps/label/label.module';
 import { Label } from './apps/label/entities/label.entity';
 import { CommentModule } from './apps/comment/comment.module';
 import { HistoryModule } from './apps/history/history.module';
-import { SearchHistoryModule } from './apps/search-history/search-history.module';
+import { FavoriteModule } from './apps/favorite/favorite.module';
 import { History } from './apps/history/entities/history.entity';
-import { SearchHistory } from './apps/search-history/entities/search-history.entity';
 import { Comment } from './apps/comment/entities/comment.entity';
 import { AuthGuard } from './guards/auth.guard';
 import { EmailModule } from './email/email.module';
 import type { RedisClientOptions } from 'redis';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
+import { Favorite } from './apps/favorite/entities/favorite.entity';
 
 @Module({
   imports: [
@@ -41,7 +41,7 @@ import { CacheModule } from '@nestjs/cache-manager';
           password: configService.get('MYSQL_PASS'),
           database: configService.get('MYSQL_DB'),
           synchronize: true,
-          logging: false,
+          logging: true,
           entities: [
             User,
             Illustrator,
@@ -49,7 +49,7 @@ import { CacheModule } from '@nestjs/cache-manager';
             Label,
             Comment,
             History,
-            SearchHistory,
+            Favorite,
           ],
           poolSize: 10,
           connectorPackage: 'mysql2',
@@ -89,8 +89,8 @@ import { CacheModule } from '@nestjs/cache-manager';
     LabelModule,
     CommentModule,
     HistoryModule,
-    SearchHistoryModule,
     EmailModule,
+    FavoriteModule,
   ],
   providers: [
     // 全局错误过滤器

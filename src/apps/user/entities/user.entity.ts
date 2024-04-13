@@ -14,7 +14,7 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { History } from 'src/apps/history/entities/history.entity';
-import { SearchHistory } from 'src/apps/search-history/entities/search-history.entity';
+import { Favorite } from 'src/apps/favorite/entities/favorite.entity';
 
 @Entity({
   name: 'users',
@@ -177,8 +177,8 @@ export class User {
   })
   histories: History[];
 
-  @OneToMany(() => SearchHistory, (searchHistory) => searchHistory.user, {
-    cascade: true,
+  @OneToMany(() => Favorite, (favorite) => favorite.user, {
+    onDelete: 'SET NULL',
   })
-  searchHistories: SearchHistory[];
+  favorites: Favorite[];
 }

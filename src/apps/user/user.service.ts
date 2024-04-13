@@ -64,4 +64,6 @@ export class UserService {
     });
     return;
   }
+
+  async getUserFavorites(id: string) {}
 }

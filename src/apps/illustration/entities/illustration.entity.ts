@@ -2,6 +2,7 @@
 // 插画实体
 
 import { Comment } from 'src/apps/comment/entities/comment.entity';
+import { Favorite } from 'src/apps/favorite/entities/favorite.entity';
 import { History } from 'src/apps/history/entities/history.entity';
 import { Illustrator } from 'src/apps/illustrator/entities/illustrator.entity';
 import { Label } from 'src/apps/label/entities/label.entity';
@@ -139,4 +140,8 @@ export class Illustration {
     cascade: true,
   })
   histories: History[];
+
+  @ManyToMany(() => Favorite, (favorite) => favorite.illustrations)
+  @JoinTable()
+  favorites: Favorite[];
 }
