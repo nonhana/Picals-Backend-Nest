@@ -1,45 +1,21 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Body, Controller, Inject, Post } from '@nestjs/common';
 import { IllustrationService } from './illustration.service';
-import { CreateIllustrationDto } from './dto/create-illustration.dto';
-import { UpdateIllustrationDto } from './dto/update-illustration.dto';
+import { UploadIllustrationDto } from './dto/upload-illustration.dto';
+import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
+import { JwtUserData } from 'src/guards/auth.guard';
 
 @Controller('illustration')
 export class IllustrationController {
-  constructor(private readonly illustrationService: IllustrationService) {}
+  @Inject(IllustrationService)
+  private readonly illustrationService: IllustrationService;
 
-  @Post()
-  create(@Body() createIllustrationDto: CreateIllustrationDto) {
-    return this.illustrationService.create(createIllustrationDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.illustrationService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.illustrationService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateIllustrationDto: UpdateIllustrationDto,
+  @Post('upload')
+  @RequireLogin()
+  async upload(
+    @UserInfo() userInfo: JwtUserData,
+    @Body() uploadIllustrationDto: UploadIllustrationDto,
   ) {
-    return this.illustrationService.update(+id, updateIllustrationDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.illustrationService.remove(+id);
+    const { id } = userInfo;
+    return await this.illustrationService.createItem(id, uploadIllustrationDto);
   }
 }

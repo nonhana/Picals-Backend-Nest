@@ -30,6 +30,14 @@ export class Label {
   })
   color: string;
 
+  @Column({
+    type: 'varchar',
+    length: 255,
+    comment: '标签背景图',
+    nullable: true,
+  })
+  cover: string;
+
   @ManyToMany(() => User, (user) => user.likedLabels)
   users: User[];
 

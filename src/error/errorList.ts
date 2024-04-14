@@ -15,4 +15,7 @@ export const errorMessages: Map<number, string> = new Map([
   // 分页相关错误
   [10201, 'Page number must be greater than 0'],
   [10202, 'Page size must be greater than 0'],
+
+  // 插画家相关错误
+  [10301, 'Illustrator already exists'],
 ]);

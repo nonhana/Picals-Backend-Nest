@@ -43,7 +43,7 @@ import { PaginationModule } from './pagination/pagination.module';
           password: configService.get('MYSQL_PASS'),
           database: configService.get('MYSQL_DB'),
           synchronize: true,
-          logging: false,
+          logging: true,
           entities: [
             User,
             Illustrator,

@@ -1,26 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { CreateIllustratorDto } from './dto/create-illustrator.dto';
-import { UpdateIllustratorDto } from './dto/update-illustrator.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Illustrator } from './entities/illustrator.entity';
+import { Repository } from 'typeorm';
+import type { NewIllustratorDto } from './dto/new-illustrator.dto';
 
 @Injectable()
 export class IllustratorService {
-  create(createIllustratorDto: CreateIllustratorDto) {
-    return 'This action adds a new illustrator';
+  @InjectRepository(Illustrator)
+  private readonly illustratorRepository: Repository<Illustrator>;
+
+  async findItemById(id: string) {
+    return await this.illustratorRepository.findOne({ where: { id } });
   }
 
-  findAll() {
-    return `This action returns all illustrator`;
+  async findItemByName(name: string) {
+    return await this.illustratorRepository.findOne({ where: { name } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} illustrator`;
-  }
-
-  update(id: number, updateIllustratorDto: UpdateIllustratorDto) {
-    return `This action updates a #${id} illustrator`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} illustrator`;
+  async createItem(newIllustratorDto: NewIllustratorDto) {
+    const existedIllustrator = await this.findItemByName(
+      newIllustratorDto.name,
+    );
+    if (existedIllustrator) return existedIllustrator;
+    return await this.illustratorRepository.save(newIllustratorDto);
   }
 }

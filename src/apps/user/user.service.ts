@@ -1,27 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { md5 } from 'src/utils';
 import { hanaError } from 'src/error/hanaError';
-import { UpdateUserDto, LoginUserDto } from './dto';
-import { Favorite } from '../favorite/entities/favorite.entity';
-import { History } from '../history/entities/history.entity';
-import { PaginationService } from 'src/pagination/pagination.service';
+import type { UpdateUserDto, LoginUserDto } from './dto';
 
 @Injectable()
 export class UserService {
-  @Inject(PaginationService)
-  private readonly paginationService: PaginationService;
-
   @InjectRepository(User)
   private userRepository: Repository<User>;
-
-  @InjectRepository(Favorite)
-  private favoriteRepository: Repository<Favorite>;
-
-  @InjectRepository(History)
-  private historyRepository: Repository<History>;
 
   async login(loginUserDto: LoginUserDto) {
     const foundUser = await this.userRepository.findOneBy({
@@ -82,30 +70,23 @@ export class UserService {
     if (!user) {
       throw new hanaError(10101);
     }
-    return await this.favoriteRepository.find({
-      where: {
-        user,
-      },
-    });
+    console.log(user);
+    return user.favorites;
   }
 
-  async getHistoryInPages(
-    id: string,
-    current: number,
-    pageSize: number,
-    order?: { [P in keyof History]?: 'ASC' | 'DESC' },
-  ) {
+  async getHistoryInPages(id: string, current: number, pageSize: number) {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new hanaError(10101);
     }
-    return this.paginationService.paginate<History>(
-      this.historyRepository,
-      current,
-      pageSize,
-      {
-        order: order || { lastTime: 'DESC' },
-      },
-    );
+    return user.histories.slice((current - 1) * pageSize, current * pageSize);
+  }
+
+  async getUserLabels(id: string) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new hanaError(10101);
+    }
+    return user.likedLabels;
   }
 }

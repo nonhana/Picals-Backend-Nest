@@ -211,13 +211,20 @@ export class UserController {
   @Get('history') // 分页获取用户的浏览记录
   @RequireLogin()
   async getHistory(
+    @UserInfo() userInfo: JwtUserData,
     @Query('pageSize') size: number,
     @Query('current') current: number,
-    @UserInfo() userInfo: JwtUserData,
   ) {
     if (current <= 0) throw new hanaError(10201);
     if (size <= 0) throw new hanaError(10202);
     const { id } = userInfo;
     return await this.userService.getHistoryInPages(id, current, size);
+  }
+
+  @Get('labels')
+  @RequireLogin()
+  async getLabels(@UserInfo() userInfo: JwtUserData) {
+    const { id } = userInfo;
+    return await this.userService.getUserLabels(id);
   }
 }

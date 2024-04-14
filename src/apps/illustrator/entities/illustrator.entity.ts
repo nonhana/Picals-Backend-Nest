@@ -32,8 +32,17 @@ export class Illustrator {
     type: 'varchar',
     length: 255,
     comment: '插画家头像地址URL',
+    default: 'https://dummyimage.com/400',
   })
   avatar: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    comment: '插画家简介',
+    default: '默认简介',
+  })
+  intro: string;
 
   @Column({
     type: 'varchar',

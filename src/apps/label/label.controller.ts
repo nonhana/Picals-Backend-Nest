@@ -1,34 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Inject, Post } from '@nestjs/common';
 import { LabelService } from './label.service';
-import { CreateLabelDto } from './dto/create-label.dto';
-import { UpdateLabelDto } from './dto/update-label.dto';
+import type { NewLabelDto } from './dto/new-label.dto';
 
 @Controller('label')
 export class LabelController {
-  constructor(private readonly labelService: LabelService) {}
+  @Inject(LabelService)
+  private readonly labelService: LabelService;
 
-  @Post()
-  create(@Body() createLabelDto: CreateLabelDto) {
-    return this.labelService.create(createLabelDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.labelService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.labelService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLabelDto: UpdateLabelDto) {
-    return this.labelService.update(+id, updateLabelDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.labelService.remove(+id);
+  @Post('new') // 新增标签
+  async newLabels(@Body() labels: NewLabelDto[]) {
+    return await this.labelService.createItems(
+      labels.map((label) => label.value),
+    );
   }
 }

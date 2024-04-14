@@ -1,26 +1,41 @@
-import { Injectable } from '@nestjs/common';
-import { CreateIllustrationDto } from './dto/create-illustration.dto';
-import { UpdateIllustrationDto } from './dto/update-illustration.dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Illustration } from './entities/illustration.entity';
+import { Repository } from 'typeorm';
+import { IllustratorService } from '../illustrator/illustrator.service';
+import { LabelService } from '../label/label.service';
+import { UserService } from '../user/user.service';
+import type { UploadIllustrationDto } from './dto/upload-illustration.dto';
 
 @Injectable()
 export class IllustrationService {
-  create(createIllustrationDto: CreateIllustrationDto) {
-    return 'This action adds a new illustration';
-  }
+  @InjectRepository(Illustration)
+  private readonly illustrationRepository: Repository<Illustration>;
 
-  findAll() {
-    return `This action returns all illustration`;
-  }
+  @Inject(IllustratorService)
+  private readonly illustratorService: IllustratorService;
 
-  findOne(id: number) {
-    return `This action returns a #${id} illustration`;
-  }
+  @Inject(LabelService)
+  private readonly labelService: LabelService;
 
-  update(id: number, updateIllustrationDto: UpdateIllustrationDto) {
-    return `This action updates a #${id} illustration`;
-  }
+  @Inject(UserService)
+  private readonly userService: UserService;
 
-  remove(id: number) {
-    return `This action removes a #${id} illustration`;
+  async createItem(id: string, uploadIllustrationDto: UploadIllustrationDto) {
+    const { labels, illustratorInfo, ...basicInfo } = uploadIllustrationDto;
+
+    const userEntity = await this.userService.getUserInfo(id);
+    const labelsEntity = await this.labelService.createItems(labels);
+    const illustratorEntity =
+      await this.illustratorService.createItem(illustratorInfo);
+
+    const illustration = this.illustrationRepository.create({
+      ...basicInfo,
+      user: userEntity,
+      labels: labelsEntity,
+      illustrator: illustratorEntity,
+    });
+
+    return await this.illustrationRepository.save(illustration);
   }
 }

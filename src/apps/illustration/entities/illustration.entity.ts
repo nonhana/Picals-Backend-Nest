@@ -39,10 +39,10 @@ export class Illustration {
 
   @Column({
     type: 'varchar',
-    length: 255,
+    length: 2047,
     comment: '插画简介',
   })
-  introduce: string;
+  intro: string;
 
   @Column({
     type: 'boolean',
@@ -65,7 +65,16 @@ export class Illustration {
   @Column('simple-array', {
     comment: '插画的作品列表',
   })
-  workList: string[];
+  imgList: string[];
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    comment: '插画原图URL',
+    nullable: true,
+    name: 'original_url',
+  })
+  workUrl: string;
 
   @Column({
     type: 'int',

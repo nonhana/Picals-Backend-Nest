@@ -10,5 +10,6 @@ import { History } from '../history/entities/history.entity';
   imports: [TypeOrmModule.forFeature([User, Favorite, History])],
   controllers: [UserController],
   providers: [UserService],
+  exports: [UserService],
 })
 export class UserModule {}
