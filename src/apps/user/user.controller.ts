@@ -5,7 +5,8 @@ import { LoginUserDto, RegisterUserDto, UpdateUserDto } from './dto';
 import { hanaError } from 'src/error/hanaError';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from 'src/email/email.service';
-import { UserDetailInfo } from './vo/detail.vo';
+import { DetailUserVo } from './vo/detail.vo';
+import { LoginUserVo } from './vo/login.vo';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { JwtUserData } from 'src/guards/auth.guard';
 import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
@@ -51,14 +52,60 @@ export class UserController {
   async login(@Query() loginUserDto: LoginUserDto) {
     const user = await this.userService.login(loginUserDto);
     if (user) {
-      const token = await this.jwtService.signAsync({
+      const vo = new LoginUserVo();
+      vo.userInfo = user;
+      vo.accessToken = await this.jwtService.signAsync(
+        {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+        },
+        {
+          expiresIn:
+            this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_TIME') || '30m',
+        },
+      );
+      vo.refreshToken = await this.jwtService.signAsync(
+        { id: user.id },
+        {
+          expiresIn:
+            this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_TIME') || '7d',
+        },
+      );
+      return vo;
+    }
+    throw new hanaError(10101);
+  }
+
+  @Get('refresh-token') // 刷新token
+  async refreshToken(@Query('refreshToken') refreshToken: string) {
+    const { id } = this.jwtService.verify(refreshToken);
+    const user = await this.userService.getUserInfo(id);
+
+    const access_token = await this.jwtService.signAsync(
+      {
         id: user.id,
         email: user.email,
         username: user.username,
-      });
-      return token;
-    }
-    throw new hanaError(10101);
+      },
+      {
+        expiresIn:
+          this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_TIME') || '30m',
+      },
+    );
+
+    const refresh_token = await this.jwtService.signAsync(
+      { id: user.id },
+      {
+        expiresIn:
+          this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_TIME') || '7d',
+      },
+    );
+
+    return {
+      access_token,
+      refresh_token,
+    };
   }
 
   @Post('register') // 用户注册
@@ -88,7 +135,7 @@ export class UserController {
   @RequireLogin()
   async getUserInfo(@Query('id') id: string) {
     const user = await this.userService.getUserInfo(id);
-    const vo = new UserDetailInfo(user);
+    const vo = new DetailUserVo(user);
     return vo;
   }
 

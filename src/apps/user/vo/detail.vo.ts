@@ -1,7 +1,7 @@
-import { User } from '../entities/user.entity';
+import type { User } from '../entities/user.entity';
 import { formatDate } from 'src/utils';
 
-export class UserDetailInfo {
+export class DetailUserVo {
   /**
    * 用户头像
    */
