@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Inject,
-  Get,
-  Query,
-  Req,
-} from '@nestjs/common';
+import { Controller, Post, Body, Inject, Get, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto, RegisterUserDto, UpdateUserDto } from './dto';
@@ -15,7 +7,8 @@ import { ConfigService } from '@nestjs/config';
 import { EmailService } from 'src/email/email.service';
 import { UserDetailInfo } from './vo/detail.vo';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { AuthenticatedRequest } from 'src/guards/auth.guard';
+import { JwtUserData } from 'src/guards/auth.guard';
+import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
 
 @Controller('user')
 export class UserController {
@@ -92,6 +85,7 @@ export class UserController {
   }
 
   @Get('detail') // 获取用户信息
+  @RequireLogin()
   async getUserInfo(@Query('id') id: string) {
     const user = await this.userService.getUserInfo(id);
     const vo = new UserDetailInfo(user);
@@ -99,6 +93,7 @@ export class UserController {
   }
 
   @Post('update') // 更新用户信息
+  @RequireLogin()
   async updateUserInfo(
     @Query('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -108,6 +103,7 @@ export class UserController {
   }
 
   @Post('update-password') // 更新用户密码
+  @RequireLogin()
   async updatePassword(
     @Query('id') id: string,
     @Body('password') password: string,
@@ -134,6 +130,7 @@ export class UserController {
   }
 
   @Post('update-email') // 更新用户邮箱
+  @RequireLogin()
   async updateEmail(
     @Query('id') id: string,
     @Body('email') email: string,
@@ -158,20 +155,22 @@ export class UserController {
   }
 
   @Get('favorites') // 获取用户收藏夹
-  async getFavorites(@Req() req: AuthenticatedRequest) {
-    const { id } = req.userInfo;
+  @RequireLogin()
+  async getFavorites(@UserInfo() userInfo: JwtUserData) {
+    const { id } = userInfo;
     return await this.userService.getUserFavorites(id);
   }
 
   @Get('history') // 分页获取用户的浏览记录
+  @RequireLogin()
   async getHistory(
     @Query('pageSize') size: number,
     @Query('current') current: number,
-    @Req() req: AuthenticatedRequest,
+    @UserInfo() userInfo: JwtUserData,
   ) {
     if (current <= 0) throw new hanaError(10201);
     if (size <= 0) throw new hanaError(10202);
-    const { id } = req.userInfo;
+    const { id } = userInfo;
     return await this.userService.getHistoryInPages(id, current, size);
   }
 }

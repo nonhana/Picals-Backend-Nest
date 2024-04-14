@@ -1,39 +1,39 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
-import { Observable } from 'rxjs';
-import { TOKEN_WHITE_LIST } from 'src/utils/constants';
+import type { Observable } from 'rxjs';
 import { hanaError } from 'src/error/hanaError';
+import { Reflector } from '@nestjs/core';
+import type { AuthenticatedRequest } from 'express';
 
-interface TokenUserInfo {
+export interface JwtUserData {
   id: string;
   email: string;
   username: string;
 }
 
-export interface AuthenticatedRequest extends Request {
-  userInfo?: TokenUserInfo;
-}
-
 @Injectable()
 export class AuthGuard implements CanActivate {
-  // 注入JwtService服务，用于对token进行验证
+  @Inject()
+  private readonly reflector: Reflector;
+
   @Inject(JwtService)
   private readonly jwtService: JwtService;
 
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const request: AuthenticatedRequest = context.switchToHttp().getRequest();
-    const path = request.path;
-    if (TOKEN_WHITE_LIST.includes(path)) {
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+
+    const requireLogin = this.reflector.getAllAndOverride('require-login', [
+      context.getClass(),
+      context.getHandler(),
+    ]);
+
+    if (!requireLogin) {
       return true;
     }
+
     const authorization = request.headers.authorization || '';
     const bearer = authorization.split(' ');
     if (!bearer || bearer.length < 2) {
@@ -42,7 +42,7 @@ export class AuthGuard implements CanActivate {
     const token = bearer[1];
     try {
       const info = this.jwtService.verify(token);
-      request.userInfo = info;
+      request.user = info;
       return true;
     } catch (error) {
       throw new hanaError(10107);
