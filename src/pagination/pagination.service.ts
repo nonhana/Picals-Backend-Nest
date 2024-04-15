@@ -32,6 +32,7 @@ export class PaginationService {
 		options?: Partial<{
 			where: any;
 			order: { [P in keyof T]?: 'ASC' | 'DESC' };
+			relations: string[];
 		}>,
 	): Promise<IPaginationResult<T>> {
 		const skippedItems = (page - 1) * limit;
@@ -40,12 +41,18 @@ export class PaginationService {
 		queryBuilder.limit(limit);
 		queryBuilder.offset(skippedItems);
 
-		if (options && options.where) {
+		if (options?.where) {
 			queryBuilder.where(options.where);
 		}
 
-		if (options && options.order) {
+		if (options?.order) {
 			queryBuilder.orderBy(options.order);
+		}
+
+		if (options?.relations) {
+			for (const relation of options.relations) {
+				queryBuilder.leftJoinAndSelect(relation, relation);
+			}
 		}
 
 		const cacheKey = `total-${repo.metadata.name}-${JSON.stringify(options)}`;

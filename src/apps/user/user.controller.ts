@@ -10,6 +10,7 @@ import { LoginUserVo } from './vo/login.vo';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { JwtUserData } from 'src/guards/auth.guard';
 import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
+import { UserItemVo } from './vo/user-item.vo';
 
 @Controller('user')
 export class UserController {
@@ -208,23 +209,23 @@ export class UserController {
 	@RequireLogin()
 	async getHistory(
 		@UserInfo() userInfo: JwtUserData,
-		@Query('pageSize') size: number,
+		@Query('pageSize') pageSize: number,
 		@Query('current') current: number,
 	) {
 		if (current <= 0) throw new hanaError(10201);
-		if (size <= 0) throw new hanaError(10202);
+		if (pageSize <= 0) throw new hanaError(10202);
 		const { id } = userInfo;
-		return await this.userService.getHistoryInPages(id, current, size);
+		return await this.userService.getHistoryInPages(id, current, pageSize);
 	}
 
-	@Get('like-labels')
+	@Get('like-labels') // 获取用户喜欢的标签列表
 	@RequireLogin()
 	async getLikeLabels(@UserInfo() userInfo: JwtUserData) {
 		const { id } = userInfo;
 		return await this.userService.getLikeLabels(id);
 	}
 
-	@Post('like-label-actions')
+	@Post('like-label-actions') // 添加/取消喜欢标签
 	@RequireLogin()
 	async likeLabelActions(
 		@UserInfo() userInfo: JwtUserData,
@@ -234,5 +235,51 @@ export class UserController {
 		const { id: userId } = userInfo;
 		await this.userService.likeLabelActions(userId, id, type);
 		return '操作成功！';
+	}
+
+	@Post('follow-action') // 关注/取关用户
+	@RequireLogin()
+	async followAction(
+		@UserInfo() userInfo: JwtUserData,
+		@Body('targetId') targetId: string,
+		@Body('type') type: number,
+	) {
+		const { id } = userInfo;
+		await this.userService.followAction(id, targetId, type);
+		return '操作成功！';
+	}
+
+	@Get('following') // 分页获取用户的关注列表
+	@RequireLogin()
+	async getFollowing(
+		@UserInfo() userInfo: JwtUserData,
+		@Query('pageSize') pageSize: number,
+		@Query('current') current: number,
+	) {
+		if (current <= 0) throw new hanaError(10201);
+		if (pageSize <= 0) throw new hanaError(10202);
+		const { id } = userInfo;
+		const userList = await this.userService.getFollowingInPages(id, current, pageSize);
+
+		return userList.map((user) => new UserItemVo(user, true));
+	}
+
+	@Get('followers') // 分页获取用户的关注列表
+	@RequireLogin()
+	async getFollowers(
+		@UserInfo() userInfo: JwtUserData,
+		@Query('pageSize') pageSize: number,
+		@Query('current') current: number,
+	) {
+		if (current <= 0) throw new hanaError(10201);
+		if (pageSize <= 0) throw new hanaError(10202);
+		const { id } = userInfo;
+		const userList = await this.userService.getFollowersInPages(id, current, pageSize);
+
+		return await Promise.all(
+			userList.map(
+				async (user) => new UserItemVo(user, await this.userService.isFollowed(id, user.id)),
+			),
+		);
 	}
 }

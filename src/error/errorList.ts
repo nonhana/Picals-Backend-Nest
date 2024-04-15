@@ -12,6 +12,9 @@ export const errorMessages: Map<number, string> = new Map([
 	[10107, 'Token expired, please log in again'],
 	[10108, 'You have sent a verification code, please wait'],
 	[10109, 'Invalid options'],
+	[10110, 'This user has already been followed'],
+	[10111, 'This user can not been found as a followed user'],
+	[10112, 'You can not follow yourself'],
 
 	// 分页相关错误
 	[10201, 'Page number must be greater than 0'],

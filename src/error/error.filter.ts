@@ -32,7 +32,7 @@ export class ErrorFilter implements ExceptionFilter {
 				)
 				.json({
 					code: HttpStatus.INTERNAL_SERVER_ERROR,
-					message: 'Internal Server Error',
+					message: exception.message || 'Internal Server Error',
 				});
 		}
 	}

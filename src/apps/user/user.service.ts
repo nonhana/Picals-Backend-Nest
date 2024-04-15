@@ -8,9 +8,13 @@ import type { UpdateUserDto, LoginUserDto } from './dto';
 import { PaginationService } from 'src/pagination/pagination.service';
 import { History } from '../history/entities/history.entity';
 import { LabelService } from '../label/label.service';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class UserService {
+	@Inject(CACHE_MANAGER)
+	private readonly cacheManager: Cache;
+
 	@Inject(PaginationService)
 	private readonly paginationService: PaginationService;
 
@@ -85,12 +89,6 @@ export class UserService {
 		});
 	}
 
-	async getLikeLabelsById(userId: string, labelId: string) {
-		const user = await this.findUserById(userId, ['likedLabels']);
-		if (!user) throw new hanaError(10101);
-		return user.likedLabels.filter((label) => label.id === labelId);
-	}
-
 	async getLikeLabels(id: string) {
 		const user = await this.findUserById(id, ['likedLabels']);
 		if (!user) throw new hanaError(10101);
@@ -100,23 +98,88 @@ export class UserService {
 	async likeLabelActions(userId: string, labelId: string, type: number) {
 		const user = await this.findUserById(userId, ['likedLabels']);
 		if (!user) throw new hanaError(10101);
-		const foundTag = await this.getLikeLabelsById(userId, labelId);
+		const isExist = user.likedLabels.some((label) => label.id === labelId);
 
 		switch (type) {
 			case 0: // 添加喜欢标签
-				if (foundTag.length !== 0) throw new hanaError(10401);
+				if (isExist) throw new hanaError(10401);
 				const label = await this.labelService.findItemById(labelId);
 				if (!label) throw new hanaError(10403);
 				user.likedLabels.push(label);
-				await this.userRepository.save(user);
 				break;
 			case 1: // 移除喜欢标签
-				if (foundTag.length === 0) throw new hanaError(10402);
+				if (!isExist) throw new hanaError(10402);
 				user.likedLabels = user.likedLabels.filter((label) => label.id !== labelId);
-				await this.userRepository.save(user);
 				break;
 			default:
 				throw new hanaError(10109);
 		}
+		await this.userRepository.save(user);
+	}
+
+	async isFollowed(userId: string, targetId: string) {
+		const cacheKey = `user_following_${userId}`;
+		let following = (await this.cacheManager.get(cacheKey)) as User[] | null;
+
+		if (!following) {
+			const user = await this.findUserById(userId, ['following']);
+			if (!user) throw new hanaError(10101);
+			following = user.following;
+			await this.cacheManager.set(cacheKey, following, 1000 * 60 * 10); // 缓存10min
+		}
+
+		return following.some((item) => item.id === targetId);
+	}
+
+	async followAction(userId: string, targetId: string, type: number) {
+		const user = await this.findUserById(userId, ['following']);
+		if (!user) throw new hanaError(10101);
+		const isFollowed = await this.isFollowed(userId, targetId);
+		switch (type) {
+			case 0: // 关注
+				if (userId === targetId) throw new hanaError(10112);
+				if (isFollowed) throw new hanaError(10110);
+				const target = await this.findUserById(targetId);
+				if (!target) throw new hanaError(10101);
+				user.following.push(target);
+				break;
+			case 1: // 取消关注
+				if (!isFollowed) throw new hanaError(10111);
+				user.following = user.following.filter((item) => item.id !== targetId);
+				break;
+			default:
+				throw new hanaError(10109);
+		}
+		await this.userRepository.save(user);
+	}
+
+	async getFollowingInPages(id: string, current: number, pageSize: number) {
+		const user = await this.findUserById(id);
+		if (!user) throw new hanaError(10101);
+
+		const queryBuilder = this.userRepository.createQueryBuilder('user');
+		queryBuilder.innerJoin('user.followers', 'follower', 'follower.id = :id', { id });
+		queryBuilder.leftJoin('user.illustrations', 'illustration');
+		queryBuilder.addSelect('illustration.id');
+
+		queryBuilder.skip((current - 1) * pageSize);
+		queryBuilder.take(pageSize);
+
+		return await queryBuilder.getMany();
+	}
+
+	async getFollowersInPages(id: string, current: number, pageSize: number) {
+		const user = await this.findUserById(id);
+		if (!user) throw new hanaError(10101);
+
+		const queryBuilder = this.userRepository.createQueryBuilder('user');
+		queryBuilder.innerJoin('user.following', 'following', 'following.id = :id', { id });
+		queryBuilder.leftJoin('user.illustrations', 'illustration');
+		queryBuilder.addSelect('illustration.id');
+
+		queryBuilder.skip((current - 1) * pageSize);
+		queryBuilder.take(pageSize);
+
+		return await queryBuilder.getMany();
 	}
 }
