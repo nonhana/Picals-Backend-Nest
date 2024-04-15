@@ -1,92 +1,122 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { md5 } from 'src/utils';
 import { hanaError } from 'src/error/hanaError';
 import type { UpdateUserDto, LoginUserDto } from './dto';
+import { PaginationService } from 'src/pagination/pagination.service';
+import { History } from '../history/entities/history.entity';
+import { LabelService } from '../label/label.service';
 
 @Injectable()
 export class UserService {
-  @InjectRepository(User)
-  private userRepository: Repository<User>;
+	@Inject(PaginationService)
+	private readonly paginationService: PaginationService;
 
-  async login(loginUserDto: LoginUserDto) {
-    const foundUser = await this.userRepository.findOneBy({
-      email: loginUserDto.email,
-    });
-    if (!foundUser) {
-      throw new hanaError(10101);
-    }
-    if (foundUser.password !== md5(loginUserDto.password)) {
-      throw new hanaError(10102);
-    }
-    return foundUser;
-  }
+	@Inject(LabelService)
+	private readonly labelService: LabelService;
 
-  async register(email: string, password: string) {
-    const foundUser = await this.userRepository.findOneBy({ email });
-    if (foundUser) {
-      throw new hanaError(10105);
-    }
-    const user = new User();
-    user.email = email;
-    user.password = md5(password);
-    await this.userRepository.save(user);
-    return;
-  }
+	@InjectRepository(User)
+	private readonly userRepository: Repository<User>;
 
-  async getUserInfo(id: string) {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) {
-      throw new hanaError(10101);
-    }
-    return user;
-  }
+	@InjectRepository(History)
+	private readonly historyRepository: Repository<History>;
 
-  async updateUserInfo(id: string, updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) {
-      throw new hanaError(10101);
-    }
-    await this.userRepository.save({ id, ...updateUserDto });
-    return;
-  }
+	// 根据 email 查找单个用户
+	async findUserByEmail(email: string) {
+		return await this.userRepository.findOne({ where: { email } });
+	}
 
-  async updateUserPassword(id: string, password: string) {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) {
-      throw new hanaError(10101);
-    }
-    await this.userRepository.save({
-      id,
-      password: md5(password),
-    });
-    return;
-  }
+	// 根据 id 查找单个用户
+	async findUserById(id: string, relations?: string[]) {
+		return await this.userRepository.findOne({ where: { id }, relations: relations || [] });
+	}
 
-  async getUserFavorites(id: string) {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) {
-      throw new hanaError(10101);
-    }
-    console.log(user);
-    return user.favorites;
-  }
+	async login(loginUserDto: LoginUserDto) {
+		const user = await this.findUserByEmail(loginUserDto.email);
+		if (!user) throw new hanaError(10101);
+		if (user.password !== md5(loginUserDto.password)) throw new hanaError(10102);
+		return user;
+	}
 
-  async getHistoryInPages(id: string, current: number, pageSize: number) {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) {
-      throw new hanaError(10101);
-    }
-    return user.histories.slice((current - 1) * pageSize, current * pageSize);
-  }
+	async register(email: string, password: string) {
+		if (await this.findUserByEmail(email)) throw new hanaError(10105);
+		const user = new User();
+		user.email = email;
+		user.password = md5(password);
+		await this.userRepository.save(user);
+		return;
+	}
 
-  async getUserLabels(id: string) {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) {
-      throw new hanaError(10101);
-    }
-    return user.likedLabels;
-  }
+	async getInfo(id: string) {
+		const user = await this.findUserById(id);
+		if (!user) throw new hanaError(10101);
+		return user;
+	}
+
+	async updateInfo(id: string, updateUserDto: UpdateUserDto) {
+		if (await this.findUserById(id)) throw new hanaError(10101);
+		await this.userRepository.save({ id, ...updateUserDto });
+		return;
+	}
+
+	async updatePassword(id: string, password: string) {
+		if (await this.findUserById(id)) throw new hanaError(10101);
+		await this.userRepository.save({
+			id,
+			password: md5(password),
+		});
+		return;
+	}
+
+	async getFavorites(id: string) {
+		const user = await this.findUserById(id, ['favorites']);
+		if (!user) throw new hanaError(10101);
+		return user.favorites;
+	}
+
+	async getHistoryInPages(id: string, current: number, pageSize: number) {
+		const user = await this.findUserById(id);
+		if (!user) throw new hanaError(10101);
+		return await this.paginationService.paginate(this.historyRepository, current, pageSize, {
+			where: { user },
+			order: { lastTime: 'DESC' },
+		});
+	}
+
+	async getLikeLabelsById(userId: string, labelId: string) {
+		const user = await this.findUserById(userId, ['likedLabels']);
+		if (!user) throw new hanaError(10101);
+		return user.likedLabels.filter((label) => label.id === labelId);
+	}
+
+	async getLikeLabels(id: string) {
+		const user = await this.findUserById(id, ['likedLabels']);
+		if (!user) throw new hanaError(10101);
+		return user.likedLabels;
+	}
+
+	async likeLabelActions(userId: string, labelId: string, type: number) {
+		const user = await this.findUserById(userId, ['likedLabels']);
+		if (!user) throw new hanaError(10101);
+		const foundTag = await this.getLikeLabelsById(userId, labelId);
+
+		switch (type) {
+			case 0: // 添加喜欢标签
+				if (foundTag.length !== 0) throw new hanaError(10401);
+				const label = await this.labelService.findItemById(labelId);
+				if (!label) throw new hanaError(10403);
+				user.likedLabels.push(label);
+				await this.userRepository.save(user);
+				break;
+			case 1: // 移除喜欢标签
+				if (foundTag.length === 0) throw new hanaError(10402);
+				user.likedLabels = user.likedLabels.filter((label) => label.id !== labelId);
+				await this.userRepository.save(user);
+				break;
+			default:
+				throw new hanaError(10109);
+		}
+	}
 }

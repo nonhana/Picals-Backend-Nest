@@ -28,95 +28,87 @@ import { PaginationService } from './pagination/pagination.service';
 import { PaginationModule } from './pagination/pagination.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: 'src/.env',
-    }),
-    TypeOrmModule.forRootAsync({
-      useFactory(configService: ConfigService) {
-        return {
-          type: 'mysql',
-          host: configService.get('MYSQL_HOST'),
-          port: configService.get('MYSQL_PORT'),
-          username: configService.get('MYSQL_USER'),
-          password: configService.get('MYSQL_PASS'),
-          database: configService.get('MYSQL_DB'),
-          synchronize: true,
-          logging: true,
-          entities: [
-            User,
-            Illustrator,
-            Illustration,
-            Label,
-            Comment,
-            History,
-            Favorite,
-          ],
-          poolSize: 10,
-          connectorPackage: 'mysql2',
-          extra: {
-            authPlugin: 'sha256_password',
-          },
-        };
-      },
-      inject: [ConfigService],
-    }),
-    JwtModule.registerAsync({
-      global: true,
-      useFactory(configService: ConfigService) {
-        return {
-          secret: configService.get('JWT_SECRET'),
-          signOptions: {
-            expiresIn: configService.get('JWT_ACCESS_TOKEN_EXPIRES_TIME'),
-          },
-        };
-      },
-      inject: [ConfigService],
-    }),
-    CacheModule.registerAsync<RedisClientOptions>({
-      isGlobal: true,
-      useFactory(configService: ConfigService) {
-        return {
-          store: redisStore,
-          url: configService.get('REDIS_SERVER_URL'),
-          database: configService.get('REDIS_DB'),
-        };
-      },
-      inject: [ConfigService],
-    }),
-    UserModule,
-    IllustratorModule,
-    IllustrationModule,
-    LabelModule,
-    CommentModule,
-    HistoryModule,
-    EmailModule,
-    FavoriteModule,
-    PaginationModule,
-  ],
-  providers: [
-    // 全局错误过滤器
-    {
-      provide: APP_FILTER,
-      useClass: ErrorFilter,
-    },
-    // 全局拦截器，统一返回格式
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ResponseInterceptor,
-    },
-    // 全局管道，验证数据
-    {
-      provide: APP_PIPE,
-      useClass: ValidationPipe,
-    },
-    // 全局守卫
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-    PaginationService,
-  ],
+	imports: [
+		ConfigModule.forRoot({
+			isGlobal: true,
+			envFilePath: 'src/.env',
+		}),
+		TypeOrmModule.forRootAsync({
+			useFactory(configService: ConfigService) {
+				return {
+					type: 'mysql',
+					host: configService.get('MYSQL_HOST'),
+					port: configService.get('MYSQL_PORT'),
+					username: configService.get('MYSQL_USER'),
+					password: configService.get('MYSQL_PASS'),
+					database: configService.get('MYSQL_DB'),
+					synchronize: true,
+					logging: false,
+					entities: [User, Illustrator, Illustration, Label, Comment, History, Favorite],
+					poolSize: 10,
+					connectorPackage: 'mysql2',
+					extra: {
+						authPlugin: 'sha256_password',
+					},
+				};
+			},
+			inject: [ConfigService],
+		}),
+		JwtModule.registerAsync({
+			global: true,
+			useFactory(configService: ConfigService) {
+				return {
+					secret: configService.get('JWT_SECRET'),
+					signOptions: {
+						expiresIn: configService.get('JWT_ACCESS_TOKEN_EXPIRES_TIME'),
+					},
+				};
+			},
+			inject: [ConfigService],
+		}),
+		CacheModule.registerAsync<RedisClientOptions>({
+			isGlobal: true,
+			useFactory(configService: ConfigService) {
+				return {
+					store: redisStore,
+					url: configService.get('REDIS_SERVER_URL'),
+					database: configService.get('REDIS_DB'),
+				};
+			},
+			inject: [ConfigService],
+		}),
+		UserModule,
+		IllustratorModule,
+		IllustrationModule,
+		LabelModule,
+		CommentModule,
+		HistoryModule,
+		EmailModule,
+		FavoriteModule,
+		PaginationModule,
+	],
+	providers: [
+		// 全局错误过滤器
+		{
+			provide: APP_FILTER,
+			useClass: ErrorFilter,
+		},
+		// 全局拦截器，统一返回格式
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: ResponseInterceptor,
+		},
+		// 全局管道，验证数据
+		{
+			provide: APP_PIPE,
+			useClass: ValidationPipe,
+		},
+		// 全局守卫
+		{
+			provide: APP_GUARD,
+			useClass: AuthGuard,
+		},
+		PaginationService,
+	],
 })
 export class AppModule {}

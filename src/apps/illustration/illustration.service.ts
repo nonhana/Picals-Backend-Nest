@@ -9,33 +9,32 @@ import type { UploadIllustrationDto } from './dto/upload-illustration.dto';
 
 @Injectable()
 export class IllustrationService {
-  @InjectRepository(Illustration)
-  private readonly illustrationRepository: Repository<Illustration>;
+	@InjectRepository(Illustration)
+	private readonly illustrationRepository: Repository<Illustration>;
 
-  @Inject(IllustratorService)
-  private readonly illustratorService: IllustratorService;
+	@Inject(IllustratorService)
+	private readonly illustratorService: IllustratorService;
 
-  @Inject(LabelService)
-  private readonly labelService: LabelService;
+	@Inject(LabelService)
+	private readonly labelService: LabelService;
 
-  @Inject(UserService)
-  private readonly userService: UserService;
+	@Inject(UserService)
+	private readonly userService: UserService;
 
-  async createItem(id: string, uploadIllustrationDto: UploadIllustrationDto) {
-    const { labels, illustratorInfo, ...basicInfo } = uploadIllustrationDto;
+	async createItem(id: string, uploadIllustrationDto: UploadIllustrationDto) {
+		const { labels, illustratorInfo, ...basicInfo } = uploadIllustrationDto;
 
-    const userEntity = await this.userService.getUserInfo(id);
-    const labelsEntity = await this.labelService.createItems(labels);
-    const illustratorEntity =
-      await this.illustratorService.createItem(illustratorInfo);
+		const userEntity = await this.userService.getInfo(id);
+		const labelsEntity = await this.labelService.createItems(labels);
+		const illustratorEntity = await this.illustratorService.createItem(illustratorInfo);
 
-    const illustration = this.illustrationRepository.create({
-      ...basicInfo,
-      user: userEntity,
-      labels: labelsEntity,
-      illustrator: illustratorEntity,
-    });
+		const illustration = this.illustrationRepository.create({
+			...basicInfo,
+			user: userEntity,
+			labels: labelsEntity,
+			illustrator: illustratorEntity,
+		});
 
-    return await this.illustrationRepository.save(illustration);
-  }
+		return await this.illustrationRepository.save(illustration);
+	}
 }

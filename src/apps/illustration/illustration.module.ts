@@ -9,15 +9,11 @@ import { Label } from '../label/entities/label.entity';
 import { Illustrator } from '../illustrator/entities/illustrator.entity';
 import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
+import { History } from '../history/entities/history.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Illustration, Label, Illustrator, User])],
-  controllers: [IllustrationController],
-  providers: [
-    IllustrationService,
-    LabelService,
-    IllustratorService,
-    UserService,
-  ],
+	imports: [TypeOrmModule.forFeature([Illustration, Label, Illustrator, User, History])],
+	controllers: [IllustrationController],
+	providers: [IllustrationService, LabelService, IllustratorService, UserService],
 })
 export class IllustrationModule {}

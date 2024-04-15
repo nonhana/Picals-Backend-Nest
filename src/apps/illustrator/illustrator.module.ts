@@ -6,9 +6,9 @@ import { Illustrator } from './entities/illustrator.entity';
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([Illustrator])],
-  controllers: [IllustratorController],
-  providers: [IllustratorService],
-  exports: [IllustratorService],
+	imports: [TypeOrmModule.forFeature([Illustrator])],
+	controllers: [IllustratorController],
+	providers: [IllustratorService],
+	exports: [IllustratorService],
 })
 export class IllustratorModule {}

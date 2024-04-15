@@ -6,16 +6,16 @@ import { JwtUserData } from 'src/guards/auth.guard';
 
 @Controller('illustration')
 export class IllustrationController {
-  @Inject(IllustrationService)
-  private readonly illustrationService: IllustrationService;
+	@Inject(IllustrationService)
+	private readonly illustrationService: IllustrationService;
 
-  @Post('upload')
-  @RequireLogin()
-  async upload(
-    @UserInfo() userInfo: JwtUserData,
-    @Body() uploadIllustrationDto: UploadIllustrationDto,
-  ) {
-    const { id } = userInfo;
-    return await this.illustrationService.createItem(id, uploadIllustrationDto);
-  }
+	@Post('upload')
+	@RequireLogin()
+	async upload(
+		@UserInfo() userInfo: JwtUserData,
+		@Body() uploadIllustrationDto: UploadIllustrationDto,
+	) {
+		const { id } = userInfo;
+		return await this.illustrationService.createItem(id, uploadIllustrationDto);
+	}
 }

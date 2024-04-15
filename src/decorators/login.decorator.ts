@@ -6,10 +6,8 @@ import type { AuthenticatedRequest } from 'express';
 export const RequireLogin = () => SetMetadata('require-login', true);
 
 // UserInfo 装饰器，用于从请求中获取用户信息（jwt解析）
-export const UserInfo = createParamDecorator(
-  (data: string, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest<AuthenticatedRequest>();
-    if (!request.user) return null;
-    return data ? request.user[data] : request.user;
-  },
-);
+export const UserInfo = createParamDecorator((data: string, ctx: ExecutionContext) => {
+	const request = ctx.switchToHttp().getRequest<AuthenticatedRequest>();
+	if (!request.user) return null;
+	return data ? request.user[data] : request.user;
+});

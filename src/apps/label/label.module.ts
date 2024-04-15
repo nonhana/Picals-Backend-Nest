@@ -5,9 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Label } from './entities/label.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Label])],
-  controllers: [LabelController],
-  providers: [LabelService],
-  exports: [LabelService],
+	imports: [TypeOrmModule.forFeature([Label])],
+	controllers: [LabelController],
+	providers: [LabelService],
+	exports: [LabelService],
 })
 export class LabelModule {}
