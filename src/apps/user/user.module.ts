@@ -8,9 +8,10 @@ import { History } from '../history/entities/history.entity';
 import { HistoryService } from '../history/history.service';
 import { Label } from '../label/entities/label.entity';
 import { LabelService } from '../label/label.service';
+import { Illustration } from '../illustration/entities/illustration.entity';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([User, Favorite, History, Label])],
+	imports: [TypeOrmModule.forFeature([User, Favorite, History, Label, Illustration])],
 	controllers: [UserController],
 	providers: [UserService, HistoryService, LabelService],
 	exports: [UserService],

@@ -33,4 +33,13 @@ export class LabelService {
 	async createItems(values: string[]) {
 		return await Promise.all(values.map(async (value) => await this.createItem(value)));
 	}
+
+	// 获取某个作品的标签列表
+	async getItemsByIllustrationId(id: string) {
+		return await this.labelRepository
+			.createQueryBuilder('label')
+			.leftJoin('label.illustrations', 'illustration')
+			.where('illustration.id = :id', { id })
+			.getMany();
+	}
 }

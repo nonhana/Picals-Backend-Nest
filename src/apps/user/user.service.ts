@@ -5,18 +5,16 @@ import { User } from './entities/user.entity';
 import { md5 } from 'src/utils';
 import { hanaError } from 'src/error/hanaError';
 import type { UpdateUserDto, LoginUserDto } from './dto';
-import { PaginationService } from 'src/pagination/pagination.service';
 import { History } from '../history/entities/history.entity';
 import { LabelService } from '../label/label.service';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { Illustration } from '../illustration/entities/illustration.entity';
+import type { Label } from '../label/entities/label.entity';
 
 @Injectable()
 export class UserService {
 	@Inject(CACHE_MANAGER)
 	private readonly cacheManager: Cache;
-
-	@Inject(PaginationService)
-	private readonly paginationService: PaginationService;
 
 	@Inject(LabelService)
 	private readonly labelService: LabelService;
@@ -26,6 +24,9 @@ export class UserService {
 
 	@InjectRepository(History)
 	private readonly historyRepository: Repository<History>;
+
+	@InjectRepository(Illustration)
+	private readonly illustrationRepository: Repository<Illustration>;
 
 	// 根据 email 查找单个用户
 	async findUserByEmail(email: string) {
@@ -83,10 +84,17 @@ export class UserService {
 	async getHistoryInPages(id: string, current: number, pageSize: number) {
 		const user = await this.findUserById(id);
 		if (!user) throw new hanaError(10101);
-		return await this.paginationService.paginate(this.historyRepository, current, pageSize, {
-			where: { user },
-			order: { lastTime: 'DESC' },
-		});
+
+		const queryBuilder = this.historyRepository.createQueryBuilder('history');
+		queryBuilder.where('history.user = :user', { user });
+		queryBuilder.leftJoin('history.illustration', 'illustration');
+		queryBuilder.addSelect('illustration.id');
+		queryBuilder.orderBy('history.lastTime', 'DESC');
+
+		queryBuilder.skip((current - 1) * pageSize);
+		queryBuilder.take(pageSize);
+
+		return await queryBuilder.getMany();
 	}
 
 	async getLikeLabels(id: string) {
@@ -153,6 +161,7 @@ export class UserService {
 		await this.userRepository.save(user);
 	}
 
+	// 分页获取用户正在关注的用户列表
 	async getFollowingInPages(id: string, current: number, pageSize: number) {
 		const user = await this.findUserById(id);
 		if (!user) throw new hanaError(10101);
@@ -168,6 +177,14 @@ export class UserService {
 		return await queryBuilder.getMany();
 	}
 
+	// 获取用户的关注用户总数
+	async getFollowingCount(id: string) {
+		const user = await this.findUserById(id, ['following']);
+		if (!user) throw new hanaError(10101);
+		return user.following.length;
+	}
+
+	// 分页获取用户的粉丝列表
 	async getFollowersInPages(id: string, current: number, pageSize: number) {
 		const user = await this.findUserById(id);
 		if (!user) throw new hanaError(10101);
@@ -181,5 +198,53 @@ export class UserService {
 		queryBuilder.take(pageSize);
 
 		return await queryBuilder.getMany();
+	}
+
+	// 获取用户的粉丝总数
+	async getFollowersCount(id: string) {
+		const user = await this.findUserById(id, ['followers']);
+		if (!user) throw new hanaError(10101);
+		return user.followers.length;
+	}
+
+	// 获取用户发布的全部作品中的标签列表
+	async getPublishedLabels(id: string) {
+		const user = await this.findUserById(id);
+		if (!user) throw new hanaError(10101);
+
+		// 1. 先获取用户发布的全部作品的 id
+		const queryBuilder = this.illustrationRepository.createQueryBuilder('illustration');
+		queryBuilder.innerJoin('illustration.user', 'user', 'user.id = :id', { id });
+		queryBuilder.select('illustration.id');
+
+		const illustrations = await queryBuilder.getMany();
+
+		// 2. 获取全部作品的标签列表，返回结果应当是一个去重的数组
+		const idSet: Set<string> = new Set();
+		const result: Label[] = [];
+		for (const illustration of illustrations) {
+			const labels = await this.labelService.getItemsByIllustrationId(illustration.id);
+			for (const label of labels) {
+				if (!idSet.has(label.id)) {
+					idSet.add(label.id);
+					result.push(label);
+				}
+			}
+		}
+
+		return result;
+	}
+
+	// 分页获取用户发布的作品列表
+	async getWorksInPages(id: string, current: number, pageSize: number) {
+		const user = await this.findUserById(id);
+		if (!user) throw new hanaError(10101);
+
+		return await this.userRepository.find({
+			where: { id },
+			relations: ['illustrations'],
+			skip: (current - 1) * pageSize,
+			take: pageSize,
+		});
 	}
 }

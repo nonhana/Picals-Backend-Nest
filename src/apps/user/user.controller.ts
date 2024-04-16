@@ -11,6 +11,7 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { JwtUserData } from 'src/guards/auth.guard';
 import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
 import { UserItemVo } from './vo/user-item.vo';
+import { LabelItemVO } from './vo/label-item.vo';
 
 @Controller('user')
 export class UserController {
@@ -264,7 +265,14 @@ export class UserController {
 		return userList.map((user) => new UserItemVo(user, true));
 	}
 
-	@Get('followers') // 分页获取用户的关注列表
+	@Get('following-count') // 获取用户的关注总数
+	@RequireLogin()
+	async getFollowingCount(@UserInfo() userInfo: JwtUserData) {
+		const { id } = userInfo;
+		return await this.userService.getFollowingCount(id);
+	}
+
+	@Get('followers') // 分页获取用户的粉丝列表
 	@RequireLogin()
 	async getFollowers(
 		@UserInfo() userInfo: JwtUserData,
@@ -281,5 +289,33 @@ export class UserController {
 				async (user) => new UserItemVo(user, await this.userService.isFollowed(id, user.id)),
 			),
 		);
+	}
+
+	@Get('followers-count') // 获取用户的粉丝总数
+	@RequireLogin()
+	async getFollowersCount(@UserInfo() userInfo: JwtUserData) {
+		const { id } = userInfo;
+		return await this.userService.getFollowersCount(id);
+	}
+
+	@Get('published-labels') // 获取用户所有发布作品中携带的标签列表
+	@RequireLogin()
+	async getPublishedLabels(@UserInfo() userInfo: JwtUserData) {
+		const { id } = userInfo;
+		const labels = await this.userService.getPublishedLabels(id);
+		return labels.map((label) => new LabelItemVO(label));
+	}
+
+	@Get('works') // 分页获取用户发布作品列表
+	@RequireLogin()
+	async getWorks(
+		@UserInfo() userInfo: JwtUserData,
+		@Query('pageSize') pageSize: number,
+		@Query('current') current: number,
+	) {
+		if (current <= 0) throw new hanaError(10201);
+		if (pageSize <= 0) throw new hanaError(10202);
+		const { id } = userInfo;
+		return await this.userService.getWorksInPages(id, current, pageSize);
 	}
 }
