@@ -38,6 +38,7 @@ export class UserService {
 		return await this.userRepository.findOne({ where: { id }, relations: relations || [] });
 	}
 
+	// 用户登录
 	async login(loginUserDto: LoginUserDto) {
 		const user = await this.findUserByEmail(loginUserDto.email);
 		if (!user) throw new hanaError(10101);
@@ -45,6 +46,7 @@ export class UserService {
 		return user;
 	}
 
+	// 用户注册
 	async register(email: string, password: string) {
 		if (await this.findUserByEmail(email)) throw new hanaError(10105);
 		const user = new User();
@@ -54,18 +56,21 @@ export class UserService {
 		return;
 	}
 
+	// 获取单个用户信息
 	async getInfo(id: string) {
 		const user = await this.findUserById(id);
 		if (!user) throw new hanaError(10101);
 		return user;
 	}
 
+	// 更新用户信息
 	async updateInfo(id: string, updateUserDto: UpdateUserDto) {
 		if (await this.findUserById(id)) throw new hanaError(10101);
 		await this.userRepository.save({ id, ...updateUserDto });
 		return;
 	}
 
+	// 更新用户密码
 	async updatePassword(id: string, password: string) {
 		if (await this.findUserById(id)) throw new hanaError(10101);
 		await this.userRepository.save({
@@ -75,20 +80,21 @@ export class UserService {
 		return;
 	}
 
+	// 获取用户的所有收藏夹列表
 	async getFavorites(id: string) {
 		const user = await this.findUserById(id, ['favorites']);
 		if (!user) throw new hanaError(10101);
 		return user.favorites;
 	}
 
+	// 分页获取用户的历史记录
 	async getHistoryInPages(id: string, current: number, pageSize: number) {
 		const user = await this.findUserById(id);
 		if (!user) throw new hanaError(10101);
 
 		const queryBuilder = this.historyRepository.createQueryBuilder('history');
 		queryBuilder.where('history.user = :user', { user });
-		queryBuilder.leftJoin('history.illustration', 'illustration');
-		queryBuilder.addSelect('illustration.id');
+		queryBuilder.leftJoinAndSelect('history.illustration', 'illustration');
 		queryBuilder.orderBy('history.lastTime', 'DESC');
 
 		queryBuilder.skip((current - 1) * pageSize);
@@ -97,12 +103,14 @@ export class UserService {
 		return await queryBuilder.getMany();
 	}
 
+	// 获取用户喜欢的标签列表
 	async getLikeLabels(id: string) {
 		const user = await this.findUserById(id, ['likedLabels']);
 		if (!user) throw new hanaError(10101);
 		return user.likedLabels;
 	}
 
+	// 添加/移除喜欢的标签
 	async likeLabelActions(userId: string, labelId: string, type: number) {
 		const user = await this.findUserById(userId, ['likedLabels']);
 		if (!user) throw new hanaError(10101);
@@ -125,6 +133,7 @@ export class UserService {
 		await this.userRepository.save(user);
 	}
 
+	// 判断用户是否关注了目标用户
 	async isFollowed(userId: string, targetId: string) {
 		const cacheKey = `user_following_${userId}`;
 		let following = (await this.cacheManager.get(cacheKey)) as User[] | null;
@@ -139,6 +148,7 @@ export class UserService {
 		return following.some((item) => item.id === targetId);
 	}
 
+	// 关注/取关用户
 	async followAction(userId: string, targetId: string, type: number) {
 		const user = await this.findUserById(userId, ['following']);
 		if (!user) throw new hanaError(10101);
@@ -240,11 +250,72 @@ export class UserService {
 		const user = await this.findUserById(id);
 		if (!user) throw new hanaError(10101);
 
-		return await this.userRepository.find({
-			where: { id },
-			relations: ['illustrations'],
+		return await this.illustrationRepository.find({
+			where: { user },
+			relations: ['user'],
 			skip: (current - 1) * pageSize,
 			take: pageSize,
 		});
+	}
+
+	// 判断用户是否喜欢了某个插画
+	async isLiked(userId: string, illustrationId: string) {
+		const cacheKey = `user_like_${userId}`;
+		let likeList = (await this.cacheManager.get(cacheKey)) as Illustration[] | null;
+
+		if (!likeList) {
+			const user = await this.findUserById(userId, ['likeWorks']);
+			if (!user) throw new hanaError(10101);
+			likeList = user.likeWorks;
+			await this.cacheManager.set(cacheKey, likeList, 1000 * 60 * 10); // 缓存10min
+		}
+
+		return likeList.some((item) => item.id === illustrationId);
+	}
+
+	// 获取用户发布的作品总数
+	async getWorksCount(id: string) {
+		const user = await this.findUserById(id, ['illustrations']);
+		if (!user) throw new hanaError(10101);
+		return user.illustrations.length;
+	}
+
+	// 分页获取用户喜欢的作品列表
+	async getLikeWorksInPages(id: string, current: number, pageSize: number) {
+		const user = await this.findUserById(id);
+		if (!user) throw new hanaError(10101);
+
+		return await this.illustrationRepository.find({
+			where: { likeUsers: { id } },
+			relations: ['user'],
+			skip: (current - 1) * pageSize,
+			take: pageSize,
+		});
+	}
+
+	// 获取用户喜欢的作品总数
+	async getLikeWorksCount(id: string) {
+		const user = await this.findUserById(id, ['likeWorks']);
+		if (!user) throw new hanaError(10101);
+		return user.likeWorks.length;
+	}
+
+	// 分页搜索用户
+	async searchUser(keyword: string, current: number, pageSize: number) {
+		const queryBuilder = this.userRepository.createQueryBuilder('user');
+		queryBuilder.where('user.username like :keyword', { keyword: `%${keyword}%` });
+
+		queryBuilder.skip((current - 1) * pageSize);
+		queryBuilder.take(pageSize);
+
+		return await queryBuilder.getMany();
+	}
+
+	// 获取搜索到的用户总数
+	async searchUserCount(keyword: string) {
+		const queryBuilder = this.userRepository.createQueryBuilder('user');
+		queryBuilder.where('user.username like :keyword', { keyword: `%${keyword}%` });
+
+		return await queryBuilder.getCount();
 	}
 }

@@ -6,8 +6,16 @@ export class IllustrationItemVO {
 	authorName: string;
 	id: string;
 	imgList: string[];
-	isLiked: boolean;
 	name: string;
+	isLiked: boolean;
 
-	constructor(illustration: Illustration) {}
+	constructor(illustration: Illustration, isLiked: boolean) {
+		this.authorAvatar = illustration.user.avatar;
+		this.authorId = illustration.user.id;
+		this.authorName = illustration.user.username;
+		this.id = illustration.id;
+		this.imgList = illustration.imgList;
+		this.name = illustration.name;
+		this.isLiked = isLiked;
+	}
 }

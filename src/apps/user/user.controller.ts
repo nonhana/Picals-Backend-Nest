@@ -12,6 +12,9 @@ import { JwtUserData } from 'src/guards/auth.guard';
 import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
 import { UserItemVo } from './vo/user-item.vo';
 import { LabelItemVO } from './vo/label-item.vo';
+import { IllustrationItemVO } from './vo/illustration-item.vo';
+import { FavoriteItemVo } from './vo/favorite-item.vo';
+import { HistoryItemVO } from './vo/history-item.vo';
 
 @Controller('user')
 export class UserController {
@@ -203,7 +206,8 @@ export class UserController {
 	@RequireLogin()
 	async getFavorites(@UserInfo() userInfo: JwtUserData) {
 		const { id } = userInfo;
-		return await this.userService.getFavorites(id);
+		const favorites = await this.userService.getFavorites(id);
+		return favorites.map((favorite) => new FavoriteItemVo(favorite));
 	}
 
 	@Get('history') // 分页获取用户的浏览记录
@@ -216,14 +220,16 @@ export class UserController {
 		if (current <= 0) throw new hanaError(10201);
 		if (pageSize <= 0) throw new hanaError(10202);
 		const { id } = userInfo;
-		return await this.userService.getHistoryInPages(id, current, pageSize);
+		const histories = await this.userService.getHistoryInPages(id, current, pageSize);
+		return histories.map((history) => new HistoryItemVO(history));
 	}
 
 	@Get('like-labels') // 获取用户喜欢的标签列表
 	@RequireLogin()
 	async getLikeLabels(@UserInfo() userInfo: JwtUserData) {
 		const { id } = userInfo;
-		return await this.userService.getLikeLabels(id);
+		const labels = await this.userService.getLikeLabels(id);
+		return labels.map((label) => new LabelItemVO(label));
 	}
 
 	@Post('like-label-actions') // 添加/取消喜欢标签
@@ -306,7 +312,7 @@ export class UserController {
 		return labels.map((label) => new LabelItemVO(label));
 	}
 
-	@Get('works') // 分页获取用户发布作品列表
+	@Get('works') // 分页获取用户发布的作品列表
 	@RequireLogin()
 	async getWorks(
 		@UserInfo() userInfo: JwtUserData,
@@ -316,6 +322,68 @@ export class UserController {
 		if (current <= 0) throw new hanaError(10201);
 		if (pageSize <= 0) throw new hanaError(10202);
 		const { id } = userInfo;
-		return await this.userService.getWorksInPages(id, current, pageSize);
+		const works = await this.userService.getWorksInPages(id, current, pageSize);
+		return await Promise.all(
+			works.map(
+				async (work) => new IllustrationItemVO(work, await this.userService.isLiked(id, work.id)),
+			),
+		);
+	}
+
+	@Get('works-count') // 获取用户发布的作品总数
+	@RequireLogin()
+	async getWorksCount(@UserInfo() userInfo: JwtUserData) {
+		const { id } = userInfo;
+		return await this.userService.getWorksCount(id);
+	}
+
+	@Get('like-works') // 分页获取用户喜欢的作品列表
+	@RequireLogin()
+	async getLikeWorks(
+		@UserInfo() userInfo: JwtUserData,
+		@Query('pageSize') pageSize: number,
+		@Query('current') current: number,
+	) {
+		if (current <= 0) throw new hanaError(10201);
+		if (pageSize <= 0) throw new hanaError(10202);
+		const { id } = userInfo;
+		const works = await this.userService.getLikeWorksInPages(id, current, pageSize);
+		return await Promise.all(
+			works.map(
+				async (work) => new IllustrationItemVO(work, await this.userService.isLiked(id, work.id)),
+			),
+		);
+	}
+
+	@Get('like-works-count') // 获取用户喜欢的作品总数
+	@RequireLogin()
+	async getLikeWorksCount(@UserInfo() userInfo: JwtUserData) {
+		const { id } = userInfo;
+		return await this.userService.getLikeWorksCount(id);
+	}
+
+	@Get('search') // 分页搜索用户
+	@RequireLogin()
+	async searchUser(
+		@UserInfo() userInfo: JwtUserData,
+		@Query('keyword') keyword: string,
+		@Query('pageSize') pageSize: number,
+		@Query('current') current: number,
+	) {
+		const { id } = userInfo;
+		if (current <= 0) throw new hanaError(10201);
+		if (pageSize <= 0) throw new hanaError(10202);
+		const userList = await this.userService.searchUser(keyword, current, pageSize);
+		return await Promise.all(
+			userList.map(
+				async (user) => new UserItemVo(user, await this.userService.isFollowed(id, user.id)),
+			),
+		);
+	}
+
+	@Get('search-count') // 搜索用户总数
+	@RequireLogin()
+	async searchUserCount(@Query('keyword') keyword: string) {
+		return await this.userService.searchUserCount(keyword);
 	}
 }

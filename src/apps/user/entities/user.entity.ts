@@ -167,6 +167,10 @@ export class User {
 	@JoinTable()
 	likedLabels: Label[];
 
+	@ManyToMany(() => Illustration, (illustration) => illustration.likeUsers)
+	@JoinTable()
+	likeWorks: Illustration[];
+
 	@OneToMany(() => Comment, (comment) => comment.user, {
 		onDelete: 'SET NULL',
 	})

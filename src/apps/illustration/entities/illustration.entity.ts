@@ -140,6 +140,9 @@ export class Illustration {
 	@JoinTable()
 	labels: Label[];
 
+	@ManyToMany(() => User, (user) => user.likeWorks)
+	likeUsers: User[];
+
 	@OneToMany(() => Comment, (comment) => comment.illustration, {
 		cascade: true,
 	})
