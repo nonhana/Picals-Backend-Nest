@@ -210,6 +210,13 @@ export class UserService {
 		return await queryBuilder.getMany();
 	}
 
+	// 获取用户的全部粉丝列表
+	async getFollowers(id: string) {
+		const user = await this.findUserById(id, ['followers']);
+		if (!user) throw new hanaError(10101);
+		return user.followers;
+	}
+
 	// 获取用户的粉丝总数
 	async getFollowersCount(id: string) {
 		const user = await this.findUserById(id, ['followers']);

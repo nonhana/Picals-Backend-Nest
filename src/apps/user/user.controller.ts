@@ -12,7 +12,7 @@ import { JwtUserData } from 'src/guards/auth.guard';
 import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
 import { UserItemVo } from './vo/user-item.vo';
 import { LabelItemVO } from './vo/label-item.vo';
-import { IllustrationItemVO } from './vo/illustration-item.vo';
+import { IllustrationItemVO } from '../illustration/vo/illustration-item.vo';
 import { FavoriteItemVo } from './vo/favorite-item.vo';
 import { HistoryItemVO } from './vo/history-item.vo';
 
