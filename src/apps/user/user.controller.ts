@@ -386,4 +386,16 @@ export class UserController {
 	async searchUserCount(@Query('keyword') keyword: string) {
 		return await this.userService.searchUserCount(keyword);
 	}
+
+	@Post('like') // 喜欢/取消喜欢作品
+	@RequireLogin()
+	async like(
+		@UserInfo() userInfo: JwtUserData,
+		@Body('id') workId: string,
+		@Body('type') type: number,
+	) {
+		const { id } = userInfo;
+		await this.userService.likeAction(id, workId, type);
+		return '操作成功！';
+	}
 }

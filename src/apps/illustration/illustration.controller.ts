@@ -5,6 +5,8 @@ import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
 import { JwtUserData } from 'src/guards/auth.guard';
 import { UserService } from '../user/user.service';
 import { IllustrationItemVO } from './vo/illustration-item.vo';
+import type { Illustration } from './entities/illustration.entity';
+import { IllustrationDetailVO } from './vo/illustration-detail.vo';
 
 @Controller('illustration')
 export class IllustrationController {
@@ -14,15 +16,12 @@ export class IllustrationController {
 	@Inject(UserService)
 	private readonly userService: UserService;
 
-	@Get('recommend') // 分页获取推荐作品列表
-	async getRecommend(
-		@UserInfo() userInfo: JwtUserData,
-		@Query('pageSize') pageSize: number = 1,
-		@Query('current') current: number = 30,
-	) {
-		const works = await this.illustrationService.getItemsInPages(pageSize, current);
-		return await Promise.all(
-			works.map(
+	convertToIllustrationItemVO = async (
+		illustrations: Illustration[],
+		userInfo: JwtUserData | undefined,
+	) =>
+		await Promise.all(
+			illustrations.map(
 				async (work) =>
 					new IllustrationItemVO(
 						work,
@@ -30,6 +29,15 @@ export class IllustrationController {
 					),
 			),
 		);
+
+	@Get('recommend') // 分页获取推荐作品列表
+	async getRecommend(
+		@UserInfo() userInfo: JwtUserData,
+		@Query('pageSize') pageSize: number = 1,
+		@Query('current') current: number = 30,
+	) {
+		const works = await this.illustrationService.getItemsInPages(pageSize, current);
+		return await this.convertToIllustrationItemVO(works, userInfo);
 	}
 
 	@Post('upload') // 上传作品
@@ -50,6 +58,27 @@ export class IllustrationController {
 		@Query('current') current: number = 30,
 	) {
 		const { id } = userInfo;
-		const works = await this.illustrationService.getFollowingWorks(id, pageSize, current);
+		const records = await this.illustrationService.getFollowingWorks(id, pageSize, current);
+		const works = records.map((record) => record.illustration);
+		return await this.convertToIllustrationItemVO(works, userInfo);
+	}
+
+	@Post('edit') // 编辑已发布的作品
+	@RequireLogin()
+	async edit(
+		@UserInfo() userInfo: JwtUserData,
+		@Query('id') workId: string,
+		@Body() uploadIllustrationDto: UploadIllustrationDto,
+	) {
+		const { id } = userInfo;
+		await this.illustrationService.editItem(id, workId, uploadIllustrationDto);
+		return '更新成功！';
+	}
+
+	@Get('detail') // 获取作品详情
+	async getDetail(@UserInfo() userInfo: JwtUserData, @Query('id') workId: string) {
+		const work = await this.illustrationService.getDetail(workId);
+		const isLiked = userInfo ? await this.userService.isLiked(userInfo.id, workId) : false;
+		return new IllustrationDetailVO(work, isLiked);
 	}
 }

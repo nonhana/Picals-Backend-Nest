@@ -23,12 +23,12 @@ export class WorkTemp {
 	})
 	createdAt: Date;
 
-	@ManyToOne(() => User, (user) => user.recordWorks, {
-		cascade: true,
-	})
+	// 这个用户指的是插画家发布新作之后推送给的粉丝
+	@ManyToOne(() => User, (user) => user.recordWorks)
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 
+	// 插画指的是插画家发布的新作
 	@ManyToOne(() => Illustration, {
 		cascade: true,
 	})

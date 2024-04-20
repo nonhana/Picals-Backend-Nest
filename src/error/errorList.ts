@@ -27,4 +27,12 @@ export const errorMessages: Map<number, string> = new Map([
 	[10401, 'This tag has already been liked'],
 	[10402, 'This tag can not been found as a liked tag'],
 	[10403, 'Tag is not found'],
+
+	// 插画相关错误
+	[10501, 'Illustration not found'],
+	[10502, "Can not edit other user's work"],
+	[10503, 'This work has already been liked'],
+	[10504, 'This work can not been found as a liked work'],
+	[10505, 'This work has already been collected'],
+	[10506, 'This work can not been found as a collected work'],
 ]);

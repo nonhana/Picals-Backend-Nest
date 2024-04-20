@@ -26,6 +26,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Favorite } from './apps/favorite/entities/favorite.entity';
 import { PaginationService } from './pagination/pagination.service';
 import { PaginationModule } from './pagination/pagination.module';
+import { WorkTemp } from './apps/illustration/entities/work-temp.entity';
 
 @Module({
 	imports: [
@@ -44,7 +45,7 @@ import { PaginationModule } from './pagination/pagination.module';
 					database: configService.get('MYSQL_DB'),
 					synchronize: true,
 					logging: false,
-					entities: [User, Illustrator, Illustration, Label, Comment, History, Favorite],
+					entities: [User, Illustrator, Illustration, Label, Comment, History, Favorite, WorkTemp],
 					poolSize: 10,
 					connectorPackage: 'mysql2',
 					extra: {

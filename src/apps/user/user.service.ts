@@ -325,4 +325,27 @@ export class UserService {
 
 		return await queryBuilder.getCount();
 	}
+
+	// 喜欢/取消喜欢作品
+	async likeAction(userId: string, workId: string, type: number) {
+		const user = await this.findUserById(userId, ['likeWorks']);
+		if (!user) throw new hanaError(10101);
+		const isLiked = await this.isLiked(userId, workId);
+		const illustration = await this.illustrationRepository.findOne({ where: { id: workId } });
+		if (!illustration) throw new hanaError(10501);
+
+		switch (type) {
+			case 0: // 喜欢
+				if (isLiked) throw new hanaError(10502);
+				user.likeWorks.push(illustration);
+				break;
+			case 1: // 取消喜欢
+				if (!isLiked) throw new hanaError(10503);
+				user.likeWorks = user.likeWorks.filter((item) => item.id !== workId);
+				break;
+			default:
+				throw new hanaError(10109);
+		}
+		await this.userRepository.save(user);
+	}
 }
