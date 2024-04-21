@@ -2,6 +2,10 @@
 // 用于定义错误码和错误信息的映射关系（主动抛出异常hanaError）
 
 export const errorMessages: Map<number, string> = new Map([
+	// 通用错误
+	[10001, 'Unknown Error'],
+	[10002, 'Invalid options'],
+
 	// 用户相关错误
 	[10101, 'User not found'],
 	[10102, 'User password error'],
@@ -11,7 +15,6 @@ export const errorMessages: Map<number, string> = new Map([
 	[10106, 'Invalid token'],
 	[10107, 'Token expired, please log in again'],
 	[10108, 'You have sent a verification code, please wait'],
-	[10109, 'Invalid options'],
 	[10110, 'This user has already been followed'],
 	[10111, 'This user can not been found as a followed user'],
 	[10112, 'You can not follow yourself'],
@@ -35,4 +38,9 @@ export const errorMessages: Map<number, string> = new Map([
 	[10504, 'This work can not been found as a liked work'],
 	[10505, 'This work has already been collected'],
 	[10506, 'This work can not been found as a collected work'],
+
+	// 收藏相关错误
+	[10601, 'Favorite not found'],
+	[10602, 'This work has already been added to the collection'],
+	[10603, 'This work can not been found as a collected work'],
 ]);

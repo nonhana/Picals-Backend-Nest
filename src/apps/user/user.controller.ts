@@ -398,4 +398,17 @@ export class UserController {
 		await this.userService.likeAction(id, workId, type);
 		return '操作成功！';
 	}
+
+	@Post('collect') // 收藏/取消收藏作品
+	@RequireLogin()
+	async collect(
+		@UserInfo() userInfo: JwtUserData,
+		@Body('id') workId: string,
+		@Body('favoriteId') favoriteId: string,
+		@Body('type') type: number,
+	) {
+		const { id } = userInfo;
+		await this.userService.collectAction(id, workId, favoriteId, type);
+		return '操作成功！';
+	}
 }

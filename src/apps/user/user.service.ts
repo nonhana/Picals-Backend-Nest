@@ -10,6 +10,8 @@ import { LabelService } from '../label/label.service';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Illustration } from '../illustration/entities/illustration.entity';
 import type { Label } from '../label/entities/label.entity';
+import { FavoriteService } from '../favorite/favorite.service';
+import { Favorite } from '../favorite/entities/favorite.entity';
 
 @Injectable()
 export class UserService {
@@ -19,6 +21,9 @@ export class UserService {
 	@Inject(LabelService)
 	private readonly labelService: LabelService;
 
+	@Inject(FavoriteService)
+	private readonly favoriteService: FavoriteService;
+
 	@InjectRepository(User)
 	private readonly userRepository: Repository<User>;
 
@@ -27,6 +32,9 @@ export class UserService {
 
 	@InjectRepository(Illustration)
 	private readonly illustrationRepository: Repository<Illustration>;
+
+	@InjectRepository(Favorite)
+	private readonly favoriteRepository: Repository<Favorite>;
 
 	// 根据 email 查找单个用户
 	async findUserByEmail(email: string) {
@@ -128,7 +136,7 @@ export class UserService {
 				user.likedLabels = user.likedLabels.filter((label) => label.id !== labelId);
 				break;
 			default:
-				throw new hanaError(10109);
+				throw new hanaError(10002);
 		}
 		await this.userRepository.save(user);
 	}
@@ -166,7 +174,7 @@ export class UserService {
 				user.following = user.following.filter((item) => item.id !== targetId);
 				break;
 			default:
-				throw new hanaError(10109);
+				throw new hanaError(10002);
 		}
 		await this.userRepository.save(user);
 	}
@@ -280,6 +288,19 @@ export class UserService {
 		return likeList.some((item) => item.id === illustrationId);
 	}
 
+	// 判断用户是否收藏了某个插画
+	async isCollected(userId: string, illustrationId: string) {
+		const cacheKey = `user_collect_${userId}`;
+		let collectList = (await this.cacheManager.get(cacheKey)) as string[] | null; // 收藏插画的id列表
+
+		if (!collectList) {
+			collectList = await this.favoriteService.getFavoriteRecords(userId);
+			await this.cacheManager.set(cacheKey, collectList, 1000 * 60 * 10); // 缓存10min
+		}
+
+		return collectList.some((item) => item === illustrationId);
+	}
+
 	// 获取用户发布的作品总数
 	async getWorksCount(id: string) {
 		const user = await this.findUserById(id, ['illustrations']);
@@ -344,8 +365,39 @@ export class UserService {
 				user.likeWorks = user.likeWorks.filter((item) => item.id !== workId);
 				break;
 			default:
-				throw new hanaError(10109);
+				throw new hanaError(10002);
 		}
-		await this.userRepository.save(user);
+		return await this.userRepository.save(user);
+	}
+
+	// 收藏/取消收藏作品
+	async collectAction(userId: string, workId: string, favoriteId: string, type: number) {
+		const illustration = await this.illustrationRepository.findOne({ where: { id: workId } });
+		if (!illustration) throw new hanaError(10501);
+
+		const favorite = await this.favoriteRepository.findOne({
+			where: { id: favoriteId, user: { id: userId } },
+			relations: ['illustrations'],
+		});
+		if (!favorite) throw new hanaError(10601);
+
+		const isCollected = await this.isCollected(userId, workId);
+
+		switch (type) {
+			case 0: // 收藏
+				if (isCollected) throw new hanaError(10602);
+				favorite.illustrations.push(illustration);
+				await this.favoriteService.addFavoriteRecord(userId, workId);
+				break;
+			case 1: // 取消收藏
+				if (!isCollected) throw new hanaError(10603);
+				favorite.illustrations = favorite.illustrations.filter((item) => item.id !== workId);
+				await this.favoriteService.removeFavoriteRecord(userId, workId);
+				break;
+			default:
+				throw new hanaError(10002);
+		}
+
+		return await this.favoriteRepository.save(favorite);
 	}
 }

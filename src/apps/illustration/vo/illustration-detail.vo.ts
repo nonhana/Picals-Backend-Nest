@@ -64,13 +64,13 @@ export class IllustrationDetailVO {
 	 */
 	openComment: boolean;
 
-	constructor(illustration: Illustration, isLiked: boolean) {
+	constructor(illustration: Illustration, isLiked: boolean, isCollected: boolean) {
 		this.id = illustration.id;
 		this.authorId = illustration.user.id;
 		this.imgList = illustration.imgList;
 		this.intro = illustration.intro;
 		this.isAIGenerated = illustration.isAIGenerated;
-		this.isCollected = false;
+		this.isCollected = isCollected;
 		this.isLiked = isLiked;
 		this.labels = illustration.labels.map((label) => ({
 			color: label.color,

@@ -79,6 +79,7 @@ export class IllustrationController {
 	async getDetail(@UserInfo() userInfo: JwtUserData, @Query('id') workId: string) {
 		const work = await this.illustrationService.getDetail(workId);
 		const isLiked = userInfo ? await this.userService.isLiked(userInfo.id, workId) : false;
-		return new IllustrationDetailVO(work, isLiked);
+		const isCollected = userInfo ? await this.userService.isCollected(userInfo.id, workId) : false;
+		return new IllustrationDetailVO(work, isLiked, isCollected);
 	}
 }

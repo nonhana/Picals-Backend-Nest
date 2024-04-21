@@ -15,7 +15,7 @@ import {
 } from 'typeorm';
 import { History } from 'src/apps/history/entities/history.entity';
 import { Favorite } from 'src/apps/favorite/entities/favorite.entity';
-import { WorkTemp } from 'src/apps/illustration/entities/work-temp.entity';
+import { WorkPushTemp } from 'src/apps/illustration/entities/work-push-temp.entity';
 
 @Entity({
 	name: 'users',
@@ -187,8 +187,8 @@ export class User {
 	})
 	favorites: Favorite[];
 
-	@OneToMany(() => WorkTemp, (workTemp) => workTemp.user, {
+	@OneToMany(() => WorkPushTemp, (workTemp) => workTemp.user, {
 		cascade: true,
 	})
-	recordWorks: WorkTemp[];
+	recordWorks: WorkPushTemp[];
 }

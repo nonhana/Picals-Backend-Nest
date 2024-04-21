@@ -6,7 +6,7 @@ import { IllustratorService } from '../illustrator/illustrator.service';
 import { LabelService } from '../label/label.service';
 import { UserService } from '../user/user.service';
 import type { UploadIllustrationDto } from './dto/upload-illustration.dto';
-import { WorkTemp } from './entities/work-temp.entity';
+import { WorkPushTemp } from './entities/work-push-temp.entity';
 import { hanaError } from 'src/error/hanaError';
 
 @Injectable()
@@ -14,8 +14,8 @@ export class IllustrationService {
 	@InjectRepository(Illustration)
 	private readonly illustrationRepository: Repository<Illustration>;
 
-	@InjectRepository(WorkTemp)
-	private readonly workTempRepository: Repository<WorkTemp>;
+	@InjectRepository(WorkPushTemp)
+	private readonly workTempRepository: Repository<WorkPushTemp>;
 
 	@Inject(IllustratorService)
 	private readonly illustratorService: IllustratorService;

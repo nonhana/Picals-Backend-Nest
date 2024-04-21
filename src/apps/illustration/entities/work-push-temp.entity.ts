@@ -1,14 +1,14 @@
 // /src/illustration/entities/work-temp.entity.ts
-// 暂存插画记录实体
+// 推送插画记录暂存实体
 
 import { Illustration } from 'src/apps/illustration/entities/illustration.entity';
 import { User } from 'src/apps/user/entities/user.entity';
 import { CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 
 @Entity({
-	name: 'work_temp',
+	name: 'work_push_temp',
 })
-export class WorkTemp {
+export class WorkPushTemp {
 	@PrimaryColumn({
 		type: 'uuid',
 		generated: 'uuid',

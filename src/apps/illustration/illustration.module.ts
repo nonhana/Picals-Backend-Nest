@@ -10,11 +10,25 @@ import { Illustrator } from '../illustrator/entities/illustrator.entity';
 import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
 import { History } from '../history/entities/history.entity';
-import { WorkTemp } from './entities/work-temp.entity';
+import { WorkPushTemp } from './entities/work-push-temp.entity';
+import { FavoriteService } from '../favorite/favorite.service';
+import { Favorite } from '../favorite/entities/favorite.entity';
+import { CollectRecord } from '../favorite/entities/collect-record.entity';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Illustration, WorkTemp, Label, Illustrator, User, History])],
+	imports: [
+		TypeOrmModule.forFeature([
+			Illustration,
+			WorkPushTemp,
+			Label,
+			Illustrator,
+			User,
+			History,
+			Favorite,
+			CollectRecord,
+		]),
+	],
 	controllers: [IllustrationController],
-	providers: [IllustrationService, LabelService, IllustratorService, UserService],
+	providers: [IllustrationService, LabelService, IllustratorService, UserService, FavoriteService],
 })
 export class IllustrationModule {}
