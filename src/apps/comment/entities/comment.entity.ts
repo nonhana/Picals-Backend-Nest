@@ -26,10 +26,16 @@ export class Comment {
 
 	@Column({
 		type: 'varchar',
-		length: 255,
+		length: 2047,
 		comment: '评论内容',
 	})
 	content: string;
+
+	@Column({
+		type: 'int',
+		comment: '评论等级，0为一级评论，1为二级评论',
+	})
+	level: number;
 
 	@CreateDateColumn({
 		type: 'timestamp',
@@ -39,20 +45,24 @@ export class Comment {
 
 	@ManyToOne(() => Comment, (comment) => comment.replies)
 	@JoinColumn({ name: 'res_to_comment_id' })
-	replyTo: Comment;
+	replyTo: Comment; // 这条评论回复的评论
+
+	@ManyToOne(() => User)
+	@JoinColumn({ name: 'res_to_user_id' })
+	replyToUser: User; // 这条评论回复的用户（仅当二级评论回复他人时有值，便于区分）
 
 	@OneToMany(() => Comment, (comment) => comment.replyTo, {
 		cascade: true,
 	})
-	replies: Comment[];
+	replies: Comment[]; // 回复这条评论的评论
 
 	@ManyToOne(() => User, (user) => user.comments, {
 		nullable: true,
 	})
 	@JoinColumn({ name: 'user_id' })
-	user: User;
+	user: User; // 评论作者
 
 	@ManyToOne(() => Illustration, (illustration) => illustration.comments)
 	@JoinColumn({ name: 'illustration_id' })
-	illustration: Illustration;
+	illustration: Illustration; // 评论所属作品
 }

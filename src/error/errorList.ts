@@ -43,4 +43,8 @@ export const errorMessages: Map<number, string> = new Map([
 	[10601, 'Favorite not found'],
 	[10602, 'This work has already been added to the collection'],
 	[10603, 'This work can not been found as a collected work'],
+
+	// 评论相关错误
+	[10701, 'Comment not found'],
+	[10702, 'Can not delete other user’s comment'],
 ]);

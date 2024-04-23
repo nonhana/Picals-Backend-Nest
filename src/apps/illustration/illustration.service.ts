@@ -58,6 +58,7 @@ export class IllustrationService {
 	// 分页获取推荐作品列表
 	async getItemsInPages(pageSize: number, current: number) {
 		return await this.illustrationRepository.find({
+			relations: ['user'],
 			take: pageSize,
 			skip: pageSize * (current - 1),
 		});

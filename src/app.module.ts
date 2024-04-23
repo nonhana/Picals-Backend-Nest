@@ -24,10 +24,9 @@ import type { RedisClientOptions } from 'redis';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Favorite } from './apps/favorite/entities/favorite.entity';
-import { PaginationService } from './pagination/pagination.service';
-import { PaginationModule } from './pagination/pagination.module';
 import { WorkPushTemp } from './apps/illustration/entities/work-push-temp.entity';
 import { CollectRecord } from './apps/favorite/entities/collect-record.entity';
+import { InvokeRecordInterceptor } from './interceptors/invoke-record.interceptor';
 
 @Module({
 	imports: [
@@ -97,7 +96,6 @@ import { CollectRecord } from './apps/favorite/entities/collect-record.entity';
 		HistoryModule,
 		EmailModule,
 		FavoriteModule,
-		PaginationModule,
 	],
 	providers: [
 		// 全局错误过滤器
@@ -110,6 +108,11 @@ import { CollectRecord } from './apps/favorite/entities/collect-record.entity';
 			provide: APP_INTERCEPTOR,
 			useClass: ResponseInterceptor,
 		},
+		// 全局拦截器，用于记录日志
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: InvokeRecordInterceptor,
+		},
 		// 全局管道，验证数据
 		{
 			provide: APP_PIPE,
@@ -120,7 +123,6 @@ import { CollectRecord } from './apps/favorite/entities/collect-record.entity';
 			provide: APP_GUARD,
 			useClass: AuthGuard,
 		},
-		PaginationService,
 	],
 })
 export class AppModule {}

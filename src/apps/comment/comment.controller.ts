@@ -1,34 +1,37 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Inject, Query } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
+import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
+import { JwtUserData } from 'src/guards/auth.guard';
+import { CommentItemVO } from './vo/comment-item.vo';
 
 @Controller('comment')
 export class CommentController {
-	constructor(private readonly commentService: CommentService) {}
+	@Inject(CommentService)
+	private readonly commentService: CommentService;
 
-	@Post()
-	create(@Body() createCommentDto: CreateCommentDto) {
-		return this.commentService.create(createCommentDto);
+	@Get('list') // 获取某个作品的评论列表
+	async getCommentList(@Query('id') id: string) {
+		const comments = await this.commentService.getCommentList(id);
+		return comments.map((comment) => new CommentItemVO(comment));
 	}
 
-	@Get()
-	findAll() {
-		return this.commentService.findAll();
+	@Post('new') // 新增评论
+	@RequireLogin()
+	async createComment(
+		@UserInfo() userInfo: JwtUserData,
+		@Body() createCommentDto: CreateCommentDto,
+	) {
+		const { id } = userInfo;
+		await this.commentService.createComment(id, createCommentDto);
+		return '评论成功！';
 	}
 
-	@Get(':id')
-	findOne(@Param('id') id: string) {
-		return this.commentService.findOne(+id);
-	}
-
-	@Patch(':id')
-	update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
-		return this.commentService.update(+id, updateCommentDto);
-	}
-
-	@Delete(':id')
-	remove(@Param('id') id: string) {
-		return this.commentService.remove(+id);
+	@Post('delete') // 删除评论
+	@RequireLogin()
+	async deleteComment(@UserInfo() userInfo: JwtUserData, @Body('id') commentId: string) {
+		const { id } = userInfo;
+		await this.commentService.deleteComment(id, commentId);
+		return '删除成功！';
 	}
 }
