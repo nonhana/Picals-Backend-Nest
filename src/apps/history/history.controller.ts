@@ -1,34 +1,55 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Inject, Query, Body } from '@nestjs/common';
 import { HistoryService } from './history.service';
-import { CreateHistoryDto } from './dto/create-history.dto';
-import { UpdateHistoryDto } from './dto/update-history.dto';
+import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
+import { JwtUserData } from 'src/guards/auth.guard';
+import { HistoryItemVo } from './vo/history-item.vo';
 
 @Controller('history')
 export class HistoryController {
-	constructor(private readonly historyService: HistoryService) {}
+	@Inject(HistoryService)
+	private readonly historyService: HistoryService;
 
-	@Post()
-	create(@Body() createHistoryDto: CreateHistoryDto) {
-		return this.historyService.create(createHistoryDto);
+	@Get('list') // 分页获取用户历史记录
+	@RequireLogin()
+	async getHistoryList(
+		@UserInfo() userInfo: JwtUserData,
+		@Query('pageSize') pageSize: number = 1,
+		@Query('current') current: number = 10,
+	) {
+		const { id } = userInfo;
+		const historyList = await this.historyService.getHistoryListInPages(id, pageSize, current);
+		return historyList.map((history) => new HistoryItemVo(history));
 	}
 
-	@Get()
-	findAll() {
-		return this.historyService.findAll();
+	@Post('new') // 新增用户历史记录
+	@RequireLogin()
+	async addHistory(@UserInfo() userInfo: JwtUserData, @Body('id') workId: string) {
+		const { id } = userInfo;
+		await this.historyService.addHistory(id, workId);
+		return '新增记录成功！';
 	}
 
-	@Get(':id')
-	findOne(@Param('id') id: string) {
-		return this.historyService.findOne(+id);
+	@Post('delete') // 删除某条历史记录
+	@RequireLogin()
+	async deleteHistory(@UserInfo() userInfo: JwtUserData, @Query('id') historyId: string) {
+		const { id } = userInfo;
+		await this.historyService.deleteHistory(id, historyId);
+		return '删除成功！';
 	}
 
-	@Patch(':id')
-	update(@Param('id') id: string, @Body() updateHistoryDto: UpdateHistoryDto) {
-		return this.historyService.update(+id, updateHistoryDto);
+	@Post('clear') // 清空用户历史记录
+	@RequireLogin()
+	async clearHistory(@UserInfo() userInfo: JwtUserData) {
+		const { id } = userInfo;
+		await this.historyService.clearHistory(id);
+		return '清空成功！';
 	}
 
-	@Delete(':id')
-	remove(@Param('id') id: string) {
-		return this.historyService.remove(+id);
+	@Get('search') // 根据作品名搜索历史记录
+	@RequireLogin()
+	async searchHistory(@UserInfo() userInfo: JwtUserData, @Query('keyword') keyword: string) {
+		const { id } = userInfo;
+		const historyList = await this.historyService.searchHistory(id, keyword);
+		return historyList.map((history) => new HistoryItemVo(history));
 	}
 }

@@ -47,4 +47,7 @@ export const errorMessages: Map<number, string> = new Map([
 	// 评论相关错误
 	[10701, 'Comment not found'],
 	[10702, 'Can not delete other user’s comment'],
+
+	// 历史记录相关错误
+	[10801, 'History not found'],
 ]);
