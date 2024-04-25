@@ -82,4 +82,19 @@ export class IllustrationController {
 		const isCollected = userInfo ? await this.userService.isCollected(userInfo.id, workId) : false;
 		return new IllustrationDetailVO(work, isLiked, isCollected);
 	}
+
+	@Get('search') // 根据标签分页搜索作品
+	async getWorksByLabel(
+		@UserInfo() userInfo: JwtUserData,
+		@Query('labelName') labelName: string,
+		@Query('pageSize') pageSize: number = 30,
+		@Query('current') current: number = 1,
+	) {
+		const works = await this.illustrationService.getItemsByLabelInPages(
+			labelName,
+			pageSize,
+			current,
+		);
+		return await this.convertToIllustrationItemVO(works, userInfo);
+	}
 }

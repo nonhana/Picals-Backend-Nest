@@ -11,10 +11,10 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { JwtUserData } from 'src/guards/auth.guard';
 import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
 import { UserItemVo } from './vo/user-item.vo';
-import { LabelItemVO } from './vo/label-item.vo';
+import { LabelItemVO } from '../label/vo/label-item.vo';
 import { IllustrationItemVO } from '../illustration/vo/illustration-item.vo';
 import { FavoriteItemVo } from './vo/favorite-item.vo';
-import { HistoryItemVO } from './vo/history-item.vo';
+import { HistoryItemVo } from '../history/vo/history-item.vo';
 
 @Controller('user')
 export class UserController {
@@ -221,7 +221,7 @@ export class UserController {
 		if (pageSize <= 0) throw new hanaError(10202);
 		const { id } = userInfo;
 		const histories = await this.userService.getHistoryInPages(id, current, pageSize);
-		return histories.map((history) => new HistoryItemVO(history));
+		return histories.map((history) => new HistoryItemVo(history));
 	}
 
 	@Get('like-labels') // 获取用户喜欢的标签列表

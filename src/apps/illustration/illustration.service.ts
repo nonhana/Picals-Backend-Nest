@@ -111,4 +111,19 @@ export class IllustrationService {
 			relations: ['user', 'labels'],
 		});
 	}
+
+	// 根据标签分页搜索作品
+	async getItemsByLabelInPages(labelName: string, pageSize: number, current: number) {
+		const label = await this.labelService.findItemByValue(labelName);
+		if (!label) throw new hanaError(10403);
+
+		return await this.illustrationRepository
+			.createQueryBuilder('illustration')
+			.leftJoinAndSelect('illustration.labels', 'label')
+			.leftJoinAndSelect('illustration.user', 'user')
+			.where('label.id = :labelId', { labelId: label.id })
+			.skip((current - 1) * pageSize)
+			.take(pageSize)
+			.getMany();
+	}
 }
