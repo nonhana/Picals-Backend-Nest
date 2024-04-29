@@ -13,7 +13,7 @@ import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
 import { UserItemVo } from './vo/user-item.vo';
 import { LabelItemVO } from '../label/vo/label-item.vo';
 import { IllustrationItemVO } from '../illustration/vo/illustration-item.vo';
-import { FavoriteItemVo } from './vo/favorite-item.vo';
+import { FavoriteItemVo } from '../favorite/vo/favorite-item.vo';
 import { HistoryItemVo } from '../history/vo/history-item.vo';
 
 @Controller('user')
