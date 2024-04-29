@@ -50,4 +50,7 @@ export const errorMessages: Map<number, string> = new Map([
 
 	// 历史记录相关错误
 	[10801, 'History not found'],
+
+	// 插画家相关错误
+	[10901, 'Illustrator not found'],
 ]);
