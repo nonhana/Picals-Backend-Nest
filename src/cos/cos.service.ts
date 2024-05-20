@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import COS from 'cos-nodejs-sdk-v5';
-import fs from 'fs';
+import * as COS from 'cos-nodejs-sdk-v5';
+import * as fs from 'node:fs';
 
 @Injectable()
 export class CosService {
-	cos: COS;
-	bucket: string;
+	private cos: COS;
+	private bucket: string;
 
 	constructor(private readonly configService: ConfigService) {
 		this.cos = new COS({

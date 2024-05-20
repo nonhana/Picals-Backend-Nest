@@ -503,6 +503,7 @@ declare module 'cos-nodejs-sdk-v5' {
 		// 重启上传任务
 		public restartTask(taskId: string): void;
 		// 监听事件
+		// eslint-disable-next-line @typescript-eslint/ban-types
 		public on(eventName: string, cb: Function): void;
 	}
 
