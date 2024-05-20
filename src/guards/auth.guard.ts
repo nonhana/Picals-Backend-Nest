@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, UnauthorizedException } from '@nestjs/common';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { Observable } from 'rxjs';
@@ -33,6 +33,7 @@ export class AuthGuard implements CanActivate {
 		}
 
 		const authorization = request.headers.authorization || '';
+		console.log('authorization', authorization);
 		const bearer = authorization.split(' ');
 		if (!bearer || bearer.length < 2) {
 			throw new hanaError(10106);
@@ -43,7 +44,7 @@ export class AuthGuard implements CanActivate {
 			request.user = info;
 			return true;
 		} catch (error) {
-			throw new hanaError(10107);
+			throw new UnauthorizedException('Token expired, please log in again');
 		}
 	}
 }

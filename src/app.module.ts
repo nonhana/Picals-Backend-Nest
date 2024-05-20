@@ -27,6 +27,10 @@ import { Favorite } from './apps/favorite/entities/favorite.entity';
 import { WorkPushTemp } from './apps/illustration/entities/work-push-temp.entity';
 import { CollectRecord } from './apps/favorite/entities/collect-record.entity';
 import { InvokeRecordInterceptor } from './interceptors/invoke-record.interceptor';
+import { AppController } from './app.controller';
+import { CosController } from './cos/cos.controller';
+import { CosService } from './cos/cos.service';
+import { CosModule } from './cos/cos.module';
 
 @Module({
 	imports: [
@@ -96,6 +100,7 @@ import { InvokeRecordInterceptor } from './interceptors/invoke-record.intercepto
 		HistoryModule,
 		EmailModule,
 		FavoriteModule,
+		CosModule,
 	],
 	providers: [
 		// 全局错误过滤器
@@ -123,6 +128,8 @@ import { InvokeRecordInterceptor } from './interceptors/invoke-record.intercepto
 			provide: APP_GUARD,
 			useClass: AuthGuard,
 		},
+		CosService,
 	],
+	controllers: [AppController, CosController],
 })
 export class AppModule {}

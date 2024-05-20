@@ -13,7 +13,6 @@ export const errorMessages: Map<number, string> = new Map([
 	[10104, 'Invalid Email, Name, Password, or Verification Code Format'],
 	[10105, 'User already exists'],
 	[10106, 'Invalid token'],
-	[10107, 'Token expired, please log in again'],
 	[10108, 'You have sent a verification code, please wait'],
 	[10110, 'This user has already been followed'],
 	[10111, 'This user can not been found as a followed user'],
@@ -53,4 +52,10 @@ export const errorMessages: Map<number, string> = new Map([
 
 	// 插画家相关错误
 	[10901, 'Illustrator not found'],
+
+	// 文件上传错误
+	[11001, 'File upload failed'],
+	[11002, 'File type is not supported'],
+	[11003, 'File size exceeds the limit'],
+	[11004, 'File not detected'],
 ]);

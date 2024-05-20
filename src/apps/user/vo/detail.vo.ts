@@ -62,8 +62,12 @@ export class DetailUserVo {
 	 * 用户名
 	 */
 	username: string;
+	/**
+	 * 是否已关注
+	 */
+	isFollowed: boolean;
 
-	constructor(user: User) {
+	constructor(user: User, isFollowed: boolean) {
 		this.id = user.id;
 		this.username = user.username;
 		this.email = user.email;
@@ -79,5 +83,6 @@ export class DetailUserVo {
 		this.favoriteCount = user.favoriteCount;
 		this.createdTime = formatDate(user.createdTime);
 		this.signature = user.signature;
+		this.isFollowed = isFollowed;
 	}
 }

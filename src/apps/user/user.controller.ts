@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Inject, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Inject, Get, Query, UnauthorizedException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto, RegisterUserDto, UpdateUserDto } from './dto';
@@ -66,7 +66,7 @@ export class UserController {
 					username: user.username,
 				},
 				{
-					expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_TIME') || '30m',
+					expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_TIME') || '10s',
 				},
 			);
 			vo.refreshToken = await this.jwtService.signAsync(
@@ -82,31 +82,35 @@ export class UserController {
 
 	@Get('refresh-token') // 刷新token，需前端配合实现无感刷新
 	async refreshToken(@Query('refreshToken') refreshToken: string) {
-		const { id } = this.jwtService.verify(refreshToken);
-		const user = await this.userService.getInfo(id);
+		try {
+			const { id } = this.jwtService.verify(refreshToken);
+			const user = await this.userService.getInfo(id);
 
-		const access_token = await this.jwtService.signAsync(
-			{
-				id: user.id,
-				email: user.email,
-				username: user.username,
-			},
-			{
-				expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_TIME') || '30m',
-			},
-		);
+			const access_token = await this.jwtService.signAsync(
+				{
+					id: user.id,
+					email: user.email,
+					username: user.username,
+				},
+				{
+					expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_TIME') || '10s',
+				},
+			);
 
-		const refresh_token = await this.jwtService.signAsync(
-			{ id: user.id },
-			{
-				expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_TIME') || '7d',
-			},
-		);
+			const refresh_token = await this.jwtService.signAsync(
+				{ id: user.id },
+				{
+					expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_TIME') || '7d',
+				},
+			);
 
-		return {
-			access_token,
-			refresh_token,
-		};
+			return {
+				access_token,
+				refresh_token,
+			};
+		} catch (error) {
+			throw new UnauthorizedException('Token expired, please log in again');
+		}
 	}
 
 	@Post('register') // 用户注册
@@ -133,11 +137,12 @@ export class UserController {
 	}
 
 	@Get('detail') // 获取用户信息
-	@RequireLogin()
-	async getUserInfo(@Query('id') id: string) {
+	async getUserInfo(@UserInfo() userInfo: JwtUserData, @Query('id') id: string) {
 		const user = await this.userService.getInfo(id);
-		const vo = new DetailUserVo(user);
-		return vo;
+		return new DetailUserVo(
+			user,
+			userInfo ? await this.userService.isFollowed(userInfo.id, id) : false,
+		);
 	}
 
 	@Post('update') // 更新用户信息
@@ -162,8 +167,9 @@ export class UserController {
 			if (verification_code !== this.configService.get('CAPTCHA_SECRET')) {
 				throw new hanaError(10103);
 			}
+
 			await this.userService.updatePassword(id, password);
-			return '注册成功！';
+			return '更新成功！';
 		}
 
 		const cacheCode = await this.cacheManager.get(`captcha_${email}`);
