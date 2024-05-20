@@ -73,14 +73,14 @@ export class UserService {
 
 	// 更新用户信息
 	async updateInfo(id: string, updateUserDto: UpdateUserDto) {
-		if (await this.findUserById(id)) throw new hanaError(10101);
+		if (!(await this.findUserById(id))) throw new hanaError(10101);
 		await this.userRepository.save({ id, ...updateUserDto });
 		return;
 	}
 
 	// 更新用户密码
 	async updatePassword(id: string, password: string) {
-		if (await this.findUserById(id)) throw new hanaError(10101);
+		if (!(await this.findUserById(id))) throw new hanaError(10101);
 		await this.userRepository.save({
 			id,
 			password: md5(password),

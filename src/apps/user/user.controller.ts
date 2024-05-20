@@ -149,6 +149,7 @@ export class UserController {
 	@RequireLogin()
 	async updateUserInfo(@UserInfo() userInfo: JwtUserData, @Body() updateUserDto: UpdateUserDto) {
 		const { id } = userInfo;
+		console.log('userInfo', userInfo);
 		await this.userService.updateInfo(id, updateUserDto);
 		return '更新成功！';
 	}
