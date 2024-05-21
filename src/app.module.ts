@@ -85,9 +85,14 @@ import * as path from 'node:path';
 			isGlobal: true,
 			useFactory(configService: ConfigService) {
 				return {
-					store: redisStore,
-					url: configService.get('REDIS_SERVER_URL'),
-					database: configService.get('REDIS_DB'),
+					store: async () =>
+						await redisStore({
+							socket: {
+								host: configService.get('REDIS_HOST'),
+								port: configService.get('REDIS_PORT'),
+							},
+							database: configService.get('REDIS_DB'),
+						}),
 				};
 			},
 			inject: [ConfigService],
