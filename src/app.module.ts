@@ -36,7 +36,8 @@ import * as path from 'node:path';
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
-			envFilePath: path.join(__dirname, '.env'),
+			// envFilePath: path.join(__dirname, '.env'),
+			envFilePath: 'src/.env',
 		}),
 		TypeOrmModule.forRootAsync({
 			useFactory(configService: ConfigService) {
