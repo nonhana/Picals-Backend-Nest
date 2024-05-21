@@ -40,3 +40,8 @@ lerna-debug.log*
 
 # uploads
 /uploads
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
