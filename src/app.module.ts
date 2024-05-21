@@ -30,12 +30,13 @@ import { InvokeRecordInterceptor } from './interceptors/invoke-record.intercepto
 import { AppController } from './app.controller';
 import { CosService } from './cos/cos.service';
 import { CosModule } from './cos/cos.module';
+import * as path from 'node:path';
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
-			envFilePath: 'src/.env',
+			envFilePath: path.join(__dirname, '.env'),
 		}),
 		TypeOrmModule.forRootAsync({
 			useFactory(configService: ConfigService) {
