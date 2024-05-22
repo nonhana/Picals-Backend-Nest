@@ -90,6 +90,9 @@ importers:
       '@types/nodemailer':
         specifier: ^6.4.14
         version: 6.4.14
+      '@types/shelljs':
+        specifier: ^0.8.15
+        version: 0.8.15
       '@types/supertest':
         specifier: ^2.0.12
         version: 2.0.16
@@ -114,6 +117,9 @@ importers:
       prettier:
         specifier: ^3.0.0
         version: 3.2.5
+      shelljs:
+        specifier: ^0.8.5
+        version: 0.8.5
       source-map-support:
         specifier: ^0.5.21
         version: 0.5.21
@@ -700,6 +706,9 @@ packages:
   '@types/express@4.17.21':
     resolution: {integrity: sha512-ejlPM315qwLpaQlQDTjPdsUFSc6ZsP4AN6AlWnogPjQ7CVi7PYF3YVz+CY3jE2pwYf7E/7HlDAN0rV2GxTG0HQ==}
 
+  '@types/glob@7.2.0':
+    resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
+
   '@types/graceful-fs@4.1.9':
     resolution: {integrity: sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==}
 
@@ -733,6 +742,9 @@ packages:
   '@types/mime@3.0.4':
     resolution: {integrity: sha512-iJt33IQnVRkqeqC7PzBHPTC6fDlRNRW8vjrgqtScAhrmMwe8c4Eo7+fUGTa+XdWrpEgpyKWMYmi2dIwMAYRzPw==}
 
+  '@types/minimatch@5.1.2':
+    resolution: {integrity: sha512-K0VQKziLUWkVKiRVrx4a40iPaxTUefQmjtkQofBkYRcoaaL/8rhwDWww9qWbrgicNOgnpIsMxyNIUM4+n6dUIA==}
+
   '@types/multer@1.4.11':
     resolution: {integrity: sha512-svK240gr6LVWvv3YGyhLlA+6LRRWA4mnGIU7RcNmgjBYFl6665wcXrRfxGp5tEPVHUNm5FMcmq7too9bxCwX/w==}
 
@@ -756,6 +768,9 @@ packages:
 
   '@types/serve-static@1.15.5':
     resolution: {integrity: sha512-PDRk21MnK70hja/YF8AHfC7yIsiQHn1rcXx7ijCFBX/k+XQJhQT/gw3xekXKJvx+5SXaMMS8oqQy09Mzvz2TuQ==}
+
+  '@types/shelljs@0.8.15':
+    resolution: {integrity: sha512-vzmnCHl6hViPu9GNLQJ+DZFd6BQI2DBTUeOvYHqkWQLMfKAAQYMb/xAmZkTogZI/vqXHCWkqDRymDI5p0QTi5Q==}
 
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
@@ -4142,6 +4157,11 @@ snapshots:
       '@types/qs': 6.9.12
       '@types/serve-static': 1.15.5
 
+  '@types/glob@7.2.0':
+    dependencies:
+      '@types/minimatch': 5.1.2
+      '@types/node': 20.11.26
+
   '@types/graceful-fs@4.1.9':
     dependencies:
       '@types/node': 20.11.26
@@ -4175,6 +4195,8 @@ snapshots:
 
   '@types/mime@3.0.4': {}
 
+  '@types/minimatch@5.1.2': {}
+
   '@types/multer@1.4.11':
     dependencies:
       '@types/express': 4.17.21
@@ -4202,6 +4224,11 @@ snapshots:
     dependencies:
       '@types/http-errors': 2.0.4
       '@types/mime': 3.0.4
+      '@types/node': 20.11.26
+
+  '@types/shelljs@0.8.15':
+    dependencies:
+      '@types/glob': 7.2.0
       '@types/node': 20.11.26
 
   '@types/stack-utils@2.0.3': {}

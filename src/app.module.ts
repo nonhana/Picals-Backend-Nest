@@ -36,11 +36,11 @@ import * as path from 'node:path';
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
-			// envFilePath: path.join(__dirname, '.env'),
-			envFilePath: 'src/.env',
+			envFilePath: path.join(__dirname, '.env'),
 		}),
 		TypeOrmModule.forRootAsync({
 			useFactory(configService: ConfigService) {
+				console.log('path', path.join(__dirname, '.env'));
 				return {
 					type: 'mysql',
 					host: configService.get('MYSQL_HOST'),
