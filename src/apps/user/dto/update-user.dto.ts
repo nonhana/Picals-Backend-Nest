@@ -1,4 +1,4 @@
-import { Matches, Length, IsOptional, IsEmail } from 'class-validator';
+import { Matches, Length, IsOptional, IsEmail, IsIn } from 'class-validator';
 
 export class UpdateUserDto {
 	@IsOptional()
@@ -37,4 +37,10 @@ export class UpdateUserDto {
 		message: '背景图片地址格式不正确，需要以http或https开头',
 	})
 	backgroundImg?: string;
+
+	@IsOptional()
+	@IsIn([0, 1, 2], {
+		message: '性别只能是0, 1或2',
+	})
+	gender?: 0 | 1 | 2;
 }

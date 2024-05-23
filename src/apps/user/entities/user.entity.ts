@@ -76,7 +76,7 @@ export class User {
 	signature: string;
 
 	@Column({
-		type: 'boolean',
+		type: 'tinyint',
 		comment: '用户性别，0-男，1-女，2-未知',
 		default: 2,
 	})
