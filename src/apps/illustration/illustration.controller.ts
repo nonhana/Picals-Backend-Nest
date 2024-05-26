@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import { IllustrationService } from './illustration.service';
 import { UploadIllustrationDto } from './dto/upload-illustration.dto';
-import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
+import { RequireLogin, UserInfo, Visitor } from 'src/decorators/login.decorator';
 import { JwtUserData } from 'src/guards/auth.guard';
 import { UserService } from '../user/user.service';
 import { IllustrationItemVO } from './vo/illustration-item.vo';
@@ -31,6 +31,7 @@ export class IllustrationController {
 		);
 
 	@Get('recommend') // 分页获取推荐作品列表
+	@Visitor()
 	async getRecommend(
 		@UserInfo() userInfo: JwtUserData,
 		@Query('pageSize') pageSize: number = 1,
@@ -63,6 +64,13 @@ export class IllustrationController {
 		return await this.convertToIllustrationItemVO(works, userInfo);
 	}
 
+	@Get('following-count') // 获取已关注用户新作总数
+	@RequireLogin()
+	async getFollowingWorksCount(@UserInfo() userInfo: JwtUserData) {
+		const { id } = userInfo;
+		return await this.illustrationService.getFollowingWorksCount(id);
+	}
+
 	@Post('edit') // 编辑已发布的作品
 	@RequireLogin()
 	async edit(
@@ -81,6 +89,13 @@ export class IllustrationController {
 		const isLiked = userInfo ? await this.userService.isLiked(userInfo.id, workId) : false;
 		const isCollected = userInfo ? await this.userService.isCollected(userInfo.id, workId) : false;
 		return new IllustrationDetailVO(work, isLiked, isCollected);
+	}
+
+	@Get('simple') // 获取作品简略信息
+	async getSimple(@UserInfo() userInfo: JwtUserData, @Query('id') workId: string) {
+		const work = await this.illustrationService.getDetail(workId);
+		const isLiked = userInfo ? await this.userService.isLiked(userInfo.id, workId) : false;
+		return new IllustrationItemVO(work, isLiked);
 	}
 
 	@Get('search') // 根据标签分页搜索作品

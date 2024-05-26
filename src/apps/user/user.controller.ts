@@ -9,7 +9,7 @@ import { DetailUserVo } from './vo/detail.vo';
 import { LoginUserVo } from './vo/login.vo';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { JwtUserData } from 'src/guards/auth.guard';
-import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
+import { RequireLogin, UserInfo, Visitor } from 'src/decorators/login.decorator';
 import { UserItemVo } from './vo/user-item.vo';
 import { LabelItemVO } from '../label/vo/label-item.vo';
 import { IllustrationItemVO } from '../illustration/vo/illustration-item.vo';
@@ -66,7 +66,7 @@ export class UserController {
 					username: user.username,
 				},
 				{
-					expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_TIME') || '10s',
+					expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_TIME') || '30m',
 				},
 			);
 			vo.refreshToken = await this.jwtService.signAsync(
@@ -93,7 +93,7 @@ export class UserController {
 					username: user.username,
 				},
 				{
-					expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_TIME') || '10s',
+					expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_TIME') || '30m',
 				},
 			);
 
@@ -209,10 +209,8 @@ export class UserController {
 		return '更新成功！';
 	}
 
-	@Get('favorites') // 获取用户收藏夹
-	@RequireLogin()
-	async getFavorites(@UserInfo() userInfo: JwtUserData) {
-		const { id } = userInfo;
+	@Get('favorites') // 获取某用户的收藏夹列表
+	async getFavorites(@Query() id: string) {
 		const favorites = await this.userService.getFavorites(id);
 		return favorites.map((favorite) => new FavoriteItemVo(favorite));
 	}
@@ -241,25 +239,17 @@ export class UserController {
 
 	@Post('like-label-actions') // 添加/取消喜欢标签
 	@RequireLogin()
-	async likeLabelActions(
-		@UserInfo() userInfo: JwtUserData,
-		@Body('id') id: string,
-		@Body('type') type: number,
-	) {
+	async likeLabelActions(@UserInfo() userInfo: JwtUserData, @Body('id') id: string) {
 		const { id: userId } = userInfo;
-		await this.userService.likeLabelActions(userId, id, type);
+		await this.userService.likeLabelActions(userId, id);
 		return '操作成功！';
 	}
 
 	@Post('follow-action') // 关注/取关用户
 	@RequireLogin()
-	async followAction(
-		@UserInfo() userInfo: JwtUserData,
-		@Body('targetId') targetId: string,
-		@Body('type') type: number,
-	) {
+	async followAction(@UserInfo() userInfo: JwtUserData, @Body('targetId') targetId: string) {
 		const { id } = userInfo;
-		await this.userService.followAction(id, targetId, type);
+		await this.userService.followAction(id, targetId);
 		return '操作成功！';
 	}
 
@@ -370,7 +360,7 @@ export class UserController {
 	}
 
 	@Get('search') // 分页搜索用户
-	@RequireLogin()
+	@Visitor()
 	async searchUser(
 		@UserInfo() userInfo: JwtUserData,
 		@Query('keyword') keyword: string,
@@ -383,26 +373,22 @@ export class UserController {
 		const userList = await this.userService.searchUser(keyword, current, pageSize);
 		return await Promise.all(
 			userList.map(
-				async (user) => new UserItemVo(user, await this.userService.isFollowed(id, user.id)),
+				async (user) =>
+					new UserItemVo(user, userInfo ? await this.userService.isFollowed(id, user.id) : false),
 			),
 		);
 	}
 
 	@Get('search-count') // 搜索用户总数
-	@RequireLogin()
 	async searchUserCount(@Query('keyword') keyword: string) {
 		return await this.userService.searchUserCount(keyword);
 	}
 
 	@Post('like') // 喜欢/取消喜欢作品
 	@RequireLogin()
-	async like(
-		@UserInfo() userInfo: JwtUserData,
-		@Body('id') workId: string,
-		@Body('type') type: number,
-	) {
+	async like(@UserInfo() userInfo: JwtUserData, @Body('id') workId: string) {
 		const { id } = userInfo;
-		await this.userService.likeAction(id, workId, type);
+		await this.userService.likeAction(id, workId);
 		return '操作成功！';
 	}
 
@@ -412,10 +398,28 @@ export class UserController {
 		@UserInfo() userInfo: JwtUserData,
 		@Body('id') workId: string,
 		@Body('favoriteId') favoriteId: string,
-		@Body('type') type: number,
 	) {
 		const { id } = userInfo;
-		await this.userService.collectAction(id, workId, favoriteId, type);
+		await this.userService.collectAction(id, workId, favoriteId);
 		return '操作成功！';
+	}
+
+	@Get('recommend-user') // 分页获取推荐用户列表
+	@Visitor()
+	async getRecommendUser(
+		@UserInfo() userInfo: JwtUserData,
+		@Query('pageSize') pageSize: number = 1,
+		@Query('current') current: number = 6,
+	) {
+		const userList = await this.userService.getRecommendUserInPages(current, pageSize);
+		return await Promise.all(
+			userList.map(
+				async (user) =>
+					new UserItemVo(
+						user,
+						userInfo ? await this.userService.isFollowed(userInfo.id, user.id) : false,
+					),
+			),
+		);
 	}
 }

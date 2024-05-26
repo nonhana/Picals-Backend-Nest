@@ -75,6 +75,15 @@ export class IllustrationService {
 		});
 	}
 
+	// 获取已关注用户新作总数
+	async getFollowingWorksCount(id: string) {
+		return await this.workTempRepository.count({
+			where: {
+				user: { id },
+			},
+		});
+	}
+
 	// 编辑已发布的作品
 	async editItem(userId: string, workId: string, uploadIllustrationDto: UploadIllustrationDto) {
 		const { labels, illustratorInfo, ...basicInfo } = uploadIllustrationDto;
@@ -109,6 +118,14 @@ export class IllustrationService {
 		return await this.illustrationRepository.findOne({
 			where: { id },
 			relations: ['user', 'labels'],
+		});
+	}
+
+	// 获取某个插画的简略信息
+	async getSimple(id: string) {
+		return await this.illustrationRepository.findOne({
+			where: { id },
+			relations: ['user'],
 		});
 	}
 

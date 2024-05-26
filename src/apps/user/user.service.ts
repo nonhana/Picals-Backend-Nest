@@ -119,25 +119,20 @@ export class UserService {
 	}
 
 	// 添加/移除喜欢的标签
-	async likeLabelActions(userId: string, labelId: string, type: number) {
+	async likeLabelActions(userId: string, labelId: string) {
 		const user = await this.findUserById(userId, ['likedLabels']);
 		if (!user) throw new hanaError(10101);
-		const isExist = user.likedLabels.some((label) => label.id === labelId);
 
-		switch (type) {
-			case 0: // 添加喜欢标签
-				if (isExist) throw new hanaError(10401);
-				const label = await this.labelService.findItemById(labelId);
-				if (!label) throw new hanaError(10403);
-				user.likedLabels.push(label);
-				break;
-			case 1: // 移除喜欢标签
-				if (!isExist) throw new hanaError(10402);
-				user.likedLabels = user.likedLabels.filter((label) => label.id !== labelId);
-				break;
-			default:
-				throw new hanaError(10002);
+		const isExist = user.likedLabels.some((label) => label.id === labelId); // 查找用户是否已经喜欢了该标签
+
+		if (isExist) {
+			user.likedLabels = user.likedLabels.filter((label) => label.id !== labelId);
+		} else {
+			const label = await this.labelService.findItemById(labelId);
+			if (!label) throw new hanaError(10403);
+			user.likedLabels.push(label);
 		}
+
 		await this.userRepository.save(user);
 	}
 
@@ -150,32 +145,29 @@ export class UserService {
 			const user = await this.findUserById(userId, ['following']);
 			if (!user) throw new hanaError(10101);
 			following = user.following;
-			await this.cacheManager.set(cacheKey, following, 1000 * 60 * 10); // 缓存10min
+			await this.cacheManager.set(cacheKey, following, 1000);
 		}
 
 		return following.some((item) => item.id === targetId);
 	}
 
 	// 关注/取关用户
-	async followAction(userId: string, targetId: string, type: number) {
+	async followAction(userId: string, targetId: string) {
 		const user = await this.findUserById(userId, ['following']);
 		if (!user) throw new hanaError(10101);
+
+		if (userId === targetId) throw new hanaError(10112);
+
 		const isFollowed = await this.isFollowed(userId, targetId);
-		switch (type) {
-			case 0: // 关注
-				if (userId === targetId) throw new hanaError(10112);
-				if (isFollowed) throw new hanaError(10110);
-				const target = await this.findUserById(targetId);
-				if (!target) throw new hanaError(10101);
-				user.following.push(target);
-				break;
-			case 1: // 取消关注
-				if (!isFollowed) throw new hanaError(10111);
-				user.following = user.following.filter((item) => item.id !== targetId);
-				break;
-			default:
-				throw new hanaError(10002);
+
+		if (isFollowed) {
+			user.following = user.following.filter((item) => item.id !== targetId);
+		} else {
+			const target = await this.findUserById(targetId);
+			if (!target) throw new hanaError(10101);
+			user.following.push(target);
 		}
+
 		await this.userRepository.save(user);
 	}
 
@@ -282,10 +274,12 @@ export class UserService {
 			const user = await this.findUserById(userId, ['likeWorks']);
 			if (!user) throw new hanaError(10101);
 			likeList = user.likeWorks;
-			await this.cacheManager.set(cacheKey, likeList, 1000 * 60 * 10); // 缓存10min
+			await this.cacheManager.set(cacheKey, likeList, 1000);
 		}
 
-		return likeList.some((item) => item.id === illustrationId);
+		const res = likeList.some((item) => item.id === illustrationId);
+
+		return res;
 	}
 
 	// 判断用户是否收藏了某个插画
@@ -295,7 +289,7 @@ export class UserService {
 
 		if (!collectList) {
 			collectList = await this.favoriteService.getFavoriteRecords(userId);
-			await this.cacheManager.set(cacheKey, collectList, 1000 * 60 * 10); // 缓存10min
+			await this.cacheManager.set(cacheKey, collectList, 1000);
 		}
 
 		return collectList.some((item) => item === illustrationId);
@@ -348,30 +342,26 @@ export class UserService {
 	}
 
 	// 喜欢/取消喜欢作品
-	async likeAction(userId: string, workId: string, type: number) {
+	async likeAction(userId: string, workId: string) {
 		const user = await this.findUserById(userId, ['likeWorks']);
 		if (!user) throw new hanaError(10101);
-		const isLiked = await this.isLiked(userId, workId);
+
 		const illustration = await this.illustrationRepository.findOne({ where: { id: workId } });
 		if (!illustration) throw new hanaError(10501);
 
-		switch (type) {
-			case 0: // 喜欢
-				if (isLiked) throw new hanaError(10502);
-				user.likeWorks.push(illustration);
-				break;
-			case 1: // 取消喜欢
-				if (!isLiked) throw new hanaError(10503);
-				user.likeWorks = user.likeWorks.filter((item) => item.id !== workId);
-				break;
-			default:
-				throw new hanaError(10002);
+		const isLiked = await this.isLiked(userId, workId);
+
+		if (isLiked) {
+			user.likeWorks = user.likeWorks.filter((item) => item.id !== workId);
+		} else {
+			user.likeWorks.push(illustration);
 		}
+
 		return await this.userRepository.save(user);
 	}
 
 	// 收藏/取消收藏作品
-	async collectAction(userId: string, workId: string, favoriteId: string, type: number) {
+	async collectAction(userId: string, workId: string, favoriteId: string) {
 		const illustration = await this.illustrationRepository.findOne({ where: { id: workId } });
 		if (!illustration) throw new hanaError(10501);
 
@@ -383,21 +373,26 @@ export class UserService {
 
 		const isCollected = await this.isCollected(userId, workId);
 
-		switch (type) {
-			case 0: // 收藏
-				if (isCollected) throw new hanaError(10602);
-				favorite.illustrations.push(illustration);
-				await this.favoriteService.addFavoriteRecord(userId, workId);
-				break;
-			case 1: // 取消收藏
-				if (!isCollected) throw new hanaError(10603);
-				favorite.illustrations = favorite.illustrations.filter((item) => item.id !== workId);
-				await this.favoriteService.removeFavoriteRecord(userId, workId);
-				break;
-			default:
-				throw new hanaError(10002);
+		if (isCollected) {
+			favorite.illustrations = favorite.illustrations.filter((item) => item.id !== workId);
+			await this.favoriteService.removeFavoriteRecord(userId, workId);
+		} else {
+			favorite.illustrations.push(illustration);
+			await this.favoriteService.addFavoriteRecord(userId, workId);
 		}
 
 		return await this.favoriteRepository.save(favorite);
+	}
+
+	// 分页获取推荐用户列表
+	async getRecommendUserInPages(current: number, pageSize: number) {
+		const queryBuilder = this.userRepository.createQueryBuilder('user');
+		queryBuilder.leftJoin('user.illustrations', 'illustration');
+		queryBuilder.addSelect('illustration.id');
+		queryBuilder.orderBy('RAND()');
+		queryBuilder.skip((current - 1) * pageSize);
+		queryBuilder.take(pageSize);
+
+		return await queryBuilder.getMany();
 	}
 }
