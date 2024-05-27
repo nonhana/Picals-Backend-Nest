@@ -71,6 +71,14 @@ export class UserService {
 		return user;
 	}
 
+	// 获取单个用户简要信息
+	async getSimpleInfo(id: string) {
+		const queryBuilder = this.userRepository.createQueryBuilder('user');
+		queryBuilder.where('user.id = :id', { id });
+
+		return await queryBuilder.getOne();
+	}
+
 	// 更新用户信息
 	async updateInfo(id: string, updateUserDto: UpdateUserDto) {
 		if (!(await this.findUserById(id))) throw new hanaError(10101);

@@ -136,10 +136,20 @@ export class UserController {
 		return '注册成功！';
 	}
 
-	@Get('detail') // 获取用户信息
+	@Get('detail') // 获取用户详细信息
 	async getUserInfo(@UserInfo() userInfo: JwtUserData, @Query('id') id: string) {
 		const user = await this.userService.getInfo(id);
 		return new DetailUserVo(
+			user,
+			userInfo ? await this.userService.isFollowed(userInfo.id, id) : false,
+		);
+	}
+
+	@Get('simple') // 获取用户简略信息
+	@Visitor()
+	async getUserSimpleInfo(@UserInfo() userInfo: JwtUserData, @Query('id') id: string) {
+		const user = await this.userService.getSimpleInfo(id);
+		return new UserItemVo(
 			user,
 			userInfo ? await this.userService.isFollowed(userInfo.id, id) : false,
 		);
@@ -310,15 +320,13 @@ export class UserController {
 	}
 
 	@Get('works') // 分页获取用户发布的作品列表
-	@RequireLogin()
 	async getWorks(
-		@UserInfo() userInfo: JwtUserData,
+		@Query('id') id: string,
 		@Query('pageSize') pageSize: number,
 		@Query('current') current: number,
 	) {
 		if (current <= 0) throw new hanaError(10201);
 		if (pageSize <= 0) throw new hanaError(10202);
-		const { id } = userInfo;
 		const works = await this.userService.getWorksInPages(id, current, pageSize);
 		return await Promise.all(
 			works.map(

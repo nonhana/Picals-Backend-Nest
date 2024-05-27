@@ -1,8 +1,6 @@
 import type { Illustration } from 'src/apps/illustration/entities/illustration.entity';
+import { formatDate } from 'src/utils';
 
-/**
- * LabelItem
- */
 export interface LabelItem {
 	/**
 	 * 标签颜色，由后台进行随机不重复的颜色生成
@@ -24,13 +22,25 @@ export interface LabelItem {
 
 export class IllustrationDetailVO {
 	/**
-	 * 作品id
-	 */
-	id: string;
-	/**
 	 * 作者id
 	 */
 	authorId: string;
+	/**
+	 * 被收藏次数
+	 */
+	collectNum: number;
+	/**
+	 * 评论个数
+	 */
+	commentNum: number;
+	/**
+	 * 创建日期
+	 */
+	createdDate: string;
+	/**
+	 * 作品id
+	 */
+	id: string;
 	/**
 	 * 作品图片url列表
 	 */
@@ -52,9 +62,17 @@ export class IllustrationDetailVO {
 	 */
 	isLiked: boolean;
 	/**
+	 * 是否是转载作品
+	 */
+	isReprinted: boolean;
+	/**
 	 * 标签列表
 	 */
 	labels: LabelItem[];
+	/**
+	 * 被喜欢次数
+	 */
+	likeNum: number;
 	/**
 	 * 作品名称
 	 */
@@ -63,6 +81,14 @@ export class IllustrationDetailVO {
 	 * 是否打开评论
 	 */
 	openComment: boolean;
+	/**
+	 * 更新日期
+	 */
+	updatedDate: string;
+	/**
+	 * 被浏览次数
+	 */
+	viewNum: number;
 
 	constructor(illustration: Illustration, isLiked: boolean, isCollected: boolean) {
 		this.id = illustration.id;
@@ -80,5 +106,12 @@ export class IllustrationDetailVO {
 		}));
 		this.name = illustration.name;
 		this.openComment = illustration.openComment;
+		this.updatedDate = formatDate(illustration.updatedTime);
+		this.createdDate = formatDate(illustration.createdTime);
+		this.likeNum = illustration.likeCount;
+		this.collectNum = illustration.collectCount;
+		this.commentNum = illustration.commentCount;
+		this.isReprinted = illustration.isReprinted;
+		this.viewNum = illustration.viewCount;
 	}
 }
