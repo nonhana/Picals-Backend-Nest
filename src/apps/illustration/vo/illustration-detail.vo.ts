@@ -58,6 +58,10 @@ export class IllustrationDetailVO {
 	 */
 	isCollected: boolean;
 	/**
+	 * 已经被收藏的收藏夹id，如果没有被收藏则不传
+	 */
+	favoriteId?: string;
+	/**
 	 * 用户是否已经喜欢
 	 */
 	isLiked: boolean;
@@ -113,5 +117,6 @@ export class IllustrationDetailVO {
 		this.commentNum = illustration.commentCount;
 		this.isReprinted = illustration.isReprinted;
 		this.viewNum = illustration.viewCount;
+		if (isCollected) this.favoriteId = illustration.favorites[0].id;
 	}
 }

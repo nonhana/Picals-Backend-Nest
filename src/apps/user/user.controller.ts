@@ -221,6 +221,8 @@ export class UserController {
 
 	@Get('favorites') // 获取某用户的收藏夹列表
 	async getFavorites(@Query() id: string) {
+		// console.log('id', id);
+		// return [];
 		const favorites = await this.userService.getFavorites(id);
 		return favorites.map((favorite) => new FavoriteItemVo(favorite));
 	}

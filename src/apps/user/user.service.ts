@@ -98,9 +98,7 @@ export class UserService {
 
 	// 获取用户的所有收藏夹列表
 	async getFavorites(id: string) {
-		const user = await this.findUserById(id, ['favorites']);
-		if (!user) throw new hanaError(10101);
-		return user.favorites;
+		return await this.favoriteRepository.find({ where: { user: { id } } });
 	}
 
 	// 分页获取用户的历史记录

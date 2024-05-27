@@ -84,8 +84,10 @@ export class IllustrationController {
 	}
 
 	@Get('detail') // 获取作品详情
+	@Visitor()
 	async getDetail(@UserInfo() userInfo: JwtUserData, @Query('id') workId: string) {
 		const work = await this.illustrationService.getDetail(workId);
+		console.log('work', work);
 		const isLiked = userInfo ? await this.userService.isLiked(userInfo.id, workId) : false;
 		const isCollected = userInfo ? await this.userService.isCollected(userInfo.id, workId) : false;
 		return new IllustrationDetailVO(work, isLiked, isCollected);
