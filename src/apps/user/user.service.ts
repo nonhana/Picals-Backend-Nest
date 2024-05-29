@@ -260,11 +260,8 @@ export class UserService {
 
 	// 分页获取用户发布的作品列表
 	async getWorksInPages(id: string, current: number, pageSize: number) {
-		const user = await this.findUserById(id);
-		if (!user) throw new hanaError(10101);
-
 		return await this.illustrationRepository.find({
-			where: { user },
+			where: { user: { id } },
 			relations: ['user'],
 			skip: (current - 1) * pageSize,
 			take: pageSize,
@@ -359,11 +356,15 @@ export class UserService {
 
 		if (isLiked) {
 			user.likeWorks = user.likeWorks.filter((item) => item.id !== workId);
+			illustration.likeCount--;
 		} else {
 			user.likeWorks.push(illustration);
+			illustration.likeCount++;
 		}
 
-		return await this.userRepository.save(user);
+		await this.illustrationRepository.save(illustration);
+		await this.userRepository.save(user);
+		return;
 	}
 
 	// 收藏/取消收藏作品
@@ -380,14 +381,18 @@ export class UserService {
 		const isCollected = await this.isCollected(userId, workId);
 
 		if (isCollected) {
+			illustration.collectCount--;
 			favorite.illustrations = favorite.illustrations.filter((item) => item.id !== workId);
 			await this.favoriteService.removeFavoriteRecord(userId, workId);
 		} else {
+			illustration.collectCount++;
 			favorite.illustrations.push(illustration);
 			await this.favoriteService.addFavoriteRecord(userId, workId);
 		}
 
-		return await this.favoriteRepository.save(favorite);
+		await this.illustrationRepository.save(illustration);
+		await this.favoriteRepository.save(favorite);
+		return;
 	}
 
 	// 分页获取推荐用户列表

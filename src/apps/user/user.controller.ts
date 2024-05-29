@@ -127,6 +127,7 @@ export class UserController {
 		}
 
 		const cacheCode = await this.cacheManager.get(`captcha_${email}`);
+		console.log(cacheCode, verification_code);
 		if (!cacheCode || cacheCode !== verification_code) {
 			throw new hanaError(10103);
 		}
@@ -220,9 +221,7 @@ export class UserController {
 	}
 
 	@Get('favorites') // 获取某用户的收藏夹列表
-	async getFavorites(@Query() id: string) {
-		// console.log('id', id);
-		// return [];
+	async getFavorites(@Query('id') id: string) {
 		const favorites = await this.userService.getFavorites(id);
 		return favorites.map((favorite) => new FavoriteItemVo(favorite));
 	}

@@ -22,7 +22,7 @@ export class Favorite {
 	@PrimaryColumn({
 		type: 'uuid',
 		generated: 'uuid',
-		comment: '用户id，采用uuid的形式',
+		comment: '收藏夹id，采用uuid的形式',
 	})
 	id: string;
 
