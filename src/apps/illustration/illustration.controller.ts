@@ -114,4 +114,10 @@ export class IllustrationController {
 		);
 		return await this.convertToIllustrationItemVO(works, userInfo);
 	}
+
+	@Post('view') // 增加作品浏览量
+	async view(@Query('id') workId: string) {
+		await this.illustrationService.addView(workId);
+		return '浏览量增加成功！';
+	}
 }

@@ -12,6 +12,9 @@ export class CommentService {
 	@InjectRepository(Comment)
 	private readonly commentRepository: Repository<Comment>;
 
+	@InjectRepository(Illustration)
+	private readonly illustrationRepository: Repository<Illustration>;
+
 	// 获取某个作品的评论列表
 	async getCommentList(id: string) {
 		return this.commentRepository.find({
@@ -30,8 +33,7 @@ export class CommentService {
 		const user = new User();
 		user.id = userId;
 
-		const work = new Illustration();
-		work.id = workId;
+		const work = await this.illustrationRepository.findOneBy({ id: workId });
 
 		const comment = new Comment();
 		comment.content = content;
@@ -41,7 +43,7 @@ export class CommentService {
 		if (!replyInfo) {
 			// 1. 一级评论
 			comment.level = 0;
-			return this.commentRepository.save(comment);
+			this.commentRepository.save(comment);
 		} else {
 			// 2. 二级评论
 			comment.level = 1;
@@ -50,15 +52,20 @@ export class CommentService {
 			comment.replyTo = replyComment;
 			if (!replyInfo.replyUserId) {
 				// 回复一级评论
-				return this.commentRepository.save(comment);
+				this.commentRepository.save(comment);
 			} else {
 				// 回复二级评论
 				const replyUser = new User();
 				replyUser.id = replyInfo.replyUserId;
 				comment.replyToUser = replyUser;
-				return this.commentRepository.save(comment);
+				this.commentRepository.save(comment);
 			}
 		}
+
+		work.commentCount++;
+		await this.illustrationRepository.save(work);
+
+		return;
 	}
 
 	// 删除某条评论
@@ -70,6 +77,10 @@ export class CommentService {
 		if (!comment) throw new hanaError(10701);
 		if (comment.user.id !== userId) throw new hanaError(10702);
 		await this.commentRepository.delete(commentId);
+
+		const work = await this.illustrationRepository.findOneBy({ id: comment.illustration.id });
+		work.commentCount--;
+		await this.illustrationRepository.save(work);
 		return;
 	}
 }

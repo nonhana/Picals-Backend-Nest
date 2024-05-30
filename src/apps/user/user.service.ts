@@ -160,19 +160,23 @@ export class UserService {
 
 	// 关注/取关用户
 	async followAction(userId: string, targetId: string) {
-		const user = await this.findUserById(userId, ['following']);
-		if (!user) throw new hanaError(10101);
-
 		if (userId === targetId) throw new hanaError(10112);
+
+		const user = await this.findUserById(userId, ['following']);
+		const target = await this.findUserById(targetId);
+		if (!user) throw new hanaError(10101);
+		if (!target) throw new hanaError(10101);
 
 		const isFollowed = await this.isFollowed(userId, targetId);
 
 		if (isFollowed) {
 			user.following = user.following.filter((item) => item.id !== targetId);
+			user.followCount--;
+			target.fanCount--;
 		} else {
-			const target = await this.findUserById(targetId);
-			if (!target) throw new hanaError(10101);
 			user.following.push(target);
+			user.followCount++;
+			target.fanCount++;
 		}
 
 		await this.userRepository.save(user);
@@ -357,9 +361,11 @@ export class UserService {
 
 		if (isLiked) {
 			user.likeWorks = user.likeWorks.filter((item) => item.id !== workId);
+			user.likeCount--;
 			illustration.likeCount--;
 		} else {
 			user.likeWorks.push(illustration);
+			user.likeCount++;
 			illustration.likeCount++;
 		}
 
@@ -382,12 +388,14 @@ export class UserService {
 		const isCollected = await this.isCollected(userId, workId);
 
 		if (isCollected) {
-			illustration.collectCount--;
 			favorite.illustrations = favorite.illustrations.filter((item) => item.id !== workId);
+			favorite.workCount--;
+			illustration.collectCount--;
 			await this.favoriteService.removeFavoriteRecord(userId, workId);
 		} else {
-			illustration.collectCount++;
 			favorite.illustrations.push(illustration);
+			favorite.workCount++;
+			illustration.collectCount++;
 			await this.favoriteService.addFavoriteRecord(userId, workId);
 		}
 

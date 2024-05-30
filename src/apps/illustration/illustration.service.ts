@@ -8,11 +8,19 @@ import { UserService } from '../user/user.service';
 import type { UploadIllustrationDto } from './dto/upload-illustration.dto';
 import { WorkPushTemp } from './entities/work-push-temp.entity';
 import { hanaError } from 'src/error/hanaError';
+import { User } from '../user/entities/user.entity';
+import { Illustrator } from '../illustrator/entities/illustrator.entity';
 
 @Injectable()
 export class IllustrationService {
 	@InjectRepository(Illustration)
 	private readonly illustrationRepository: Repository<Illustration>;
+
+	@InjectRepository(User)
+	private readonly userRepository: Repository<User>;
+
+	@InjectRepository(Illustrator)
+	private readonly illustratorRepository: Repository<Illustrator>;
 
 	@InjectRepository(WorkPushTemp)
 	private readonly workTempRepository: Repository<WorkPushTemp>;
@@ -34,12 +42,25 @@ export class IllustrationService {
 		const labelsEntity = await this.labelService.createItems(labels);
 		const illustratorEntity = await this.illustratorService.createItem(illustratorInfo);
 
+		const user = await this.userRepository.findOneBy({ id });
+		const illustrator = await this.illustratorRepository.findOneBy({ id: illustratorEntity.id });
+
 		const illustration = this.illustrationRepository.create({
 			...basicInfo,
 			user: userEntity,
 			labels: labelsEntity,
 			illustrator: illustratorEntity,
 		});
+
+		if (basicInfo.isReprinted) {
+			user.reprintedCount++;
+		} else {
+			user.originCount++;
+		}
+		await this.userRepository.save(user);
+
+		illustrator.workCount++;
+		await this.illustratorRepository.save(illustrator);
 
 		const newWork = await this.illustrationRepository.save(illustration);
 
@@ -142,5 +163,10 @@ export class IllustrationService {
 			.skip((current - 1) * pageSize)
 			.take(pageSize)
 			.getMany();
+	}
+
+	// 增加作品浏览量
+	async addView(id: string) {
+		await this.illustrationRepository.increment({ id }, 'viewCount', 1);
 	}
 }
