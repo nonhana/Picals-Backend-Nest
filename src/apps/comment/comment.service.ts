@@ -43,24 +43,20 @@ export class CommentService {
 		if (!replyInfo) {
 			// 1. 一级评论
 			comment.level = 0;
-			this.commentRepository.save(comment);
 		} else {
 			// 2. 二级评论
 			comment.level = 1;
 			const replyComment = new Comment();
 			replyComment.id = replyInfo.replyCommentId;
 			comment.replyTo = replyComment;
-			if (!replyInfo.replyUserId) {
-				// 回复一级评论
-				this.commentRepository.save(comment);
-			} else {
-				// 回复二级评论
+			// 3. 二级评论回复的用户
+			if (replyInfo.replyUserId) {
 				const replyUser = new User();
 				replyUser.id = replyInfo.replyUserId;
 				comment.replyToUser = replyUser;
-				this.commentRepository.save(comment);
 			}
 		}
+		await this.commentRepository.save(comment);
 
 		work.commentCount++;
 		await this.illustrationRepository.save(work);

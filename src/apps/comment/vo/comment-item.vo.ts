@@ -1,4 +1,5 @@
 import type { Comment } from '../entities/comment.entity';
+import { formatDate } from 'src/utils';
 
 export interface CommentAuthorInfo {
 	id: string;
@@ -37,7 +38,7 @@ export class CommentItemVO {
 			username: comment.user.username,
 		};
 		this.content = comment.content;
-		this.createdAt = comment.createTime.toISOString();
+		this.createdAt = formatDate(comment.createTime);
 		this.level = comment.level;
 		this.childComments = comment.replies.map((reply) => {
 			const result: CommentItem = {
@@ -48,7 +49,7 @@ export class CommentItemVO {
 					username: reply.user.username,
 				},
 				content: reply.content,
-				createdAt: reply.createTime.toISOString(),
+				createdAt: formatDate(reply.createTime),
 				level: reply.level,
 			};
 			if (reply.replyToUser) {

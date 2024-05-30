@@ -47,7 +47,9 @@ export class Comment {
 	@JoinColumn({ name: 'res_to_comment_id' })
 	replyTo: Comment; // 这条评论回复的评论
 
-	@ManyToOne(() => User)
+	@ManyToOne(() => User, {
+		nullable: true,
+	})
 	@JoinColumn({ name: 'res_to_user_id' })
 	replyToUser: User; // 这条评论回复的用户（仅当二级评论回复他人时有值，便于区分）
 
