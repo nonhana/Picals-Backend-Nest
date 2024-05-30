@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { md5 } from 'src/utils';
+import { verifyPassword, hashPassword } from 'src/utils';
 import { hanaError } from 'src/error/hanaError';
 import type { UpdateUserDto, LoginUserDto } from './dto';
 import { History } from '../history/entities/history.entity';
@@ -50,7 +50,8 @@ export class UserService {
 	async login(loginUserDto: LoginUserDto) {
 		const user = await this.findUserByEmail(loginUserDto.email);
 		if (!user) throw new hanaError(10101);
-		if (user.password !== md5(loginUserDto.password)) throw new hanaError(10102);
+		const compareResult = await verifyPassword(loginUserDto.password, user.password);
+		if (!compareResult) throw new hanaError(10102);
 		return user;
 	}
 
@@ -59,7 +60,7 @@ export class UserService {
 		if (await this.findUserByEmail(email)) throw new hanaError(10105);
 		const user = new User();
 		user.email = email;
-		user.password = md5(password);
+		user.password = await hashPassword(password);
 		await this.userRepository.save(user);
 		return;
 	}
@@ -91,7 +92,7 @@ export class UserService {
 		if (!(await this.findUserById(id))) throw new hanaError(10101);
 		await this.userRepository.save({
 			id,
-			password: md5(password),
+			password: await hashPassword(password),
 		});
 		return;
 	}
