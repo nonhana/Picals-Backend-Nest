@@ -30,5 +30,6 @@ import { CollectRecord } from '../favorite/entities/collect-record.entity';
 	],
 	controllers: [IllustrationController],
 	providers: [IllustrationService, LabelService, IllustratorService, UserService, FavoriteService],
+	exports: [IllustrationService],
 })
 export class IllustrationModule {}

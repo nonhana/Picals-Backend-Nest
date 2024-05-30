@@ -1,6 +1,3 @@
-// /src/comment/entities/comment.entity.ts
-// 评论实体
-
 import { Illustration } from 'src/apps/illustration/entities/illustration.entity';
 import { User } from 'src/apps/user/entities/user.entity';
 import {
@@ -43,7 +40,7 @@ export class Comment {
 	})
 	createTime: Date;
 
-	@ManyToOne(() => Comment, (comment) => comment.replies)
+	@ManyToOne(() => Comment, (comment) => comment.replies, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'res_to_comment_id' })
 	replyTo: Comment; // 这条评论回复的评论
 

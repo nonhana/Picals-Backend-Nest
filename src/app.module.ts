@@ -36,12 +36,10 @@ import * as path from 'node:path';
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
-			// envFilePath: path.join(__dirname, '.env'),
 			envFilePath: path.join(__dirname, '../.env'),
 		}),
 		TypeOrmModule.forRootAsync({
 			useFactory(configService: ConfigService) {
-				console.log('path', path.join(__dirname, '.env'));
 				return {
 					type: 'mysql',
 					host: configService.get('MYSQL_HOST'),
@@ -50,7 +48,7 @@ import * as path from 'node:path';
 					password: configService.get('MYSQL_PASS'),
 					database: configService.get('MYSQL_DB'),
 					synchronize: true,
-					logging: true,
+					logging: false,
 					entities: [
 						User,
 						Illustrator,

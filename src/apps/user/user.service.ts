@@ -169,6 +169,8 @@ export class UserService {
 
 		const isFollowed = await this.isFollowed(userId, targetId);
 
+		console.log('123123213123213123123123', user.following);
+
 		if (isFollowed) {
 			user.following = user.following.filter((item) => item.id !== targetId);
 			user.followCount--;
@@ -180,6 +182,7 @@ export class UserService {
 		}
 
 		await this.userRepository.save(user);
+		await this.userRepository.save(target);
 	}
 
 	// 分页获取用户正在关注的用户列表

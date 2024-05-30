@@ -150,6 +150,7 @@ export class UserController {
 	@Visitor()
 	async getUserSimpleInfo(@UserInfo() userInfo: JwtUserData, @Query('id') id: string) {
 		const user = await this.userService.getSimpleInfo(id);
+		console.log('simple-userInfo', userInfo);
 		return new UserItemVo(
 			user,
 			userInfo ? await this.userService.isFollowed(userInfo.id, id) : false,
@@ -258,7 +259,7 @@ export class UserController {
 
 	@Post('follow-action') // 关注/取关用户
 	@RequireLogin()
-	async followAction(@UserInfo() userInfo: JwtUserData, @Body('targetId') targetId: string) {
+	async followAction(@UserInfo() userInfo: JwtUserData, @Body('id') targetId: string) {
 		const { id } = userInfo;
 		await this.userService.followAction(id, targetId);
 		return '操作成功！';

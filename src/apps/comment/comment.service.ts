@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Comment } from './entities/comment.entity';
@@ -6,14 +6,15 @@ import type { CreateCommentDto } from './dto/create-comment.dto';
 import { User } from '../user/entities/user.entity';
 import { Illustration } from '../illustration/entities/illustration.entity';
 import { hanaError } from 'src/error/hanaError';
+import { IllustrationService } from '../illustration/illustration.service';
 
 @Injectable()
 export class CommentService {
 	@InjectRepository(Comment)
 	private readonly commentRepository: Repository<Comment>;
 
-	@InjectRepository(Illustration)
-	private readonly illustrationRepository: Repository<Illustration>;
+	@Inject(IllustrationService)
+	private readonly illustrationService: IllustrationService;
 
 	// 获取某个作品的评论列表
 	async getCommentList(id: string) {
@@ -33,7 +34,8 @@ export class CommentService {
 		const user = new User();
 		user.id = userId;
 
-		const work = await this.illustrationRepository.findOneBy({ id: workId });
+		const work = new Illustration();
+		work.id = workId;
 
 		const comment = new Comment();
 		comment.content = content;
@@ -57,10 +59,7 @@ export class CommentService {
 			}
 		}
 		await this.commentRepository.save(comment);
-
-		work.commentCount++;
-		await this.illustrationRepository.save(work);
-
+		await this.illustrationService.updateCommentCount(workId, 'increase');
 		return;
 	}
 
@@ -68,15 +67,16 @@ export class CommentService {
 	async deleteComment(userId: string, commentId: string) {
 		const comment = await this.commentRepository.findOne({
 			where: { id: commentId },
-			relations: ['user'],
+			relations: ['user', 'replies', 'illustration'],
 		});
 		if (!comment) throw new hanaError(10701);
 		if (comment.user.id !== userId) throw new hanaError(10702);
-		await this.commentRepository.delete(commentId);
-
-		const work = await this.illustrationRepository.findOneBy({ id: comment.illustration.id });
-		work.commentCount--;
-		await this.illustrationRepository.save(work);
+		await this.commentRepository.remove(comment);
+		await this.illustrationService.updateCommentCount(
+			comment.illustration.id,
+			'decrease',
+			comment.level === 0 ? comment.replies.length + 1 : 1,
+		);
 		return;
 	}
 }

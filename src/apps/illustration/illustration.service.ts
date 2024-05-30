@@ -169,4 +169,16 @@ export class IllustrationService {
 	async addView(id: string) {
 		await this.illustrationRepository.increment({ id }, 'viewCount', 1);
 	}
+
+	// 增减指定作品的评论数量
+	async updateCommentCount(id: string, type: 'increase' | 'decrease', count: number = 1) {
+		switch (type) {
+			case 'increase':
+				await this.illustrationRepository.increment({ id }, 'commentCount', count);
+				break;
+			case 'decrease':
+				await this.illustrationRepository.decrement({ id }, 'commentCount', count);
+				break;
+		}
+	}
 }
