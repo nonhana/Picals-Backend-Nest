@@ -40,17 +40,25 @@ export class IllustrationService {
 
 		const userEntity = await this.userService.getInfo(id);
 		const labelsEntity = await this.labelService.createItems(labels);
-		const illustratorEntity = await this.illustratorService.createItem(illustratorInfo);
 
 		const user = await this.userRepository.findOneBy({ id });
-		const illustrator = await this.illustratorRepository.findOneBy({ id: illustratorEntity.id });
 
-		const illustration = this.illustrationRepository.create({
+		const entityInfo: { [key: string]: any } = {
 			...basicInfo,
 			user: userEntity,
 			labels: labelsEntity,
-			illustrator: illustratorEntity,
-		});
+		};
+
+		// 处理包含插画家的情况
+		if (illustratorInfo) {
+			const illustratorEntity = await this.illustratorService.createItem(illustratorInfo);
+			const illustrator = await this.illustratorRepository.findOneBy({ id: illustratorEntity.id });
+			illustrator.workCount++;
+			await this.illustratorRepository.save(illustrator);
+			entityInfo.illustrator = illustratorEntity;
+		}
+
+		const illustration = this.illustrationRepository.create(entityInfo);
 
 		if (basicInfo.isReprinted) {
 			user.reprintedCount++;
@@ -58,9 +66,6 @@ export class IllustrationService {
 			user.originCount++;
 		}
 		await this.userRepository.save(user);
-
-		illustrator.workCount++;
-		await this.illustratorRepository.save(illustrator);
 
 		const newWork = await this.illustrationRepository.save(illustration);
 

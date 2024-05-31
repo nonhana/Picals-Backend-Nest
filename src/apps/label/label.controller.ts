@@ -15,7 +15,14 @@ export class LabelController {
 
 	@Get('recommend') // 获取推荐标签
 	async getRecommendLabels() {
-		return await this.labelService.getRecommendLabels();
+		const source = await this.labelService.getRecommendLabels();
+		return source.map((label) => new LabelItemVO(label));
+	}
+
+	@Get('list') // 分页获取标签列表
+	async getLabelList(@Query('pageSize') pageSize: number, @Query('current') current: number) {
+		const source = await this.labelService.getLabelsInPages(pageSize, current);
+		return source.map((label) => new LabelItemVO(label));
 	}
 
 	@Get('detail') // 获取标签详情

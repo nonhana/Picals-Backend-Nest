@@ -69,4 +69,12 @@ export class LabelService {
 			.take(pageSize)
 			.getMany();
 	}
+
+	// 分页获取标签列表
+	async getLabelsInPages(pageSize: number, current: number) {
+		return await this.labelRepository.find({
+			skip: (current - 1) * pageSize,
+			take: pageSize,
+		});
+	}
 }
