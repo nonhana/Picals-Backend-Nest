@@ -127,7 +127,6 @@ export class UserController {
 		}
 
 		const cacheCode = await this.cacheManager.get(`captcha_${email}`);
-		console.log(cacheCode, verification_code);
 		if (!cacheCode || cacheCode !== verification_code) {
 			throw new hanaError(10103);
 		}
@@ -150,7 +149,6 @@ export class UserController {
 	@Visitor()
 	async getUserSimpleInfo(@UserInfo() userInfo: JwtUserData, @Query('id') id: string) {
 		const user = await this.userService.getSimpleInfo(id);
-		console.log('simple-userInfo', userInfo);
 		return new UserItemVo(
 			user,
 			userInfo ? await this.userService.isFollowed(userInfo.id, id) : false,
@@ -161,7 +159,6 @@ export class UserController {
 	@RequireLogin()
 	async updateUserInfo(@UserInfo() userInfo: JwtUserData, @Body() updateUserDto: UpdateUserDto) {
 		const { id } = userInfo;
-		console.log('userInfo', userInfo);
 		await this.userService.updateInfo(id, updateUserDto);
 		return '更新成功！';
 	}
@@ -421,7 +418,8 @@ export class UserController {
 		@Query('pageSize') pageSize: number = 1,
 		@Query('current') current: number = 6,
 	) {
-		const userList = await this.userService.getRecommendUserInPages(current, pageSize);
+		let userList = await this.userService.getRecommendUserInPages(current, pageSize);
+		if (userInfo) userList = userList.filter((user) => user.id !== userInfo.id);
 		return await Promise.all(
 			userList.map(
 				async (user) =>

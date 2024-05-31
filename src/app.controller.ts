@@ -1,5 +1,13 @@
-import { Controller, Inject, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+	Controller,
+	Inject,
+	Post,
+	UploadedFile,
+	UploadedFiles,
+	UseInterceptors,
+} from '@nestjs/common';
 import { SingleImgInterceptor } from './interceptors/single-img-interceptor';
+import { MultipleImgsInterceptor } from './interceptors/multiple-imgs-interceptor';
 import { CosService } from './cos/cos.service';
 import { hanaError } from './error/hanaError';
 
@@ -14,13 +22,30 @@ export class AppController {
 		if (!file) throw new hanaError(11004);
 		const filePath = file.path;
 		const targetPath = 'images' + filePath.split('uploads')[1].replace(/\\/g, '/');
-		console.log('targetPath:', targetPath);
 		try {
 			const result = await this.cosService.uploadFileToCos(filePath, targetPath);
 			return result;
 		} catch (error) {
 			throw new hanaError(11001, error.message);
 		}
+	}
+
+	@Post('upload-multiple-imgs')
+	@UseInterceptors(MultipleImgsInterceptor)
+	async uploadImgs(@UploadedFiles() files: Express.Multer.File[]) {
+		if (!files) throw new hanaError(11004);
+		const results = [];
+		for (const file of files) {
+			const filePath = file.path;
+			const targetPath = 'images' + filePath.split('uploads')[1].replace(/\\/g, '/');
+			try {
+				const result = await this.cosService.uploadFileToCos(filePath, targetPath);
+				results.push(result);
+			} catch (error) {
+				throw new hanaError(11001, error.message);
+			}
+		}
+		return results;
 	}
 
 	@Post('delete-single-img')

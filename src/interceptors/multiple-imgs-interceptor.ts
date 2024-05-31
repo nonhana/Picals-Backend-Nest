@@ -1,20 +1,15 @@
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import * as fs from 'fs';
 import * as path from 'path';
 import { hanaError } from 'src/error/hanaError';
 
-const SingleImgInterceptor = FileInterceptor('image', {
+const MultipleImgsInterceptor = FilesInterceptor('images', 50, {
 	storage: multer.diskStorage({
 		destination: (_, __, cb) => {
-			try {
-				fs.mkdirSync(path.join(process.cwd(), 'uploads'));
-			} catch (e) {
-				if (e.code !== 'EEXIST') {
-					throw new hanaError(11001, e.message);
-				}
-			}
-			cb(null, path.join(process.cwd(), 'uploads'));
+			const uploadPath = path.join(process.cwd(), 'uploads');
+			fs.mkdirSync(uploadPath, { recursive: true });
+			cb(null, uploadPath);
 		},
 		filename: (_, file, cb) => {
 			const uniqueSuffix =
@@ -31,8 +26,8 @@ const SingleImgInterceptor = FileInterceptor('image', {
 		}
 	},
 	limits: {
-		fileSize: 1024 * 1024 * 10,
+		fileSize: 1024 * 1024 * 10, // 单个文件的最大尺寸
 	},
 });
 
-export { SingleImgInterceptor };
+export { MultipleImgsInterceptor };

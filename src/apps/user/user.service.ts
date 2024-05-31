@@ -169,8 +169,6 @@ export class UserService {
 
 		const isFollowed = await this.isFollowed(userId, targetId);
 
-		console.log('123123213123213123123123', user.following);
-
 		if (isFollowed) {
 			user.following = user.following.filter((item) => item.id !== targetId);
 			user.followCount--;
