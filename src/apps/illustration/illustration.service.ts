@@ -13,6 +13,15 @@ import { Illustrator } from '../illustrator/entities/illustrator.entity';
 
 @Injectable()
 export class IllustrationService {
+	@Inject(IllustratorService)
+	private readonly illustratorService: IllustratorService;
+
+	@Inject(LabelService)
+	private readonly labelService: LabelService;
+
+	@Inject(UserService)
+	private readonly userService: UserService;
+
 	@InjectRepository(Illustration)
 	private readonly illustrationRepository: Repository<Illustration>;
 
@@ -24,15 +33,6 @@ export class IllustrationService {
 
 	@InjectRepository(WorkPushTemp)
 	private readonly workTempRepository: Repository<WorkPushTemp>;
-
-	@Inject(IllustratorService)
-	private readonly illustratorService: IllustratorService;
-
-	@Inject(LabelService)
-	private readonly labelService: LabelService;
-
-	@Inject(UserService)
-	private readonly userService: UserService;
 
 	// 发布作品
 	async createItem(id: string, uploadIllustrationDto: UploadIllustrationDto) {

@@ -1,23 +1,24 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Favorite } from '../favorite/entities/favorite.entity';
 import { History } from '../history/entities/history.entity';
-import { HistoryService } from '../history/history.service';
-import { Label } from '../label/entities/label.entity';
-import { LabelService } from '../label/label.service';
 import { Illustration } from '../illustration/entities/illustration.entity';
-import { FavoriteService } from '../favorite/favorite.service';
-import { CollectRecord } from '../favorite/entities/collect-record.entity';
+import { EmailModule } from 'src/email/email.module';
+import { LabelModule } from '../label/label.module';
+import { FavoriteModule } from '../favorite/favorite.module';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([User, Favorite, History, Label, Illustration, CollectRecord]),
+		TypeOrmModule.forFeature([User, History, Illustration, Favorite]),
+		EmailModule,
+		LabelModule,
+		forwardRef(() => FavoriteModule),
 	],
 	controllers: [UserController],
-	providers: [UserService, HistoryService, LabelService, FavoriteService],
+	providers: [UserService],
 	exports: [UserService],
 })
 export class UserModule {}

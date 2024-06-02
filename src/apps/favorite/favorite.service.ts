@@ -5,8 +5,8 @@ import { Like, Repository } from 'typeorm';
 import { CollectRecord } from './entities/collect-record.entity';
 import type { User } from '../user/entities/user.entity';
 import { Illustration } from '../illustration/entities/illustration.entity';
-import type { CreateFavoriteDto } from './dto/create-favotite.dto';
-import type { EditFavoriteDto } from './dto/edit-favotite.dto';
+import type { CreateFavoriteDto } from './dto/create-favorite.dto';
+import type { EditFavoriteDto } from './dto/edit-favorite.dto';
 import type { ChangeOrderDto } from './dto/change-order.dto';
 
 @Injectable()

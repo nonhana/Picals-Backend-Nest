@@ -3,33 +3,22 @@ import { IllustrationService } from './illustration.service';
 import { IllustrationController } from './illustration.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Illustration } from './entities/illustration.entity';
-import { LabelService } from '../label/label.service';
-import { IllustratorService } from '../illustrator/illustrator.service';
-import { Label } from '../label/entities/label.entity';
 import { Illustrator } from '../illustrator/entities/illustrator.entity';
-import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
-import { History } from '../history/entities/history.entity';
 import { WorkPushTemp } from './entities/work-push-temp.entity';
-import { FavoriteService } from '../favorite/favorite.service';
-import { Favorite } from '../favorite/entities/favorite.entity';
-import { CollectRecord } from '../favorite/entities/collect-record.entity';
+import { UserModule } from '../user/user.module';
+import { LabelModule } from '../label/label.module';
+import { IllustratorModule } from '../illustrator/illustrator.module';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([
-			Illustration,
-			WorkPushTemp,
-			Label,
-			Illustrator,
-			User,
-			History,
-			Favorite,
-			CollectRecord,
-		]),
+		TypeOrmModule.forFeature([Illustration, WorkPushTemp, Illustrator, User]),
+		UserModule,
+		LabelModule,
+		IllustratorModule,
 	],
 	controllers: [IllustrationController],
-	providers: [IllustrationService, LabelService, IllustratorService, UserService, FavoriteService],
+	providers: [IllustrationService],
 	exports: [IllustrationService],
 })
 export class IllustrationModule {}

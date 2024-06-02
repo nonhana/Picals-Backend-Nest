@@ -99,7 +99,7 @@ export class UserService {
 
 	// 获取用户的所有收藏夹列表
 	async getFavorites(id: string) {
-		return await this.favoriteRepository.find({ where: { user: { id } } });
+		return await this.favoriteService.getFavoriteList(id);
 	}
 
 	// 分页获取用户的历史记录
