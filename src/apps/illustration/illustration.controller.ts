@@ -93,6 +93,7 @@ export class IllustrationController {
 	}
 
 	@Get('simple') // 获取作品简略信息
+	@Visitor()
 	async getSimple(@UserInfo() userInfo: JwtUserData, @Query('id') workId: string) {
 		const work = await this.illustrationService.getDetail(workId);
 		const isLiked = userInfo ? await this.userService.isLiked(userInfo.id, workId) : false;

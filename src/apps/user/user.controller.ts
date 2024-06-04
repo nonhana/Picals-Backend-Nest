@@ -311,9 +311,7 @@ export class UserController {
 	}
 
 	@Get('published-labels') // 获取用户所有发布作品中携带的标签列表
-	@RequireLogin()
-	async getPublishedLabels(@UserInfo() userInfo: JwtUserData) {
-		const { id } = userInfo;
+	async getPublishedLabels(@Query('id') id: string) {
 		const labels = await this.userService.getPublishedLabels(id);
 		return labels.map((label) => new LabelItemVO(label));
 	}
@@ -335,9 +333,7 @@ export class UserController {
 	}
 
 	@Get('works-count') // 获取用户发布的作品总数
-	@RequireLogin()
-	async getWorksCount(@UserInfo() userInfo: JwtUserData) {
-		const { id } = userInfo;
+	async getWorksCount(@Query('id') id: string) {
 		return await this.userService.getWorksCount(id);
 	}
 

@@ -80,8 +80,8 @@ export class FavoriteService {
 	}
 
 	// 删除某个收藏夹
-	async deleteFavorite(userId: string, favoriteId: string) {
-		return await this.favoriteRepository.delete({ id: favoriteId, user: { id: userId } });
+	async deleteFavorite(id: string) {
+		return await this.favoriteRepository.delete({ id });
 	}
 
 	// 更改收藏夹的排序
@@ -125,6 +125,7 @@ export class FavoriteService {
 	async getFavoriteWorksInPages(favoriteId: string, current: number, pageSize: number) {
 		return this.illustrationRepository.find({
 			where: { favorites: { id: favoriteId } },
+			relations: ['user'],
 			take: pageSize,
 			skip: (current - 1) * pageSize,
 		});
@@ -137,7 +138,7 @@ export class FavoriteService {
 		current: number,
 		pageSize: number,
 	) {
-		const [works, total] = await this.illustrationRepository.findAndCount({
+		return await this.illustrationRepository.find({
 			where: {
 				favorites: { id: favoriteId },
 				name: Like(`%${keyword}%`),
@@ -146,6 +147,15 @@ export class FavoriteService {
 			take: pageSize,
 			skip: (current - 1) * pageSize,
 		});
-		return { works, total };
+	}
+
+	// 获取搜索结果数量
+	async searchWorksCountInFavorite(favoriteId: string, keyword: string) {
+		return await this.illustrationRepository.count({
+			where: {
+				favorites: { id: favoriteId },
+				name: Like(`%${keyword}%`),
+			},
+		});
 	}
 }

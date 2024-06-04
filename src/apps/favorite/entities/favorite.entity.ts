@@ -4,8 +4,6 @@
 import { Illustration } from 'src/apps/illustration/entities/illustration.entity';
 import { User } from 'src/apps/user/entities/user.entity';
 import {
-	BeforeInsert,
-	BeforeUpdate,
 	Column,
 	CreateDateColumn,
 	Entity,
@@ -80,12 +78,8 @@ export class Favorite {
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 
-	@ManyToMany(() => Illustration, (illustration) => illustration.favorites)
+	@ManyToMany(() => Illustration, (illustration) => illustration.favorites, {
+		onDelete: 'CASCADE',
+	})
 	illustrations: Illustration[];
-
-	@BeforeUpdate()
-	@BeforeInsert()
-	async updateWorkCount() {
-		this.workCount = this.illustrations ? this.illustrations.length : 0;
-	}
 }

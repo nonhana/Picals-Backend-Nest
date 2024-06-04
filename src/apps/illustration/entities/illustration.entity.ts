@@ -153,7 +153,9 @@ export class Illustration {
 	})
 	histories: History[];
 
-	@ManyToMany(() => Favorite, (favorite) => favorite.illustrations)
+	@ManyToMany(() => Favorite, (favorite) => favorite.illustrations, {
+		cascade: true,
+	})
 	@JoinTable()
 	favorites: Favorite[];
 }

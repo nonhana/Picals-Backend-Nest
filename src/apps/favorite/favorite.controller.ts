@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
-import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
+import { RequireLogin, UserInfo, Visitor } from 'src/decorators/login.decorator';
 import { JwtUserData } from 'src/guards/auth.guard';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { EditFavoriteDto } from './dto/edit-favorite.dto';
@@ -23,7 +23,8 @@ export class FavoriteController {
 		@UserInfo() userInfo: JwtUserData,
 		@Body() createFavoriteDto: CreateFavoriteDto,
 	) {
-		await this.favoriteService.createFavorite(userInfo.id, createFavoriteDto);
+		const { id } = userInfo;
+		await this.favoriteService.createFavorite(id, createFavoriteDto);
 		return '新建成功！';
 	}
 
@@ -41,9 +42,8 @@ export class FavoriteController {
 
 	@Post('delete') // 删除收藏夹
 	@RequireLogin()
-	async deleteFavorite(@UserInfo() userInfo: JwtUserData, @Query('id') favoriteId: string) {
-		const { id: userId } = userInfo;
-		await this.favoriteService.deleteFavorite(userId, favoriteId);
+	async deleteFavorite(@Body('id') id: string) {
+		await this.favoriteService.deleteFavorite(id);
 		return '删除成功！';
 	}
 
@@ -72,6 +72,7 @@ export class FavoriteController {
 	}
 
 	@Get('works') // 分页获取某收藏夹的作品列表
+	@Visitor()
 	async getFavoriteWorksInPages(
 		@UserInfo() userInfo: JwtUserData,
 		@Query('id') favoriteId: string,
@@ -99,21 +100,27 @@ export class FavoriteController {
 		@Query('current') current: number,
 		@Query('pageSize') size: number,
 	) {
-		const { works, total } = await this.favoriteService.searchWorksInFavorite(
+		const works = await this.favoriteService.searchWorksInFavorite(
 			favoriteId,
 			keyword,
 			current,
 			size,
 		);
 
-		return {
-			works: await Promise.all(
-				works.map(
-					async (work) =>
-						new IllustrationItemVO(work, await this.userService.isLiked(userInfo.id, work.id)),
-				),
+		return await Promise.all(
+			works.map(
+				async (work) =>
+					new IllustrationItemVO(work, await this.userService.isLiked(userInfo.id, work.id)),
 			),
-			total,
-		};
+		);
+	}
+
+	@Get('search-count') // 获取搜索结果数量
+	@RequireLogin()
+	async searchWorksCountInFavorite(
+		@Query('id') favoriteId: string,
+		@Query('keyword') keyword: string,
+	) {
+		return await this.favoriteService.searchWorksCountInFavorite(favoriteId, keyword);
 	}
 }
