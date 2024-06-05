@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { verifyPassword, hashPassword } from 'src/utils';
 import { hanaError } from 'src/error/hanaError';
@@ -402,6 +402,62 @@ export class UserService {
 
 		await this.illustrationRepository.save(illustration);
 		await this.favoriteRepository.save(favorite);
+		return;
+	}
+
+	// 移动作品到其他收藏夹
+	async moveCollect(userId: string, fromId: string, toId: string, workIds: string[]) {
+		const fromFavorite = await this.favoriteRepository.findOne({
+			where: { id: fromId, user: { id: userId } },
+			relations: ['illustrations'],
+		});
+		const toFavorite = await this.favoriteRepository.findOne({
+			where: { id: toId, user: { id: userId } },
+			relations: ['illustrations'],
+		});
+
+		if (!fromFavorite || !toFavorite) throw new hanaError(10601);
+
+		const works = await this.illustrationRepository.findBy({ id: In(workIds) });
+
+		for (const work of works) {
+			const isExist = fromFavorite.illustrations.some((item) => item.id === work.id);
+			if (isExist) {
+				fromFavorite.illustrations = fromFavorite.illustrations.filter(
+					(item) => item.id !== work.id,
+				);
+				fromFavorite.workCount--;
+				this.favoriteService.removeFavoriteRecord(userId, work.id);
+
+				toFavorite.illustrations.push(work);
+				toFavorite.workCount++;
+				this.favoriteService.addFavoriteRecord(userId, work.id);
+			}
+		}
+
+		await this.favoriteRepository.save(fromFavorite);
+		await this.favoriteRepository.save(toFavorite);
+		return;
+	}
+
+	// 复制作品到其他收藏夹
+	async copyCollect(userId: string, toId: string, workIds: string[]) {
+		const toFavorite = await this.favoriteRepository.findOne({
+			where: { id: toId, user: { id: userId } },
+			relations: ['illustrations'],
+		});
+
+		if (!toFavorite) throw new hanaError(10601);
+
+		const works = await this.illustrationRepository.findBy({ id: In(workIds) });
+
+		for (const work of works) {
+			toFavorite.illustrations.push(work);
+			toFavorite.workCount++;
+			this.favoriteService.addFavoriteRecord(userId, work.id);
+		}
+
+		await this.favoriteRepository.save(toFavorite);
 		return;
 	}
 

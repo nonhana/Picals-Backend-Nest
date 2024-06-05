@@ -407,6 +407,31 @@ export class UserController {
 		return '操作成功！';
 	}
 
+	@Post('move-collect') // 移动作品到其他收藏夹
+	@RequireLogin()
+	async moveCollect(
+		@UserInfo() userInfo: JwtUserData,
+		@Body('idList') workIds: string[],
+		@Body('fromId') fromId: string,
+		@Body('toId') toId: string,
+	) {
+		const { id } = userInfo;
+		await this.userService.moveCollect(id, fromId, toId, workIds);
+		return '操作成功！';
+	}
+
+	@Post('copy-collect') // 复制作品到其他收藏夹
+	@RequireLogin()
+	async copyCollect(
+		@UserInfo() userInfo: JwtUserData,
+		@Body('idList') workIds: string[],
+		@Body('toId') toId: string,
+	) {
+		const { id } = userInfo;
+		await this.userService.copyCollect(id, toId, workIds);
+		return '操作成功！';
+	}
+
 	@Get('recommend-user') // 分页获取推荐用户列表
 	@Visitor()
 	async getRecommendUser(

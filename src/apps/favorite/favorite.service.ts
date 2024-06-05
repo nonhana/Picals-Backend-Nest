@@ -114,26 +114,6 @@ export class FavoriteService {
 		});
 	}
 
-	// 移动作品到其他收藏夹
-	async moveWorks(fromId: string, toId: string, workIds: string[]) {
-		const fromFavorite = await this.favoriteRepository.findOne({
-			where: { id: fromId },
-			relations: ['illustrations'],
-		});
-		const toFavorite = await this.favoriteRepository.findOne({
-			where: { id: toId },
-			relations: ['illustrations'],
-		});
-		const works = fromFavorite.illustrations.filter((work) => workIds.includes(work.id));
-		toFavorite.illustrations.push(...works);
-		fromFavorite.illustrations = fromFavorite.illustrations.filter(
-			(work) => !workIds.includes(work.id),
-		);
-		await this.favoriteRepository.save(fromFavorite);
-		await this.favoriteRepository.save(toFavorite);
-		return true;
-	}
-
 	// 分页获取某个收藏夹的插画列表
 	async getFavoriteWorksInPages(favoriteId: string, current: number, pageSize: number) {
 		return this.illustrationRepository.find({

@@ -61,17 +61,6 @@ export class FavoriteController {
 		return new FavoriteDetailVo(favorite);
 	}
 
-	@Post('move') // 移动作品到其他收藏夹
-	@RequireLogin()
-	async moveWorks(
-		@Body('workIdList') workIds: string[],
-		@Body('fromId') fromId: string,
-		@Body('toId') toId: string,
-	) {
-		await this.favoriteService.moveWorks(fromId, toId, workIds);
-		return '移动成功！';
-	}
-
 	@Get('works') // 分页获取某收藏夹的作品列表
 	@Visitor()
 	async getFavoriteWorksInPages(
