@@ -42,8 +42,9 @@ export class FavoriteController {
 
 	@Post('delete') // 删除收藏夹
 	@RequireLogin()
-	async deleteFavorite(@Body('id') id: string) {
-		await this.favoriteService.deleteFavorite(id);
+	async deleteFavorite(@UserInfo() userInfo: JwtUserData, @Body('id') favoriteId: string) {
+		const { id: userId } = userInfo;
+		await this.favoriteService.deleteFavorite(userId, favoriteId);
 		return '删除成功！';
 	}
 

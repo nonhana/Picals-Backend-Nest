@@ -57,6 +57,7 @@ export class Favorite {
 		type: 'int',
 		comment: '收藏夹内的作品数量',
 		name: 'work_count',
+		default: 0,
 	})
 	workCount: number;
 

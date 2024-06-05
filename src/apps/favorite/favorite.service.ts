@@ -80,8 +80,21 @@ export class FavoriteService {
 	}
 
 	// 删除某个收藏夹
-	async deleteFavorite(id: string) {
-		return await this.favoriteRepository.delete({ id });
+	async deleteFavorite(userId: string, favoriteId: string) {
+		const favorite = await this.favoriteRepository.findOne({
+			where: { id: favoriteId },
+			relations: ['illustrations'],
+		});
+		// 删除收藏夹内的所有收藏记录
+		favorite.illustrations.forEach(async (work) => {
+			await this.collectRecordRepository.delete({
+				user: { id: userId },
+				illustration: { id: work.id },
+			});
+		});
+		// 删除收藏夹
+		await this.favoriteRepository.remove(favorite);
+		return;
 	}
 
 	// 更改收藏夹的排序
