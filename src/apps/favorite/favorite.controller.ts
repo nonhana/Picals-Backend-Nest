@@ -113,4 +113,29 @@ export class FavoriteController {
 	) {
 		return await this.favoriteService.searchWorksCountInFavorite(favoriteId, keyword);
 	}
+
+	@Post('move') // 移动作品到其他收藏夹
+	@RequireLogin()
+	async moveCollect(
+		@UserInfo() userInfo: JwtUserData,
+		@Body('idList') workIds: string[],
+		@Body('fromId') fromId: string,
+		@Body('toId') toId: string,
+	) {
+		const { id } = userInfo;
+		await this.favoriteService.moveCollect(id, fromId, toId, workIds);
+		return '操作成功！';
+	}
+
+	@Post('copy') // 复制作品到其他收藏夹
+	@RequireLogin()
+	async copyCollect(
+		@UserInfo() userInfo: JwtUserData,
+		@Body('idList') workIds: string[],
+		@Body('toId') toId: string,
+	) {
+		const { id } = userInfo;
+		await this.favoriteService.copyCollect(id, toId, workIds);
+		return '操作成功！';
+	}
 }

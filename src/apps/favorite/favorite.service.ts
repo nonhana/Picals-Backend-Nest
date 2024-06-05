@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Favorite } from './entities/favorite.entity';
-import { Like, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 import { CollectRecord } from './entities/collect-record.entity';
 import type { User } from '../user/entities/user.entity';
 import { Illustration } from '../illustration/entities/illustration.entity';
 import type { CreateFavoriteDto } from './dto/create-favorite.dto';
 import type { EditFavoriteDto } from './dto/edit-favorite.dto';
 import type { ChangeOrderDto } from './dto/change-order.dto';
+import { hanaError } from 'src/error/hanaError';
 
 @Injectable()
 export class FavoriteService {
@@ -150,5 +151,64 @@ export class FavoriteService {
 				name: Like(`%${keyword}%`),
 			},
 		});
+	}
+
+	// 移动作品到其他收藏夹
+	async moveCollect(userId: string, fromId: string, toId: string, workIds: string[]) {
+		const fromFavorite = await this.favoriteRepository.findOne({
+			where: { id: fromId, user: { id: userId } },
+			relations: ['illustrations'],
+		});
+		const toFavorite = await this.favoriteRepository.findOne({
+			where: { id: toId, user: { id: userId } },
+			relations: ['illustrations'],
+		});
+
+		if (!fromFavorite || !toFavorite) throw new hanaError(10601);
+
+		const works = await this.illustrationRepository.findBy({ id: In(workIds) });
+
+		for (const work of works) {
+			const fromExist = fromFavorite.illustrations.some((item) => item.id === work.id);
+			const toExist = toFavorite.illustrations.some((item) => item.id === work.id);
+			if (!fromExist) continue;
+			// 1. 从原收藏夹中移除
+			fromFavorite.illustrations = fromFavorite.illustrations.filter((item) => item.id !== work.id);
+			fromFavorite.workCount--;
+			this.removeFavoriteRecord(userId, work.id);
+
+			// 2. 添加到目标收藏夹
+			if (toExist) continue; // 如果目标收藏夹已存在该作品，则跳过
+			toFavorite.illustrations.push(work);
+			toFavorite.workCount++;
+			this.addFavoriteRecord(userId, work.id);
+		}
+
+		await this.favoriteRepository.save(fromFavorite);
+		await this.favoriteRepository.save(toFavorite);
+		return;
+	}
+
+	// 复制作品到其他收藏夹
+	async copyCollect(userId: string, toId: string, workIds: string[]) {
+		const toFavorite = await this.favoriteRepository.findOne({
+			where: { id: toId, user: { id: userId } },
+			relations: ['illustrations'],
+		});
+
+		if (!toFavorite) throw new hanaError(10601);
+
+		const works = await this.illustrationRepository.findBy({ id: In(workIds) });
+
+		for (const work of works) {
+			const toExist = toFavorite.illustrations.some((item) => item.id === work.id);
+			if (toExist) continue; // 如果目标收藏夹已存在该作品，则跳过
+			toFavorite.illustrations.push(work);
+			toFavorite.workCount++;
+			this.addFavoriteRecord(userId, work.id);
+		}
+
+		await this.favoriteRepository.save(toFavorite);
+		return;
 	}
 }

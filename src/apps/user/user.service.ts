@@ -376,88 +376,33 @@ export class UserService {
 	}
 
 	// 收藏/取消收藏作品
-	async collectAction(userId: string, workId: string, favoriteId: string) {
+	async collectAction(userId: string, workId: string, favoriteIds: string[]) {
 		const illustration = await this.illustrationRepository.findOne({ where: { id: workId } });
 		if (!illustration) throw new hanaError(10501);
 
-		const favorite = await this.favoriteRepository.findOne({
-			where: { id: favoriteId, user: { id: userId } },
-			relations: ['illustrations'],
-		});
-		if (!favorite) throw new hanaError(10601);
-
-		const isCollected = await this.isCollected(userId, workId);
-
-		if (isCollected) {
-			favorite.illustrations = favorite.illustrations.filter((item) => item.id !== workId);
-			favorite.workCount--;
-			illustration.collectCount--;
-			await this.favoriteService.removeFavoriteRecord(userId, workId);
-		} else {
-			favorite.illustrations.push(illustration);
-			favorite.workCount++;
-			illustration.collectCount++;
-			await this.favoriteService.addFavoriteRecord(userId, workId);
-		}
-
-		await this.illustrationRepository.save(illustration);
-		await this.favoriteRepository.save(favorite);
-		return;
-	}
-
-	// 移动作品到其他收藏夹
-	async moveCollect(userId: string, fromId: string, toId: string, workIds: string[]) {
-		const fromFavorite = await this.favoriteRepository.findOne({
-			where: { id: fromId, user: { id: userId } },
-			relations: ['illustrations'],
-		});
-		const toFavorite = await this.favoriteRepository.findOne({
-			where: { id: toId, user: { id: userId } },
+		const favorites = await this.favoriteRepository.find({
+			where: { id: In(favoriteIds), user: { id: userId } },
 			relations: ['illustrations'],
 		});
 
-		if (!fromFavorite || !toFavorite) throw new hanaError(10601);
-
-		const works = await this.illustrationRepository.findBy({ id: In(workIds) });
-
-		for (const work of works) {
-			const isExist = fromFavorite.illustrations.some((item) => item.id === work.id);
-			if (isExist) {
-				fromFavorite.illustrations = fromFavorite.illustrations.filter(
-					(item) => item.id !== work.id,
-				);
-				fromFavorite.workCount--;
-				this.favoriteService.removeFavoriteRecord(userId, work.id);
-
-				toFavorite.illustrations.push(work);
-				toFavorite.workCount++;
-				this.favoriteService.addFavoriteRecord(userId, work.id);
+		for (const favorite of favorites) {
+			if (!favorite) throw new hanaError(10601);
+			const isCollected = favorite.illustrations.some((item) => item.id === workId);
+			if (isCollected) {
+				favorite.illustrations = favorite.illustrations.filter((item) => item.id !== workId);
+				favorite.workCount--;
+				illustration.collectCount--;
+				await this.favoriteService.removeFavoriteRecord(userId, workId);
+			} else {
+				favorite.illustrations.push(illustration);
+				favorite.workCount++;
+				illustration.collectCount++;
+				await this.favoriteService.addFavoriteRecord(userId, workId);
 			}
+
+			await this.illustrationRepository.save(illustration);
+			await this.favoriteRepository.save(favorite);
 		}
-
-		await this.favoriteRepository.save(fromFavorite);
-		await this.favoriteRepository.save(toFavorite);
-		return;
-	}
-
-	// 复制作品到其他收藏夹
-	async copyCollect(userId: string, toId: string, workIds: string[]) {
-		const toFavorite = await this.favoriteRepository.findOne({
-			where: { id: toId, user: { id: userId } },
-			relations: ['illustrations'],
-		});
-
-		if (!toFavorite) throw new hanaError(10601);
-
-		const works = await this.illustrationRepository.findBy({ id: In(workIds) });
-
-		for (const work of works) {
-			toFavorite.illustrations.push(work);
-			toFavorite.workCount++;
-			this.favoriteService.addFavoriteRecord(userId, work.id);
-		}
-
-		await this.favoriteRepository.save(toFavorite);
 		return;
 	}
 
