@@ -10,10 +10,8 @@ import { SingleImgInterceptor } from './interceptors/single-img-interceptor';
 import { MultipleImgsInterceptor } from './interceptors/multiple-imgs-interceptor';
 import { CosService } from './cos/cos.service';
 import { hanaError } from './error/hanaError';
-import { RequireLogin } from './decorators/login.decorator';
 
 @Controller('tool')
-@RequireLogin()
 export class AppController {
 	@Inject()
 	private readonly cosService: CosService;
