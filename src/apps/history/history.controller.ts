@@ -5,12 +5,12 @@ import { JwtUserData } from 'src/guards/auth.guard';
 import { HistoryItemVo } from './vo/history-item.vo';
 
 @Controller('history')
+@RequireLogin()
 export class HistoryController {
 	@Inject(HistoryService)
 	private readonly historyService: HistoryService;
 
 	@Get('list') // 分页获取用户历史记录
-	@RequireLogin()
 	async getHistoryList(
 		@UserInfo() userInfo: JwtUserData,
 		@Query('pageSize') pageSize: number = 1,
@@ -22,7 +22,6 @@ export class HistoryController {
 	}
 
 	@Post('new') // 新增用户历史记录
-	@RequireLogin()
 	async addHistory(@UserInfo() userInfo: JwtUserData, @Body('id') workId: string) {
 		const { id } = userInfo;
 		await this.historyService.addHistory(id, workId);
@@ -30,7 +29,6 @@ export class HistoryController {
 	}
 
 	@Post('delete') // 删除某条历史记录
-	@RequireLogin()
 	async deleteHistory(@UserInfo() userInfo: JwtUserData, @Query('id') historyId: string) {
 		const { id } = userInfo;
 		await this.historyService.deleteHistory(id, historyId);
@@ -38,7 +36,6 @@ export class HistoryController {
 	}
 
 	@Post('clear') // 清空用户历史记录
-	@RequireLogin()
 	async clearHistory(@UserInfo() userInfo: JwtUserData) {
 		const { id } = userInfo;
 		await this.historyService.clearHistory(id);
@@ -46,7 +43,6 @@ export class HistoryController {
 	}
 
 	@Get('search') // 根据作品名搜索历史记录
-	@RequireLogin()
 	async searchHistory(@UserInfo() userInfo: JwtUserData, @Query('keyword') keyword: string) {
 		const { id } = userInfo;
 		const historyList = await this.historyService.searchHistory(id, keyword);

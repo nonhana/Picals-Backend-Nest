@@ -3,7 +3,7 @@ import { IllustratorService } from './illustrator.service';
 import { NewIllustratorDto } from './dto/new-illustrator.dto';
 import { EditIllustratorDto } from './dto/edit-illustrator.dto';
 import { IllustratorDetailVo } from './vo/illustrator-detail.vo';
-import { UserInfo } from 'src/decorators/login.decorator';
+import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
 import { JwtUserData } from 'src/guards/auth.guard';
 import { IllustrationItemVO } from '../illustration/vo/illustration-item.vo';
 import { UserService } from '../user/user.service';
@@ -17,12 +17,14 @@ export class IllustratorController {
 	private readonly userService: UserService;
 
 	@Post('new') // 新增插画家（转载作品需要填写）
+	@RequireLogin()
 	async createIllustrator(@Body() newIllustratorDto: NewIllustratorDto) {
 		await this.illustratorService.createItem(newIllustratorDto);
 		return '创建成功！';
 	}
 
 	@Post('edit') // 修改插画家信息
+	@RequireLogin()
 	async editIllustrator(@Query('id') id: string, @Body() editIllustratorDto: EditIllustratorDto) {
 		await this.illustratorService.editItem(id, editIllustratorDto);
 		return '修改成功！';

@@ -2,6 +2,7 @@ import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import { LabelService } from './label.service';
 import type { NewLabelDto } from './dto/new-label.dto';
 import { LabelItemVO } from './vo/label-item.vo';
+import { RequireLogin } from 'src/decorators/login.decorator';
 
 @Controller('label')
 export class LabelController {
@@ -9,6 +10,7 @@ export class LabelController {
 	private readonly labelService: LabelService;
 
 	@Post('new') // 新增标签
+	@RequireLogin()
 	async newLabels(@Body() labels: NewLabelDto[]) {
 		return await this.labelService.createItems(labels.map((label) => label.value));
 	}

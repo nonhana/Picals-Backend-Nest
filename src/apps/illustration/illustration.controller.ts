@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import { IllustrationService } from './illustration.service';
 import { UploadIllustrationDto } from './dto/upload-illustration.dto';
-import { RequireLogin, UserInfo, Visitor } from 'src/decorators/login.decorator';
+import { RequireLogin, UserInfo, AllowVisitor } from 'src/decorators/login.decorator';
 import { JwtUserData } from 'src/guards/auth.guard';
 import { UserService } from '../user/user.service';
 import { IllustrationItemVO } from './vo/illustration-item.vo';
@@ -31,7 +31,7 @@ export class IllustrationController {
 		);
 
 	@Get('recommend') // 分页获取推荐作品列表
-	@Visitor()
+	@AllowVisitor()
 	async getRecommend(
 		@UserInfo() userInfo: JwtUserData,
 		@Query('pageSize') pageSize: number = 1,
@@ -84,7 +84,7 @@ export class IllustrationController {
 	}
 
 	@Get('detail') // 获取作品详情
-	@Visitor()
+	@AllowVisitor()
 	async getDetail(@UserInfo() userInfo: JwtUserData, @Query('id') workId: string) {
 		const work = await this.illustrationService.getDetail(workId);
 		const isLiked = userInfo ? await this.userService.isLiked(userInfo.id, workId) : false;
@@ -93,7 +93,7 @@ export class IllustrationController {
 	}
 
 	@Get('simple') // 获取作品简略信息
-	@Visitor()
+	@AllowVisitor()
 	async getSimple(@UserInfo() userInfo: JwtUserData, @Query('id') workId: string) {
 		const work = await this.illustrationService.getDetail(workId);
 		const isLiked = userInfo ? await this.userService.isLiked(userInfo.id, workId) : false;

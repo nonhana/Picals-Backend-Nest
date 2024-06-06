@@ -9,7 +9,7 @@ import { DetailUserVo } from './vo/detail.vo';
 import { LoginUserVo } from './vo/login.vo';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { JwtUserData } from 'src/guards/auth.guard';
-import { RequireLogin, UserInfo, Visitor } from 'src/decorators/login.decorator';
+import { RequireLogin, UserInfo, AllowVisitor } from 'src/decorators/login.decorator';
 import { UserItemVo } from './vo/user-item.vo';
 import { LabelItemVO } from '../label/vo/label-item.vo';
 import { IllustrationItemVO } from '../illustration/vo/illustration-item.vo';
@@ -137,6 +137,7 @@ export class UserController {
 	}
 
 	@Get('detail') // 获取用户详细信息
+	@AllowVisitor()
 	async getUserInfo(@UserInfo() userInfo: JwtUserData, @Query('id') id: string) {
 		const user = await this.userService.getInfo(id);
 		return new DetailUserVo(
@@ -146,7 +147,7 @@ export class UserController {
 	}
 
 	@Get('simple') // 获取用户简略信息
-	@Visitor()
+	@AllowVisitor()
 	async getUserSimpleInfo(@UserInfo() userInfo: JwtUserData, @Query('id') id: string) {
 		const user = await this.userService.getSimpleInfo(id);
 		return new UserItemVo(
@@ -262,38 +263,32 @@ export class UserController {
 		return '操作成功！';
 	}
 
-	@Get('following') // 分页获取用户的关注列表
-	@RequireLogin()
+	@Get('following') // 分页获取某用户的关注列表
 	async getFollowing(
-		@UserInfo() userInfo: JwtUserData,
+		@Query('id') id: string,
 		@Query('pageSize') pageSize: number,
 		@Query('current') current: number,
 	) {
 		if (current <= 0) throw new hanaError(10201);
 		if (pageSize <= 0) throw new hanaError(10202);
-		const { id } = userInfo;
 		const userList = await this.userService.getFollowingInPages(id, current, pageSize);
 
 		return userList.map((user) => new UserItemVo(user, true));
 	}
 
 	@Get('following-count') // 获取用户的关注总数
-	@RequireLogin()
-	async getFollowingCount(@UserInfo() userInfo: JwtUserData) {
-		const { id } = userInfo;
+	async getFollowingCount(@Query('id') id: string) {
 		return await this.userService.getFollowingCount(id);
 	}
 
 	@Get('followers') // 分页获取用户的粉丝列表
-	@RequireLogin()
 	async getFollowers(
-		@UserInfo() userInfo: JwtUserData,
+		@Query('id') id: string,
 		@Query('pageSize') pageSize: number,
 		@Query('current') current: number,
 	) {
 		if (current <= 0) throw new hanaError(10201);
 		if (pageSize <= 0) throw new hanaError(10202);
-		const { id } = userInfo;
 		const userList = await this.userService.getFollowersInPages(id, current, pageSize);
 
 		return await Promise.all(
@@ -303,10 +298,8 @@ export class UserController {
 		);
 	}
 
-	@Get('followers-count') // 获取用户的粉丝总数
-	@RequireLogin()
-	async getFollowersCount(@UserInfo() userInfo: JwtUserData) {
-		const { id } = userInfo;
+	@Get('followers-count') // 获取某用户的粉丝总数
+	async getFollowersCount(@Query('id') id: string) {
 		return await this.userService.getFollowersCount(id);
 	}
 
@@ -338,15 +331,13 @@ export class UserController {
 	}
 
 	@Get('like-works') // 分页获取用户喜欢的作品列表
-	@RequireLogin()
 	async getLikeWorks(
-		@UserInfo() userInfo: JwtUserData,
+		@Query('id') id: string,
 		@Query('pageSize') pageSize: number,
 		@Query('current') current: number,
 	) {
 		if (current <= 0) throw new hanaError(10201);
 		if (pageSize <= 0) throw new hanaError(10202);
-		const { id } = userInfo;
 		const works = await this.userService.getLikeWorksInPages(id, current, pageSize);
 		return await Promise.all(
 			works.map(
@@ -356,14 +347,12 @@ export class UserController {
 	}
 
 	@Get('like-works-count') // 获取用户喜欢的作品总数
-	@RequireLogin()
-	async getLikeWorksCount(@UserInfo() userInfo: JwtUserData) {
-		const { id } = userInfo;
+	async getLikeWorksCount(@Query('id') id: string) {
 		return await this.userService.getLikeWorksCount(id);
 	}
 
 	@Get('search') // 分页搜索用户
-	@Visitor()
+	@AllowVisitor()
 	async searchUser(
 		@UserInfo() userInfo: JwtUserData,
 		@Query('keyword') keyword: string,
@@ -408,7 +397,7 @@ export class UserController {
 	}
 
 	@Get('recommend-user') // 分页获取推荐用户列表
-	@Visitor()
+	@AllowVisitor()
 	async getRecommendUser(
 		@UserInfo() userInfo: JwtUserData,
 		@Query('pageSize') pageSize: number = 1,

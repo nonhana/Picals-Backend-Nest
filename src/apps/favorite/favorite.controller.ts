@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
-import { RequireLogin, UserInfo, Visitor } from 'src/decorators/login.decorator';
+import { RequireLogin, UserInfo, AllowVisitor } from 'src/decorators/login.decorator';
 import { JwtUserData } from 'src/guards/auth.guard';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { EditFavoriteDto } from './dto/edit-favorite.dto';
@@ -62,7 +62,7 @@ export class FavoriteController {
 	}
 
 	@Get('works') // 分页获取某收藏夹的作品列表
-	@Visitor()
+	@AllowVisitor()
 	async getFavoriteWorksInPages(
 		@UserInfo() userInfo: JwtUserData,
 		@Query('id') favoriteId: string,
@@ -82,7 +82,7 @@ export class FavoriteController {
 	}
 
 	@Get('search') // 搜索收藏夹内的作品
-	@RequireLogin()
+	@AllowVisitor()
 	async searchWorksInFavorite(
 		@UserInfo() userInfo: JwtUserData,
 		@Query('id') favoriteId: string,
@@ -106,7 +106,6 @@ export class FavoriteController {
 	}
 
 	@Get('search-count') // 获取搜索结果数量
-	@RequireLogin()
 	async searchWorksCountInFavorite(
 		@Query('id') favoriteId: string,
 		@Query('keyword') keyword: string,
