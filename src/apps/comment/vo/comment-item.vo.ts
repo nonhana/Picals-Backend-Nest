@@ -1,5 +1,5 @@
 import type { Comment } from '../entities/comment.entity';
-import { formatDate } from 'src/utils';
+import * as dayjs from 'dayjs';
 
 export interface CommentAuthorInfo {
 	id: string;
@@ -38,7 +38,7 @@ export class CommentItemVO {
 			username: comment.user.username,
 		};
 		this.content = comment.content;
-		this.createdAt = formatDate(comment.createTime);
+		this.createdAt = dayjs(comment.createTime).format('YYYY-MM-DD HH:mm:ss');
 		this.level = comment.level;
 		this.childComments = comment.replies.map((reply) => {
 			const result: CommentItem = {
@@ -49,7 +49,7 @@ export class CommentItemVO {
 					username: reply.user.username,
 				},
 				content: reply.content,
-				createdAt: formatDate(reply.createTime),
+				createdAt: dayjs(reply.createTime).format('YYYY-MM-DD HH:mm:ss'),
 				level: reply.level,
 			};
 			if (reply.replyToUser) {

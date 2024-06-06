@@ -1,5 +1,5 @@
 import type { Illustration } from 'src/apps/illustration/entities/illustration.entity';
-import { formatDate } from 'src/utils';
+import * as dayjs from 'dayjs';
 
 export interface LabelItem {
 	/**
@@ -94,7 +94,7 @@ export class IllustrationDetailVO {
 	 */
 	viewNum: number;
 
-	constructor(illustration: Illustration, isLiked: boolean, isCollected: boolean) {
+	constructor(userId: string, illustration: Illustration, isLiked: boolean, isCollected: boolean) {
 		this.id = illustration.id;
 		this.authorId = illustration.user.id;
 		this.imgList = illustration.imgList;
@@ -110,13 +110,16 @@ export class IllustrationDetailVO {
 		}));
 		this.name = illustration.name;
 		this.openComment = illustration.openComment;
-		this.updatedDate = formatDate(illustration.updatedTime);
-		this.createdDate = formatDate(illustration.createdTime);
+		this.updatedDate = dayjs(illustration.updatedTime).format('YYYY-MM-DD HH:mm:ss');
+		this.createdDate = dayjs(illustration.createdTime).format('YYYY-MM-DD HH:mm:ss');
 		this.likeNum = illustration.likeCount;
 		this.collectNum = illustration.collectCount;
 		this.commentNum = illustration.commentCount;
 		this.isReprinted = illustration.isReprinted;
 		this.viewNum = illustration.viewCount;
-		if (isCollected) this.favoriteIds = illustration.favorites.map((favorite) => favorite.id);
+		if (isCollected)
+			this.favoriteIds = illustration.favorites
+				.filter((favorite) => favorite.user.id === userId)
+				.map((favorite) => favorite.id);
 	}
 }

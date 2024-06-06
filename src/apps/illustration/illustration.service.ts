@@ -143,7 +143,7 @@ export class IllustrationService {
 	async getDetail(id: string) {
 		return await this.illustrationRepository.findOne({
 			where: { id },
-			relations: ['user', 'labels', 'favorites'],
+			relations: ['user', 'labels', 'favorites', 'favorites.user'],
 		});
 	}
 

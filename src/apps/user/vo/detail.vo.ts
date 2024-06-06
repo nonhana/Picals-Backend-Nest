@@ -1,5 +1,5 @@
 import type { User } from '../entities/user.entity';
-import { formatDate } from 'src/utils';
+import * as dayjs from 'dayjs';
 
 export class DetailUserVo {
 	/**
@@ -81,7 +81,7 @@ export class DetailUserVo {
 		this.fanCount = user.fanCount;
 		this.followCount = user.followCount;
 		this.favoriteCount = user.favoriteCount;
-		this.createdTime = formatDate(user.createdTime);
+		this.createdTime = dayjs(user.createdTime).format('YYYY-MM-DD HH:mm:ss');
 		this.signature = user.signature;
 		this.isFollowed = isFollowed;
 	}

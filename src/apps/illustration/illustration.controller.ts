@@ -89,7 +89,7 @@ export class IllustrationController {
 		const work = await this.illustrationService.getDetail(workId);
 		const isLiked = userInfo ? await this.userService.isLiked(userInfo.id, workId) : false;
 		const isCollected = userInfo ? await this.userService.isCollected(userInfo.id, workId) : false;
-		return new IllustrationDetailVO(work, isLiked, isCollected);
+		return new IllustrationDetailVO(userInfo ? userInfo.id : undefined, work, isLiked, isCollected);
 	}
 
 	@Get('simple') // 获取作品简略信息
