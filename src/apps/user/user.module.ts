@@ -14,7 +14,7 @@ import { FavoriteModule } from '../favorite/favorite.module';
 	imports: [
 		TypeOrmModule.forFeature([User, History, Illustration, Favorite]),
 		EmailModule,
-		LabelModule,
+		forwardRef(() => LabelModule),
 		forwardRef(() => FavoriteModule),
 	],
 	controllers: [UserController],

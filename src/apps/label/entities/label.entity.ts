@@ -36,7 +36,15 @@ export class Label {
 		comment: '标签背景图',
 		nullable: true,
 	})
-	cover: string;
+	cover: string | null;
+
+	@Column({
+		name: 'work_count',
+		type: 'int',
+		comment: '标签下的作品总数',
+		default: 0,
+	})
+	workCount: number;
 
 	@ManyToMany(() => User, (user) => user.likedLabels)
 	users: User[];

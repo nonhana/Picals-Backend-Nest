@@ -6,7 +6,7 @@ import { hanaError } from 'src/error/hanaError';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from 'src/email/email.service';
 import { DetailUserVo } from './vo/detail.vo';
-import { LoginUserVo } from './vo/login.vo';
+import { LoginUserVo, userLoginInfoVo } from './vo/login.vo';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { JwtUserData } from 'src/guards/auth.guard';
 import { RequireLogin, UserInfo, AllowVisitor } from 'src/decorators/login.decorator';
@@ -58,7 +58,7 @@ export class UserController {
 		const user = await this.userService.login(loginUserDto);
 		if (user) {
 			const vo = new LoginUserVo();
-			vo.userInfo = user;
+			vo.userInfo = new userLoginInfoVo(user);
 			vo.accessToken = await this.jwtService.signAsync(
 				{
 					id: user.id,

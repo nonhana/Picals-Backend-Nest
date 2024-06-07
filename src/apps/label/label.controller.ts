@@ -2,12 +2,18 @@ import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import { LabelService } from './label.service';
 import type { NewLabelDto } from './dto/new-label.dto';
 import { LabelItemVO } from './vo/label-item.vo';
-import { RequireLogin } from 'src/decorators/login.decorator';
+import { AllowVisitor, RequireLogin, UserInfo } from 'src/decorators/login.decorator';
+import { JwtUserData } from 'src/guards/auth.guard';
+import { UserService } from '../user/user.service';
+import { LabelDetailVO } from './vo/label-detail.vo';
 
 @Controller('label')
 export class LabelController {
 	@Inject(LabelService)
 	private readonly labelService: LabelService;
+
+	@Inject(UserService)
+	private readonly userService: UserService;
 
 	@Post('new') // 新增标签
 	@RequireLogin()
@@ -28,8 +34,13 @@ export class LabelController {
 	}
 
 	@Get('detail') // 获取标签详情
-	async getLabelDetail(@Query('id') id: string) {
-		const label = await this.labelService.findItemById(id);
-		return new LabelItemVO(label);
+	@AllowVisitor()
+	async getLabelDetail(@UserInfo() userInfo: JwtUserData, @Query('name') name: string) {
+		const label = await this.labelService.findItemByValue(name);
+		if (!label) return null;
+		return new LabelDetailVO(
+			label,
+			userInfo ? await this.userService.isLikedLabel(userInfo.id, label.id) : false,
+		);
 	}
 }

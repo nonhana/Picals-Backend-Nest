@@ -37,8 +37,8 @@ export class UserService {
 	private readonly favoriteRepository: Repository<Favorite>;
 
 	// 根据 email 查找单个用户
-	async findUserByEmail(email: string) {
-		return await this.userRepository.findOne({ where: { email } });
+	async findUserByEmail(email: string, relations?: string[]) {
+		return await this.userRepository.findOne({ where: { email }, relations: relations || [] });
 	}
 
 	// 根据 id 查找单个用户
@@ -48,7 +48,7 @@ export class UserService {
 
 	// 用户登录
 	async login(loginUserDto: LoginUserDto) {
-		const user = await this.findUserByEmail(loginUserDto.email);
+		const user = await this.findUserByEmail(loginUserDto.email, ['likedLabels']);
 		if (!user) throw new hanaError(10101);
 		const compareResult = await verifyPassword(loginUserDto.password, user.password);
 		if (!compareResult) throw new hanaError(10102);
@@ -125,12 +125,19 @@ export class UserService {
 		return user.likedLabels;
 	}
 
+	// 判断用户是否已经喜欢该标签
+	async isLikedLabel(userId: string, labelId: string) {
+		const user = await this.findUserById(userId, ['likedLabels']);
+		if (!user) throw new hanaError(10101);
+		return user.likedLabels.some((label) => label.id === labelId);
+	}
+
 	// 添加/移除喜欢的标签
 	async likeLabelActions(userId: string, labelId: string) {
 		const user = await this.findUserById(userId, ['likedLabels']);
 		if (!user) throw new hanaError(10101);
 
-		const isExist = user.likedLabels.some((label) => label.id === labelId); // 查找用户是否已经喜欢了该标签
+		const isExist = await this.isLikedLabel(userId, labelId);
 
 		if (isExist) {
 			user.likedLabels = user.likedLabels.filter((label) => label.id !== labelId);
@@ -334,10 +341,13 @@ export class UserService {
 	// 分页搜索用户
 	async searchUser(keyword: string, current: number, pageSize: number) {
 		const queryBuilder = this.userRepository.createQueryBuilder('user');
-		queryBuilder.where('user.username like :keyword', { keyword: `%${keyword}%` });
-
-		queryBuilder.skip((current - 1) * pageSize);
-		queryBuilder.take(pageSize);
+		queryBuilder
+			.where('user.username like :keyword', { keyword: `%${keyword}%` })
+			.leftJoin('user.illustrations', 'illustration')
+			.addSelect('illustration.id')
+			.skip((current - 1) * pageSize)
+			.take(pageSize)
+			.orderBy('user.username', 'ASC');
 
 		return await queryBuilder.getMany();
 	}

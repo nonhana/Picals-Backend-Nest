@@ -78,6 +78,11 @@ export class IllustrationService {
 			});
 		});
 
+		// 更新标签的作品数量
+		labels.forEach((label) => {
+			this.labelService.increaseWorkCount(label);
+		});
+
 		return newWork;
 	}
 
@@ -155,16 +160,40 @@ export class IllustrationService {
 		});
 	}
 
-	// 根据标签分页搜索作品
-	async getItemsByLabelInPages(labelName: string, pageSize: number, current: number) {
+	async getItemsByLabelInPages(
+		labelName: string,
+		sortType: string,
+		pageSize: number,
+		current: number,
+	) {
 		const label = await this.labelService.findItemByValue(labelName);
 		if (!label) throw new hanaError(10403);
+
+		// 根据 sortType 进行排序
+		let orderByClause: { [key: string]: 'ASC' | 'DESC' };
+		switch (sortType) {
+			case 'new':
+				orderByClause = { 'illustration.createdTime': 'DESC' }; // 按创建时间倒序排列
+				break;
+			case 'old':
+				orderByClause = { 'illustration.createdTime': 'ASC' }; // 按创建时间正序排列
+				break;
+			case 'like':
+				orderByClause = { 'illustration.likeCount': 'DESC' }; // 按喜欢数倒序排列
+				break;
+			case 'collect':
+				orderByClause = { 'illustration.collectCount': 'DESC' }; // 按收藏数倒序排列
+				break;
+			default:
+				throw new hanaError(10404); // 无效的排序类型
+		}
 
 		return await this.illustrationRepository
 			.createQueryBuilder('illustration')
 			.leftJoinAndSelect('illustration.labels', 'label')
 			.leftJoinAndSelect('illustration.user', 'user')
 			.where('label.id = :labelId', { labelId: label.id })
+			.orderBy(orderByClause) // 动态排序
 			.skip((current - 1) * pageSize)
 			.take(pageSize)
 			.getMany();

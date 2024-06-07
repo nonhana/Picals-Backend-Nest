@@ -101,14 +101,17 @@ export class IllustrationController {
 	}
 
 	@Get('search') // 根据标签分页搜索作品
+	@AllowVisitor()
 	async getWorksByLabel(
 		@UserInfo() userInfo: JwtUserData,
 		@Query('labelName') labelName: string,
+		@Query('sortType') sortType: string,
 		@Query('pageSize') pageSize: number = 30,
 		@Query('current') current: number = 1,
 	) {
 		const works = await this.illustrationService.getItemsByLabelInPages(
 			labelName,
+			sortType,
 			pageSize,
 			current,
 		);

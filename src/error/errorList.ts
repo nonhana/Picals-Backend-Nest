@@ -29,6 +29,7 @@ export const errorMessages: Map<number, string> = new Map([
 	[10401, 'This tag has already been liked'],
 	[10402, 'This tag can not been found as a liked tag'],
 	[10403, 'Tag is not found'],
+	[10404, 'Invalid sort type'],
 
 	// 插画相关错误
 	[10501, 'Illustration not found'],

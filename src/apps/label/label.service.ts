@@ -26,7 +26,9 @@ export class LabelService {
 
 	// 根据value查找标签
 	async findItemByValue(value: string) {
-		return await this.labelRepository.findOne({ where: { value } });
+		const label = await this.labelRepository.findOne({ where: { value } });
+		if (!label) return null;
+		return label;
 	}
 
 	// 创建标签
@@ -76,5 +78,19 @@ export class LabelService {
 			skip: (current - 1) * pageSize,
 			take: pageSize,
 		});
+	}
+
+	// 增加标签的作品数
+	async increaseWorkCount(value: string) {
+		const label = await this.findItemByValue(value);
+		label.workCount += 1;
+		return await this.labelRepository.save(label);
+	}
+
+	// 减少标签的作品数
+	async decreaseWorkCount(value: string) {
+		const label = await this.findItemByValue(value);
+		label.workCount -= 1;
+		return await this.labelRepository.save(label);
 	}
 }
