@@ -93,6 +93,17 @@ export class IllustrationDetailVO {
 	 * 被浏览次数
 	 */
 	viewNum: number;
+	/**
+	 * 插画家信息（转载作品）
+	 */
+	illustrator?: {
+		id: string;
+		name: string;
+		intro: string;
+		avatar: string;
+		homeUrl: string;
+		workCount: number;
+	};
 
 	constructor(userId: string, illustration: Illustration, isLiked: boolean, isCollected: boolean) {
 		this.id = illustration.id;
@@ -117,6 +128,15 @@ export class IllustrationDetailVO {
 		this.commentNum = illustration.commentCount;
 		this.isReprinted = illustration.isReprinted;
 		this.viewNum = illustration.viewCount;
+		if (this.isReprinted)
+			this.illustrator = {
+				id: illustration.illustrator.id,
+				name: illustration.illustrator.name,
+				intro: illustration.illustrator.intro,
+				avatar: illustration.illustrator.avatar,
+				homeUrl: illustration.illustrator.homeUrl,
+				workCount: illustration.illustrator.workCount,
+			};
 		if (isCollected)
 			this.favoriteIds = illustration.favorites
 				.filter((favorite) => favorite.user.id === userId)

@@ -359,14 +359,16 @@ export class UserController {
 		@Query('pageSize') pageSize: number,
 		@Query('current') current: number,
 	) {
-		const { id } = userInfo;
 		if (current <= 0) throw new hanaError(10201);
 		if (pageSize <= 0) throw new hanaError(10202);
 		const userList = await this.userService.searchUser(keyword, current, pageSize);
 		return await Promise.all(
 			userList.map(
 				async (user) =>
-					new UserItemVo(user, userInfo ? await this.userService.isFollowed(id, user.id) : false),
+					new UserItemVo(
+						user,
+						userInfo ? await this.userService.isFollowed(userInfo.id, user.id) : false,
+					),
 			),
 		);
 	}

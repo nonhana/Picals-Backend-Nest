@@ -62,8 +62,8 @@ export class UploadIllustrationDto {
 	imgList: string[];
 
 	@IsOptional()
-	@Matches(/(https?:\/\/.*\.(?:png|jpg))/, {
-		message: '图片格式不正确，需要以http或https开头、以png或jpg结尾',
+	@Matches(/(https?:\/\/.*)/, {
+		message: '请输入一个有效的URL地址！',
 	})
 	workUrl?: string;
 

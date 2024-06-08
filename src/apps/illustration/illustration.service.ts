@@ -86,13 +86,14 @@ export class IllustrationService {
 		return newWork;
 	}
 
-	// 分页获取推荐作品列表
+	// 分页随机获取推荐作品列表
 	async getItemsInPages(pageSize: number, current: number) {
-		return await this.illustrationRepository.find({
-			relations: ['user'],
-			take: pageSize,
-			skip: pageSize * (current - 1),
-		});
+		return await this.illustrationRepository
+			.createQueryBuilder('illustration')
+			.leftJoinAndSelect('illustration.user', 'user')
+			.take(pageSize)
+			.skip(pageSize * (current - 1))
+			.getMany();
 	}
 
 	// 获取已关注用户新作
@@ -148,7 +149,7 @@ export class IllustrationService {
 	async getDetail(id: string) {
 		return await this.illustrationRepository.findOne({
 			where: { id },
-			relations: ['user', 'labels', 'favorites', 'favorites.user'],
+			relations: ['user', 'labels', 'favorites', 'favorites.user', 'illustrator'],
 		});
 	}
 

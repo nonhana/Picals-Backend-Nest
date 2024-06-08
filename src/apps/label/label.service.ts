@@ -55,7 +55,12 @@ export class LabelService {
 
 	// 获取推荐标签列表
 	async getRecommendLabels() {
-		return await this.labelRepository.find({ take: 10 });
+		const recommendLabels = await this.labelRepository
+			.createQueryBuilder()
+			.orderBy('RAND()') // 随机排序
+			.limit(30)
+			.getMany();
+		return recommendLabels;
 	}
 
 	// 分页获取带有该标签的作品列表
