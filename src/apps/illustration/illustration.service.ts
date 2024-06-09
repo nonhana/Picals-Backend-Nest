@@ -10,6 +10,7 @@ import { WorkPushTemp } from './entities/work-push-temp.entity';
 import { hanaError } from 'src/error/hanaError';
 import { User } from '../user/entities/user.entity';
 import { Illustrator } from '../illustrator/entities/illustrator.entity';
+import { Favorite } from '../favorite/entities/favorite.entity';
 
 @Injectable()
 export class IllustrationService {
@@ -34,57 +35,8 @@ export class IllustrationService {
 	@InjectRepository(WorkPushTemp)
 	private readonly workTempRepository: Repository<WorkPushTemp>;
 
-	// 发布作品
-	async createItem(id: string, uploadIllustrationDto: UploadIllustrationDto) {
-		const { labels, illustratorInfo, ...basicInfo } = uploadIllustrationDto;
-
-		const userEntity = await this.userService.getInfo(id);
-		const labelsEntity = await this.labelService.createItems(labels);
-
-		const user = await this.userRepository.findOneBy({ id });
-
-		const entityInfo: { [key: string]: any } = {
-			...basicInfo,
-			user: userEntity,
-			labels: labelsEntity,
-		};
-
-		// 处理包含插画家的情况
-		if (illustratorInfo) {
-			const illustratorEntity = await this.illustratorService.createItem(illustratorInfo);
-			const illustrator = await this.illustratorRepository.findOneBy({ id: illustratorEntity.id });
-			illustrator.workCount++;
-			await this.illustratorRepository.save(illustrator);
-			entityInfo.illustrator = illustratorEntity;
-		}
-
-		const illustration = this.illustrationRepository.create(entityInfo);
-
-		if (basicInfo.isReprinted) {
-			user.reprintedCount++;
-		} else {
-			user.originCount++;
-		}
-		await this.userRepository.save(user);
-
-		const newWork = await this.illustrationRepository.save(illustration);
-
-		// 将新作品推送给粉丝
-		const fans = await this.userService.getFollowers(id);
-		fans.forEach(async (fan) => {
-			await this.workTempRepository.save({
-				user: fan,
-				illustration: newWork,
-			});
-		});
-
-		// 更新标签的作品数量
-		labels.forEach((label) => {
-			this.labelService.increaseWorkCount(label);
-		});
-
-		return newWork;
-	}
+	@InjectRepository(Favorite)
+	private readonly favoriteRepository: Repository<Favorite>;
 
 	// 分页随机获取推荐作品列表
 	async getItemsInPages(pageSize: number, current: number) {
@@ -116,55 +68,147 @@ export class IllustrationService {
 		});
 	}
 
-	// 编辑已发布的作品
-	async editItem(userId: string, workId: string, uploadIllustrationDto: UploadIllustrationDto) {
+	// 发布/编辑作品
+	async submitForm(userId: string, uploadIllustrationDto: UploadIllustrationDto, workId?: string) {
 		const { labels, illustratorInfo, ...basicInfo } = uploadIllustrationDto;
 
 		const userEntity = await this.userService.getInfo(userId);
 		const labelsEntity = await this.labelService.createItems(labels);
-		const illustratorEntity = await this.illustratorService.createItem(illustratorInfo);
 
-		const illustration = await this.illustrationRepository.findOne({
-			where: { id: workId },
-			relations: ['user', 'labels', 'illustrator'],
-		});
+		const user = await this.userRepository.findOneBy({ id: userId });
 
-		if (illustration.user.id !== userId) {
-			throw new hanaError(10502);
-		}
-
-		const newWork = this.illustrationRepository.create({
+		const entityInfo: { [key: string]: any } = {
 			...basicInfo,
 			user: userEntity,
 			labels: labelsEntity,
-			illustrator: illustratorEntity,
-		});
+		};
 
-		await this.illustrationRepository.update(workId, newWork);
+		let prevWork: Illustration;
 
-		return;
+		if (workId) {
+			prevWork = await this.illustrationRepository.findOne({
+				where: { id: workId },
+				relations: ['illustrator', 'labels'],
+			});
+		}
+
+		// 处理包含插画家的情况
+		if (illustratorInfo) {
+			const illustratorEntity = await this.illustratorService.createItem(illustratorInfo);
+			if (workId) {
+				if (!prevWork.illustrator) {
+					illustratorEntity.workCount++;
+				} else if (prevWork.illustrator.name !== illustratorEntity.name) {
+					prevWork.illustrator.workCount--;
+					await this.illustratorRepository.save(prevWork.illustrator);
+					illustratorEntity.workCount++;
+				}
+			} else {
+				illustratorEntity.workCount++;
+			}
+			await this.illustratorRepository.save(illustratorEntity);
+			entityInfo.illustrator = illustratorEntity;
+		}
+
+		const illustration = this.illustrationRepository.create(entityInfo);
+
+		if (basicInfo.isReprinted) {
+			if (workId && prevWork.isReprinted === !basicInfo.isReprinted) user.originCount--;
+			user.reprintedCount++;
+		} else {
+			if (workId && prevWork.isReprinted === !basicInfo.isReprinted) user.reprintedCount--;
+			user.originCount++;
+		}
+		await this.userRepository.save(user);
+
+		const newWork = await this.illustrationRepository.save(
+			workId ? { id: workId, ...illustration } : illustration,
+		);
+
+		if (!workId) {
+			// 将新作品推送给粉丝
+			const fans = await this.userService.getFollowers(userId);
+			fans.forEach(async (fan) => {
+				await this.workTempRepository.save({
+					user: fan,
+					illustration: newWork,
+				});
+			});
+		}
+
+		if (workId) {
+			// 和之前的标签进行比对，更新标签的作品数量
+			const prevLabels = prevWork.labels;
+			const newLabels = labelsEntity;
+			const addLabels = newLabels.filter((label) => !prevLabels.includes(label));
+			const delLabels = prevLabels.filter((label) => !newLabels.includes(label));
+
+			addLabels.forEach((label) => {
+				this.labelService.increaseWorkCount(label.value);
+			});
+			delLabels.forEach((label) => {
+				this.labelService.decreaseWorkCount(label.value);
+			});
+		} else {
+			// 更新标签的作品数量
+			labels.forEach((label) => {
+				this.labelService.increaseWorkCount(label);
+			});
+		}
+
+		return newWork;
 	}
 
 	// 删除已发布的作品
 	async deleteItem(userId: string, workId: string) {
 		const illustration = await this.illustrationRepository.findOne({
 			where: { id: workId },
-			relations: ['user'],
+			relations: ['user', 'illustrator', 'labels', 'favorites'],
 		});
 
-		if (illustration.user.id !== userId) {
-			throw new hanaError(10502);
+		const user = illustration.user;
+		const illustrator = illustration.illustrator;
+		const labels = illustration.labels;
+		const favorites = illustration.favorites;
+
+		if (illustration.isReprinted) {
+			user.reprintedCount--;
+		} else {
+			user.originCount--;
+		}
+		user.likeCount--;
+		user.collectCount--;
+		await this.userRepository.save(user);
+
+		if (illustrator) {
+			illustrator.workCount--;
+			await this.illustratorRepository.save(illustrator);
 		}
 
-		await this.illustrationRepository.delete({ id: workId });
+		labels.forEach((label) => {
+			this.labelService.decreaseWorkCount(label.value);
+		});
+
+		favorites.forEach(async (favorite) => {
+			favorite.workCount--;
+			await this.favoriteRepository.save(favorite);
+		});
+
+		if (illustration.user.id !== userId) throw new hanaError(10502);
+
+		await this.illustrationRepository.remove(illustration);
+
+		return;
 	}
 
 	// 获取某个插画的详细信息
 	async getDetail(id: string) {
-		return await this.illustrationRepository.findOne({
+		const work = await this.illustrationRepository.findOne({
 			where: { id },
 			relations: ['user', 'labels', 'favorites', 'favorites.user', 'illustrator'],
 		});
+		if (!work) return null;
+		return work;
 	}
 
 	// 获取某个插画的简略信息

@@ -41,16 +41,6 @@ export class IllustrationController {
 		return await this.convertToIllustrationItemVO(works, userInfo);
 	}
 
-	@Post('upload') // 上传作品
-	@RequireLogin()
-	async upload(
-		@UserInfo() userInfo: JwtUserData,
-		@Body() uploadIllustrationDto: UploadIllustrationDto,
-	) {
-		const { id } = userInfo;
-		return await this.illustrationService.createItem(id, uploadIllustrationDto);
-	}
-
 	@Get('following') // 分页获取已关注用户新作
 	@RequireLogin()
 	async getFollowingWorks(
@@ -71,6 +61,16 @@ export class IllustrationController {
 		return await this.illustrationService.getFollowingWorksCount(id);
 	}
 
+	@Post('upload') // 上传作品
+	@RequireLogin()
+	async upload(
+		@UserInfo() userInfo: JwtUserData,
+		@Body() uploadIllustrationDto: UploadIllustrationDto,
+	) {
+		const { id } = userInfo;
+		return await this.illustrationService.submitForm(id, uploadIllustrationDto);
+	}
+
 	@Post('edit') // 编辑已发布的作品
 	@RequireLogin()
 	async edit(
@@ -79,7 +79,7 @@ export class IllustrationController {
 		@Body() uploadIllustrationDto: UploadIllustrationDto,
 	) {
 		const { id } = userInfo;
-		await this.illustrationService.editItem(id, workId, uploadIllustrationDto);
+		await this.illustrationService.submitForm(id, uploadIllustrationDto, workId);
 		return '更新成功！';
 	}
 
@@ -95,6 +95,7 @@ export class IllustrationController {
 	@AllowVisitor()
 	async getDetail(@UserInfo() userInfo: JwtUserData, @Query('id') workId: string) {
 		const work = await this.illustrationService.getDetail(workId);
+		if (!work) return null;
 		const isLiked = userInfo ? await this.userService.isLiked(userInfo.id, workId) : false;
 		const isCollected = userInfo ? await this.userService.isCollected(userInfo.id, workId) : false;
 		return new IllustrationDetailVO(userInfo ? userInfo.id : undefined, work, isLiked, isCollected);

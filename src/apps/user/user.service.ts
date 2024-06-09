@@ -387,6 +387,9 @@ export class UserService {
 
 	// 收藏/取消收藏作品
 	async collectAction(userId: string, workId: string, favoriteIds: string[]) {
+		const user = await this.findUserById(userId);
+		if (!user) throw new hanaError(10101);
+
 		const illustration = await this.illustrationRepository.findOne({ where: { id: workId } });
 		if (!illustration) throw new hanaError(10501);
 
@@ -400,16 +403,19 @@ export class UserService {
 			const isCollected = favorite.illustrations.some((item) => item.id === workId);
 			if (isCollected) {
 				favorite.illustrations = favorite.illustrations.filter((item) => item.id !== workId);
+				user.collectCount--;
 				favorite.workCount--;
 				illustration.collectCount--;
 				await this.favoriteService.removeFavoriteRecord(userId, workId);
 			} else {
 				favorite.illustrations.push(illustration);
+				user.collectCount++;
 				favorite.workCount++;
 				illustration.collectCount++;
 				await this.favoriteService.addFavoriteRecord(userId, workId);
 			}
 
+			await this.userRepository.save(user);
 			await this.illustrationRepository.save(illustration);
 			await this.favoriteRepository.save(favorite);
 		}

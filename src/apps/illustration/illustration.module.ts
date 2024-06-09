@@ -9,10 +9,11 @@ import { WorkPushTemp } from './entities/work-push-temp.entity';
 import { UserModule } from '../user/user.module';
 import { LabelModule } from '../label/label.module';
 import { IllustratorModule } from '../illustrator/illustrator.module';
+import { Favorite } from '../favorite/entities/favorite.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([Illustration, WorkPushTemp, Illustrator, User]),
+		TypeOrmModule.forFeature([Illustration, WorkPushTemp, Illustrator, User, Favorite]),
 		UserModule,
 		LabelModule,
 		IllustratorModule,
