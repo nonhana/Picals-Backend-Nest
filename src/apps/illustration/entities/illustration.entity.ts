@@ -125,6 +125,7 @@ export class Illustration {
 	// 关联到User表，一个用户可以有多个插画
 	@ManyToOne(() => User, (user) => user.illustrations, {
 		nullable: true, // 可以为空，当删除用户之后，插画还在，只是找不到用户了
+		onDelete: 'SET NULL',
 	})
 	@JoinColumn({ name: 'user_id' })
 	user: User;
@@ -132,6 +133,7 @@ export class Illustration {
 	// 关联到Illustrator表，一个插画家可以有多个插画
 	@ManyToOne(() => Illustrator, (illustrator) => illustrator.illustrations, {
 		nullable: true, // 同上
+		onDelete: 'SET NULL',
 	})
 	@JoinColumn({ name: 'illustrator_id' })
 	illustrator: Illustrator;
@@ -140,7 +142,9 @@ export class Illustration {
 	@JoinTable()
 	labels: Label[];
 
-	@ManyToMany(() => User, (user) => user.likeWorks)
+	@ManyToMany(() => User, (user) => user.likeWorks, {
+		onDelete: 'CASCADE',
+	})
 	likeUsers: User[];
 
 	@OneToMany(() => Comment, (comment) => comment.illustration, {

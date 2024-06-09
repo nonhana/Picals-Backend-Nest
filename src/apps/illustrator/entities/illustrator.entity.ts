@@ -69,7 +69,7 @@ export class Illustrator {
 	updatedTime: Date;
 
 	@OneToMany(() => Illustration, (illustration) => illustration.illustrator, {
-		onDelete: 'SET NULL',
+		cascade: true,
 	})
 	illustrations: Illustration[];
 }

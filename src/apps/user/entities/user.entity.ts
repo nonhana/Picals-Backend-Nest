@@ -160,7 +160,7 @@ export class User {
 	followers: User[];
 
 	@OneToMany(() => Illustration, (illustration) => illustration.user, {
-		onDelete: 'SET NULL',
+		cascade: true,
 	})
 	illustrations: Illustration[];
 
@@ -168,7 +168,9 @@ export class User {
 	@JoinTable()
 	likedLabels: Label[];
 
-	@ManyToMany(() => Illustration, (illustration) => illustration.likeUsers)
+	@ManyToMany(() => Illustration, (illustration) => illustration.likeUsers, {
+		cascade: true,
+	})
 	@JoinTable()
 	likeWorks: Illustration[];
 

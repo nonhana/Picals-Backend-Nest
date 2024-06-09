@@ -30,7 +30,7 @@ export class CollectRecord {
 	user: User;
 
 	@ManyToOne(() => Illustration, {
-		cascade: true,
+		onDelete: 'CASCADE',
 	})
 	@JoinColumn({ name: 'illustration_id' })
 	illustration: Illustration;

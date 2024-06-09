@@ -145,6 +145,20 @@ export class IllustrationService {
 		return;
 	}
 
+	// 删除已发布的作品
+	async deleteItem(userId: string, workId: string) {
+		const illustration = await this.illustrationRepository.findOne({
+			where: { id: workId },
+			relations: ['user'],
+		});
+
+		if (illustration.user.id !== userId) {
+			throw new hanaError(10502);
+		}
+
+		await this.illustrationRepository.delete({ id: workId });
+	}
+
 	// 获取某个插画的详细信息
 	async getDetail(id: string) {
 		return await this.illustrationRepository.findOne({

@@ -83,6 +83,14 @@ export class IllustrationController {
 		return '更新成功！';
 	}
 
+	@Post('delete') // 删除已发布的作品
+	@RequireLogin()
+	async delete(@UserInfo() userInfo: JwtUserData, @Query('id') workId: string) {
+		const { id } = userInfo;
+		await this.illustrationService.deleteItem(id, workId);
+		return '删除成功！';
+	}
+
 	@Get('detail') // 获取作品详情
 	@AllowVisitor()
 	async getDetail(@UserInfo() userInfo: JwtUserData, @Query('id') workId: string) {

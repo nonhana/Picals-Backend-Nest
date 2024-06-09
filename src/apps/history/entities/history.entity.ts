@@ -27,7 +27,9 @@ export class History {
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 
-	@ManyToOne(() => Illustration, (illustration) => illustration.histories)
+	@ManyToOne(() => Illustration, (illustration) => illustration.histories, {
+		onDelete: 'CASCADE',
+	})
 	@JoinColumn({ name: 'illustration_id' })
 	illustration: Illustration;
 }

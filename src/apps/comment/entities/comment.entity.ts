@@ -57,11 +57,14 @@ export class Comment {
 
 	@ManyToOne(() => User, (user) => user.comments, {
 		nullable: true,
+		onDelete: 'CASCADE',
 	})
 	@JoinColumn({ name: 'user_id' })
 	user: User; // 评论作者
 
-	@ManyToOne(() => Illustration, (illustration) => illustration.comments)
+	@ManyToOne(() => Illustration, (illustration) => illustration.comments, {
+		onDelete: 'CASCADE',
+	})
 	@JoinColumn({ name: 'illustration_id' })
 	illustration: Illustration; // 评论所属作品
 }

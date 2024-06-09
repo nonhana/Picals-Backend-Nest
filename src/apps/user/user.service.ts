@@ -159,7 +159,7 @@ export class UserService {
 			const user = await this.findUserById(userId, ['following']);
 			if (!user) throw new hanaError(10101);
 			following = user.following;
-			await this.cacheManager.set(cacheKey, following, 1000);
+			await this.cacheManager.set(cacheKey, following, 100);
 		}
 
 		return following.some((item) => item.id === targetId);
@@ -290,7 +290,7 @@ export class UserService {
 			const user = await this.findUserById(userId, ['likeWorks']);
 			if (!user) throw new hanaError(10101);
 			likeList = user.likeWorks;
-			await this.cacheManager.set(cacheKey, likeList, 1000);
+			await this.cacheManager.set(cacheKey, likeList, 100);
 		}
 
 		const res = likeList.some((item) => item.id === illustrationId);
@@ -305,7 +305,7 @@ export class UserService {
 
 		if (!collectList) {
 			collectList = await this.favoriteService.getFavoriteRecords(userId);
-			await this.cacheManager.set(cacheKey, collectList, 1000);
+			await this.cacheManager.set(cacheKey, collectList, 100);
 		}
 
 		return collectList.some((item) => item === illustrationId);

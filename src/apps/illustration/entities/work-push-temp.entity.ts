@@ -24,13 +24,15 @@ export class WorkPushTemp {
 	createdAt: Date;
 
 	// 这个用户指的是插画家发布新作之后推送给的粉丝
-	@ManyToOne(() => User, (user) => user.recordWorks)
+	@ManyToOne(() => User, (user) => user.recordWorks, {
+		onDelete: 'CASCADE', // 删除用户的同时删除推送记录
+	})
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 
 	// 插画指的是插画家发布的新作
 	@ManyToOne(() => Illustration, {
-		cascade: true,
+		onDelete: 'CASCADE', // 删除插画的同时删除推送记录
 	})
 	@JoinColumn({ name: 'illustration_id' })
 	illustration: Illustration;
