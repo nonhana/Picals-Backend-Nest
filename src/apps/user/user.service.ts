@@ -7,7 +7,6 @@ import { hanaError } from 'src/error/hanaError';
 import type { UpdateUserDto, LoginUserDto } from './dto';
 import { History } from '../history/entities/history.entity';
 import { LabelService } from '../label/label.service';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Illustration } from '../illustration/entities/illustration.entity';
 import type { Label } from '../label/entities/label.entity';
 import { FavoriteService } from '../favorite/favorite.service';
@@ -16,9 +15,6 @@ import { WorkPushTemp } from '../illustration/entities/work-push-temp.entity';
 
 @Injectable()
 export class UserService {
-	@Inject(CACHE_MANAGER)
-	private readonly cacheManager: Cache;
-
 	@Inject(LabelService)
 	private readonly labelService: LabelService;
 
@@ -156,17 +152,10 @@ export class UserService {
 
 	// 判断用户是否关注了目标用户
 	async isFollowed(userId: string, targetId: string) {
-		const cacheKey = `user_following_${userId}`;
-		let following = (await this.cacheManager.get(cacheKey)) as User[] | null;
+		const user = await this.findUserById(userId, ['following']);
+		if (!user) throw new hanaError(10101);
 
-		if (!following) {
-			const user = await this.findUserById(userId, ['following']);
-			if (!user) throw new hanaError(10101);
-			following = user.following;
-			await this.cacheManager.set(cacheKey, following, 100);
-		}
-
-		return following.some((item) => item.id === targetId);
+		return user.following.some((item) => item.id === targetId);
 	}
 
 	// 关注/取关用户
@@ -302,31 +291,14 @@ export class UserService {
 
 	// 判断用户是否喜欢了某个插画
 	async isLiked(userId: string, illustrationId: string) {
-		const cacheKey = `user_like_${userId}`;
-		let likeList = (await this.cacheManager.get(cacheKey)) as Illustration[] | null;
-
-		if (!likeList) {
-			const user = await this.findUserById(userId, ['likeWorks']);
-			if (!user) throw new hanaError(10101);
-			likeList = user.likeWorks;
-			await this.cacheManager.set(cacheKey, likeList, 100);
-		}
-
-		const res = likeList.some((item) => item.id === illustrationId);
-
-		return res;
+		const user = await this.findUserById(userId, ['likeWorks']);
+		if (!user) throw new hanaError(10101);
+		return user.likeWorks.some((item) => item.id === illustrationId);
 	}
 
 	// 判断用户是否收藏了某个插画
 	async isCollected(userId: string, illustrationId: string) {
-		const cacheKey = `user_collect_${userId}`;
-		let collectList = (await this.cacheManager.get(cacheKey)) as string[] | null; // 收藏插画的id列表
-
-		if (!collectList) {
-			collectList = await this.favoriteService.getFavoriteRecords(userId);
-			await this.cacheManager.set(cacheKey, collectList, 100);
-		}
-
+		const collectList = await this.favoriteService.getFavoriteRecords(userId);
 		return collectList.some((item) => item === illustrationId);
 	}
 
