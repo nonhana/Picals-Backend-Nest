@@ -55,7 +55,9 @@ export class IllustrationService {
 			relations: ['illustration', 'illustration.user', 'user'],
 			take: pageSize,
 			skip: pageSize * (current - 1),
-			order: { createdAt: 'DESC' }, // 按照发布时间倒序，拿到最新的作品
+			order: {
+				illustration: { createdTime: 'DESC' },
+			}, // 按作品本身的创建时间倒序排列
 		});
 	}
 

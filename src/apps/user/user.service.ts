@@ -12,6 +12,7 @@ import { Illustration } from '../illustration/entities/illustration.entity';
 import type { Label } from '../label/entities/label.entity';
 import { FavoriteService } from '../favorite/favorite.service';
 import { Favorite } from '../favorite/entities/favorite.entity';
+import { WorkPushTemp } from '../illustration/entities/work-push-temp.entity';
 
 @Injectable()
 export class UserService {
@@ -35,6 +36,9 @@ export class UserService {
 
 	@InjectRepository(Favorite)
 	private readonly favoriteRepository: Repository<Favorite>;
+
+	@InjectRepository(WorkPushTemp)
+	private readonly workTempRepository: Repository<WorkPushTemp>;
 
 	// 根据 email 查找单个用户
 	async findUserByEmail(email: string, relations?: string[]) {
@@ -171,6 +175,7 @@ export class UserService {
 
 		const user = await this.findUserById(userId, ['following']);
 		const target = await this.findUserById(targetId);
+
 		if (!user) throw new hanaError(10101);
 		if (!target) throw new hanaError(10101);
 
@@ -180,10 +185,24 @@ export class UserService {
 			user.following = user.following.filter((item) => item.id !== targetId);
 			user.followCount--;
 			target.fanCount--;
+			// 取消关注，删除用户的作品推送
+			await this.workTempRepository.delete({ user: target });
 		} else {
 			user.following.push(target);
 			user.followCount++;
 			target.fanCount++;
+			// 关注用户，将用户的作品的前十个推送到关注用户的作品推送表中
+			const illustrations = await this.illustrationRepository.find({
+				where: { user: { id: targetId } },
+				order: { createdTime: 'DESC' },
+				take: 10,
+			});
+			illustrations.forEach(async (work) => {
+				await this.workTempRepository.save({
+					user: target,
+					illustration: work,
+				});
+			});
 		}
 
 		await this.userRepository.save(user);

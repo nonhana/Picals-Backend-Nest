@@ -9,10 +9,11 @@ import { Illustration } from '../illustration/entities/illustration.entity';
 import { EmailModule } from 'src/email/email.module';
 import { LabelModule } from '../label/label.module';
 import { FavoriteModule } from '../favorite/favorite.module';
+import { WorkPushTemp } from '../illustration/entities/work-push-temp.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([User, History, Illustration, Favorite]),
+		TypeOrmModule.forFeature([User, History, Illustration, Favorite, WorkPushTemp]),
 		EmailModule,
 		forwardRef(() => LabelModule),
 		forwardRef(() => FavoriteModule),

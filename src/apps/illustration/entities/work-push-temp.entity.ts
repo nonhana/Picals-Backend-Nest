@@ -3,7 +3,7 @@
 
 import { Illustration } from 'src/apps/illustration/entities/illustration.entity';
 import { User } from 'src/apps/user/entities/user.entity';
-import { CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 
 @Entity({
 	name: 'work_push_temp',
@@ -15,13 +15,6 @@ export class WorkPushTemp {
 		comment: '采用uuid的形式',
 	})
 	id: string;
-
-	@CreateDateColumn({
-		type: 'timestamp',
-		comment: '创建时间',
-		name: 'created_at',
-	})
-	createdAt: Date;
 
 	// 这个用户指的是插画家发布新作之后推送给的粉丝
 	@ManyToOne(() => User, (user) => user.recordWorks, {
