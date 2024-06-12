@@ -28,8 +28,8 @@ import { WorkPushTemp } from './apps/illustration/entities/work-push-temp.entity
 import { CollectRecord } from './apps/favorite/entities/collect-record.entity';
 import { InvokeRecordInterceptor } from './interceptors/invoke-record.interceptor';
 import { AppController } from './app.controller';
-import { CosService } from './cos/cos.service';
-import { CosModule } from './cos/cos.module';
+import { R2Service } from './r2/r2.service';
+import { R2Module } from './r2/r2.module';
 import * as path from 'node:path';
 
 @Module({
@@ -105,7 +105,7 @@ import * as path from 'node:path';
 		HistoryModule,
 		EmailModule,
 		FavoriteModule,
-		CosModule,
+		R2Module,
 	],
 	providers: [
 		// 全局错误过滤器
@@ -133,7 +133,7 @@ import * as path from 'node:path';
 			provide: APP_GUARD,
 			useClass: AuthGuard,
 		},
-		CosService,
+		R2Service,
 	],
 	controllers: [AppController],
 })

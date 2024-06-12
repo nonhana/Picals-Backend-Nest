@@ -21,6 +21,7 @@
 		"test:e2e": "jest --config ./test/jest-e2e.json"
 	},
 	"dependencies": {
+		"@aws-sdk/client-s3": "^3.592.0",
 		"@nestjs/cache-manager": "^2.2.2",
 		"@nestjs/common": "^10.0.0",
 		"@nestjs/config": "^3.2.0",
@@ -34,7 +35,6 @@
 		"cache-manager-redis-yet": "^5.0.0",
 		"class-transformer": "^0.5.1",
 		"class-validator": "^0.14.1",
-		"cos-nodejs-sdk-v5": "^2.12.6",
 		"dayjs": "^1.11.11",
 		"mysql2": "^3.9.2",
 		"nodemailer": "^6.9.12",

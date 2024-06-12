@@ -32,7 +32,7 @@ export class User {
 		type: 'varchar',
 		length: 31,
 		comment: '用户名',
-		default: '默认用户名',
+		default: '一只小萌新',
 	})
 	username: string;
 
@@ -55,7 +55,7 @@ export class User {
 		length: 127,
 		comment: '用户背景图片URL地址',
 		name: 'background_img',
-		default: 'https://dummyimage.com/400X400',
+		nullable: true,
 	})
 	backgroundImg: string;
 
@@ -63,7 +63,7 @@ export class User {
 		type: 'varchar',
 		length: 127,
 		comment: '用户头像图片URL地址',
-		default: 'https://dummyimage.com/400X400',
+		default: 'https://moe.nonhana.pics/images/image-1718196057137-465811744-default-avatar.jpg',
 	})
 	avatar: string;
 
