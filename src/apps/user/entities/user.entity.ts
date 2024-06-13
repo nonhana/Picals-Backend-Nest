@@ -63,7 +63,7 @@ export class User {
 		type: 'varchar',
 		length: 127,
 		comment: '用户头像图片URL地址',
-		default: 'https://moe.nonhana.pics/images/image-1718196057137-465811744-default-avatar.jpg',
+		default: 'https://moe.nonhana.pics/images/image-1718290795662-173119738-default-avatar.jpg',
 	})
 	avatar: string;
 
