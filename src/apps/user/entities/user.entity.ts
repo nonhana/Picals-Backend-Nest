@@ -152,45 +152,44 @@ export class User {
 	})
 	updatedTime: Date;
 
-	@ManyToMany(() => User, (user) => user.followers)
+	@ManyToMany(() => User, (user) => user.followers, {
+		cascade: true,
+		onDelete: 'CASCADE',
+	})
 	@JoinTable()
 	following: User[];
 
-	@ManyToMany(() => User, (user) => user.following)
+	@ManyToMany(() => User, (user) => user.following, {
+		onDelete: 'CASCADE',
+	})
 	followers: User[];
 
-	@OneToMany(() => Illustration, (illustration) => illustration.user, {
-		cascade: true,
-	})
+	@OneToMany(() => Illustration, (illustration) => illustration.user)
 	illustrations: Illustration[];
 
-	@ManyToMany(() => Label, (label) => label.users)
+	@ManyToMany(() => Label, (label) => label.users, {
+		cascade: true,
+		onDelete: 'CASCADE',
+	})
 	@JoinTable()
 	likedLabels: Label[];
 
 	@ManyToMany(() => Illustration, (illustration) => illustration.likeUsers, {
 		cascade: true,
+		onDelete: 'CASCADE',
 	})
 	@JoinTable()
 	likeWorks: Illustration[];
 
-	@OneToMany(() => Comment, (comment) => comment.user, {
-		onDelete: 'SET NULL',
-	})
+	@OneToMany(() => Comment, (comment) => comment.user)
 	comments: Comment[];
 
-	@OneToMany(() => History, (history) => history.user, {
-		cascade: true,
-	})
+	@OneToMany(() => History, (history) => history.user)
 	histories: History[];
 
-	@OneToMany(() => Favorite, (favorite) => favorite.user, {
-		onDelete: 'SET NULL',
-	})
+	@OneToMany(() => Favorite, (favorite) => favorite.user)
 	favorites: Favorite[];
 
-	@OneToMany(() => WorkPushTemp, (workTemp) => workTemp.user, {
-		cascade: true,
-	})
+	@OneToMany(() => WorkPushTemp, (workTemp) => workTemp.user)
 	recordWorks: WorkPushTemp[];
 }

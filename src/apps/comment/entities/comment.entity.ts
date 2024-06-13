@@ -40,24 +40,25 @@ export class Comment {
 	})
 	createTime: Date;
 
-	@ManyToOne(() => Comment, (comment) => comment.replies, { onDelete: 'CASCADE' })
+	@ManyToOne(() => Comment, (comment) => comment.replies, {
+		onDelete: 'CASCADE',
+	})
 	@JoinColumn({ name: 'res_to_comment_id' })
 	replyTo: Comment; // 这条评论回复的评论
 
 	@ManyToOne(() => User, {
 		nullable: true,
+		onDelete: 'SET NULL',
 	})
 	@JoinColumn({ name: 'res_to_user_id' })
 	replyToUser: User; // 这条评论回复的用户（仅当二级评论回复他人时有值，便于区分）
 
-	@OneToMany(() => Comment, (comment) => comment.replyTo, {
-		cascade: true,
-	})
+	@OneToMany(() => Comment, (comment) => comment.replyTo)
 	replies: Comment[]; // 回复这条评论的评论
 
 	@ManyToOne(() => User, (user) => user.comments, {
 		nullable: true,
-		onDelete: 'CASCADE',
+		onDelete: 'SET NULL',
 	})
 	@JoinColumn({ name: 'user_id' })
 	user: User; // 评论作者

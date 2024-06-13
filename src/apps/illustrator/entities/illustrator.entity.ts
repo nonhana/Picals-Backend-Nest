@@ -68,8 +68,6 @@ export class Illustrator {
 	})
 	updatedTime: Date;
 
-	@OneToMany(() => Illustration, (illustration) => illustration.illustrator, {
-		cascade: true,
-	})
+	@OneToMany(() => Illustration, (illustration) => illustration.illustrator)
 	illustrations: Illustration[];
 }

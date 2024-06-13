@@ -24,7 +24,7 @@ export class CollectRecord {
 	createdAt: Date;
 
 	@ManyToOne(() => User, {
-		cascade: true,
+		onDelete: 'CASCADE',
 	})
 	@JoinColumn({ name: 'user_id' })
 	user: User;

@@ -129,23 +129,24 @@ export class Illustration {
 	})
 	updatedTime: Date;
 
-	// 关联到User表，一个用户可以有多个插画
 	@ManyToOne(() => User, (user) => user.illustrations, {
-		nullable: true, // 可以为空，当删除用户之后，插画还在，只是找不到用户了
+		nullable: true,
 		onDelete: 'SET NULL',
 	})
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 
-	// 关联到Illustrator表，一个插画家可以有多个插画
 	@ManyToOne(() => Illustrator, (illustrator) => illustrator.illustrations, {
-		nullable: true, // 同上
+		nullable: true,
 		onDelete: 'SET NULL',
 	})
 	@JoinColumn({ name: 'illustrator_id' })
 	illustrator: Illustrator;
 
-	@ManyToMany(() => Label, (label) => label.illustrations)
+	@ManyToMany(() => Label, (label) => label.illustrations, {
+		cascade: true,
+		onDelete: 'CASCADE',
+	})
 	@JoinTable()
 	labels: Label[];
 
@@ -154,18 +155,15 @@ export class Illustration {
 	})
 	likeUsers: User[];
 
-	@OneToMany(() => Comment, (comment) => comment.illustration, {
-		cascade: true,
-	})
+	@OneToMany(() => Comment, (comment) => comment.illustration)
 	comments: Comment[];
 
-	@OneToMany(() => History, (history) => history.illustration, {
-		cascade: true,
-	})
+	@OneToMany(() => History, (history) => history.illustration)
 	histories: History[];
 
 	@ManyToMany(() => Favorite, (favorite) => favorite.illustrations, {
 		cascade: true,
+		onDelete: 'CASCADE',
 	})
 	@JoinTable()
 	favorites: Favorite[];

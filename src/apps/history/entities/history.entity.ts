@@ -23,7 +23,9 @@ export class History {
 	})
 	lastTime: Date;
 
-	@ManyToOne(() => User, (user) => user.histories)
+	@ManyToOne(() => User, (user) => user.histories, {
+		onDelete: 'CASCADE',
+	})
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 

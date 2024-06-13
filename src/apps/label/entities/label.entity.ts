@@ -46,9 +46,13 @@ export class Label {
 	})
 	workCount: number;
 
-	@ManyToMany(() => User, (user) => user.likedLabels)
+	@ManyToMany(() => User, (user) => user.likedLabels, {
+		onDelete: 'CASCADE',
+	})
 	users: User[];
 
-	@ManyToMany(() => Illustration, (illustration) => illustration.labels)
+	@ManyToMany(() => Illustration, (illustration) => illustration.labels, {
+		onDelete: 'CASCADE',
+	})
 	illustrations: Illustration[];
 }
