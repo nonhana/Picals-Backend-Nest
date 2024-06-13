@@ -70,6 +70,13 @@ export class Illustration {
 	@Column({
 		type: 'varchar',
 		length: 255,
+		comment: '插画封面URL',
+	})
+	cover: string;
+
+	@Column({
+		type: 'varchar',
+		length: 255,
 		comment: '插画原图URL',
 		nullable: true,
 		name: 'original_url',

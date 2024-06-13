@@ -30,6 +30,7 @@ import { InvokeRecordInterceptor } from './interceptors/invoke-record.intercepto
 import { AppController } from './app.controller';
 import { R2Service } from './r2/r2.service';
 import { R2Module } from './r2/r2.module';
+import { ImgHandlerModule } from './img-handler/img-handler.module';
 import * as path from 'node:path';
 
 @Module({
@@ -106,6 +107,7 @@ import * as path from 'node:path';
 		EmailModule,
 		FavoriteModule,
 		R2Module,
+		ImgHandlerModule,
 	],
 	providers: [
 		// 全局错误过滤器

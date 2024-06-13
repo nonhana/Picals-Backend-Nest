@@ -6,6 +6,7 @@ export class IllustrationItemVO {
 	authorName: string;
 	id: string;
 	imgList: string[];
+	cover: string;
 	name: string;
 	isLiked: boolean;
 
@@ -15,6 +16,7 @@ export class IllustrationItemVO {
 		this.authorName = illustration.user.username;
 		this.id = illustration.id;
 		this.imgList = illustration.imgList;
+		this.cover = illustration.cover;
 		this.name = illustration.name;
 		this.isLiked = isLiked;
 	}

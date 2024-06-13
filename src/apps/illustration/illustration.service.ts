@@ -11,6 +11,9 @@ import { hanaError } from 'src/error/hanaError';
 import { User } from '../user/entities/user.entity';
 import { Illustrator } from '../illustrator/entities/illustrator.entity';
 import { Favorite } from '../favorite/entities/favorite.entity';
+import { downloadFile } from 'src/utils';
+import { R2Service } from 'src/r2/r2.service';
+import { ImgHandlerService } from 'src/img-handler/img-handler.service';
 
 @Injectable()
 export class IllustrationService {
@@ -22,6 +25,12 @@ export class IllustrationService {
 
 	@Inject(UserService)
 	private readonly userService: UserService;
+
+	@Inject(R2Service)
+	private readonly r2Service: R2Service;
+
+	@Inject(ImgHandlerService)
+	private readonly imgHandlerService: ImgHandlerService;
 
 	@InjectRepository(Illustration)
 	private readonly illustrationRepository: Repository<Illustration>;
@@ -74,6 +83,12 @@ export class IllustrationService {
 	async submitForm(userId: string, uploadIllustrationDto: UploadIllustrationDto, workId?: string) {
 		const { labels, illustratorInfo, ...basicInfo } = uploadIllustrationDto;
 
+		// 从图片列表中选取第一张作为封面生成缩略图，将其作为封面
+		const coverSourceUrl = basicInfo.imgList[0];
+		const fileName = coverSourceUrl.split('/').pop().split('.')[0];
+		const imgBuffer = await downloadFile(coverSourceUrl);
+		const coverUrl = await this.imgHandlerService.generateThumbnail(imgBuffer, fileName);
+
 		const userEntity = await this.userService.getInfo(userId);
 		const labelsEntity = await this.labelService.createItems(labels);
 
@@ -81,12 +96,12 @@ export class IllustrationService {
 
 		const entityInfo: { [key: string]: any } = {
 			...basicInfo,
+			cover: coverUrl,
 			user: userEntity,
 			labels: labelsEntity,
 		};
 
 		let prevWork: Illustration;
-
 		if (workId) {
 			prevWork = await this.illustrationRepository.findOne({
 				where: { id: workId },

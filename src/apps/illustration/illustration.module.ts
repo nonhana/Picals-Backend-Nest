@@ -10,10 +10,20 @@ import { UserModule } from '../user/user.module';
 import { LabelModule } from '../label/label.module';
 import { IllustratorModule } from '../illustrator/illustrator.module';
 import { Favorite } from '../favorite/entities/favorite.entity';
+import { R2Module } from 'src/r2/r2.module';
+import { ImgHandlerModule } from 'src/img-handler/img-handler.module';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([Illustration, WorkPushTemp, Illustrator, User, Favorite]),
+		TypeOrmModule.forFeature([
+			Illustration,
+			WorkPushTemp,
+			Illustrator,
+			User,
+			Favorite,
+			R2Module,
+			ImgHandlerModule,
+		]),
 		UserModule,
 		LabelModule,
 		IllustratorModule,
