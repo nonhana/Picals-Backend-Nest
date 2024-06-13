@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Favorite } from './entities/favorite.entity';
 import { In, Like, Repository } from 'typeorm';
 import { CollectRecord } from './entities/collect-record.entity';
-import type { User } from '../user/entities/user.entity';
+import { User } from '../user/entities/user.entity';
 import { Illustration } from '../illustration/entities/illustration.entity';
 import type { CreateFavoriteDto } from './dto/create-favorite.dto';
 import type { EditFavoriteDto } from './dto/edit-favorite.dto';
@@ -12,14 +12,17 @@ import { hanaError } from 'src/error/hanaError';
 
 @Injectable()
 export class FavoriteService {
+	@InjectRepository(User)
+	private readonly userRepository: Repository<User>;
+
 	@InjectRepository(Favorite)
-	private favoriteRepository: Repository<Favorite>;
+	private readonly favoriteRepository: Repository<Favorite>;
 
 	@InjectRepository(CollectRecord)
-	private collectRecordRepository: Repository<CollectRecord>;
+	private readonly collectRecordRepository: Repository<CollectRecord>;
 
 	@InjectRepository(Illustration)
-	private illustrationRepository: Repository<Illustration>;
+	private readonly illustrationRepository: Repository<Illustration>;
 
 	// 获取用户的收藏夹列表
 	async getFavoriteList(id: string) {
@@ -82,17 +85,27 @@ export class FavoriteService {
 
 	// 删除某个收藏夹
 	async deleteFavorite(userId: string, favoriteId: string) {
+		const user = await this.userRepository.findOneBy({ id: userId });
+		if (!user) throw new hanaError(10101);
+
 		const favorite = await this.favoriteRepository.findOne({
 			where: { id: favoriteId },
 			relations: ['illustrations'],
 		});
+		if (!favorite) throw new hanaError(10601);
+
 		// 删除收藏夹内的所有收藏记录
 		favorite.illustrations.forEach(async (work) => {
 			await this.collectRecordRepository.delete({
 				user: { id: userId },
 				illustration: { id: work.id },
 			});
+			work.collectCount--;
+			await this.illustrationRepository.save(work);
 		});
+
+		user.collectCount -= favorite.workCount;
+
 		// 删除收藏夹
 		await this.favoriteRepository.remove(favorite);
 		return;
@@ -155,6 +168,9 @@ export class FavoriteService {
 
 	// 移动作品到其他收藏夹
 	async moveCollect(userId: string, fromId: string, toId: string, workIds: string[]) {
+		const user = await this.userRepository.findOneBy({ id: userId });
+		if (!user) throw new hanaError(10101);
+
 		const fromFavorite = await this.favoriteRepository.findOne({
 			where: { id: fromId, user: { id: userId } },
 			relations: ['illustrations'],
@@ -163,7 +179,6 @@ export class FavoriteService {
 			where: { id: toId, user: { id: userId } },
 			relations: ['illustrations'],
 		});
-
 		if (!fromFavorite || !toFavorite) throw new hanaError(10601);
 
 		const works = await this.illustrationRepository.findBy({ id: In(workIds) });
@@ -171,26 +186,38 @@ export class FavoriteService {
 		for (const work of works) {
 			const fromExist = fromFavorite.illustrations.some((item) => item.id === work.id);
 			const toExist = toFavorite.illustrations.some((item) => item.id === work.id);
+
 			if (!fromExist) continue;
 			// 1. 从原收藏夹中移除
 			fromFavorite.illustrations = fromFavorite.illustrations.filter((item) => item.id !== work.id);
 			fromFavorite.workCount--;
-			this.removeFavoriteRecord(userId, work.id);
+			user.collectCount--;
+			work.collectCount--;
+			await this.illustrationRepository.save(work);
+			await this.removeFavoriteRecord(userId, work.id);
+
+			if (toExist) continue; // 如果目标收藏夹已存在该作品，则跳过
 
 			// 2. 添加到目标收藏夹
-			if (toExist) continue; // 如果目标收藏夹已存在该作品，则跳过
 			toFavorite.illustrations.push(work);
 			toFavorite.workCount++;
-			this.addFavoriteRecord(userId, work.id);
+			user.collectCount++;
+			work.collectCount++;
+			await this.illustrationRepository.save(work);
+			await this.addFavoriteRecord(userId, work.id);
 		}
 
 		await this.favoriteRepository.save(fromFavorite);
 		await this.favoriteRepository.save(toFavorite);
+		await this.userRepository.save(user);
 		return;
 	}
 
 	// 复制作品到其他收藏夹
 	async copyCollect(userId: string, toId: string, workIds: string[]) {
+		const user = await this.userRepository.findOneBy({ id: userId });
+		if (!user) throw new hanaError(10101);
+
 		const toFavorite = await this.favoriteRepository.findOne({
 			where: { id: toId, user: { id: userId } },
 			relations: ['illustrations'],
@@ -205,10 +232,14 @@ export class FavoriteService {
 			if (toExist) continue; // 如果目标收藏夹已存在该作品，则跳过
 			toFavorite.illustrations.push(work);
 			toFavorite.workCount++;
-			this.addFavoriteRecord(userId, work.id);
+			user.collectCount++;
+			work.collectCount++;
+			await this.illustrationRepository.save(work);
+			await this.addFavoriteRecord(userId, work.id);
 		}
 
 		await this.favoriteRepository.save(toFavorite);
+		await this.userRepository.save(user);
 		return;
 	}
 }

@@ -12,7 +12,6 @@ import { User } from '../user/entities/user.entity';
 import { Illustrator } from '../illustrator/entities/illustrator.entity';
 import { Favorite } from '../favorite/entities/favorite.entity';
 import { downloadFile } from 'src/utils';
-import { R2Service } from 'src/r2/r2.service';
 import { ImgHandlerService } from 'src/img-handler/img-handler.service';
 
 @Injectable()
@@ -25,9 +24,6 @@ export class IllustrationService {
 
 	@Inject(UserService)
 	private readonly userService: UserService;
-
-	@Inject(R2Service)
-	private readonly r2Service: R2Service;
 
 	@Inject(ImgHandlerService)
 	private readonly imgHandlerService: ImgHandlerService;
@@ -161,16 +157,16 @@ export class IllustrationService {
 			const addLabels = newLabels.filter((label) => !prevLabels.includes(label));
 			const delLabels = prevLabels.filter((label) => !newLabels.includes(label));
 
-			addLabels.forEach((label) => {
-				this.labelService.increaseWorkCount(label.value);
+			addLabels.forEach(async (label) => {
+				await this.labelService.increaseWorkCount(label.value);
 			});
-			delLabels.forEach((label) => {
-				this.labelService.decreaseWorkCount(label.value);
+			delLabels.forEach(async (label) => {
+				await this.labelService.decreaseWorkCount(label.value);
 			});
 		} else {
 			// 更新标签的作品数量
-			labels.forEach((label) => {
-				this.labelService.increaseWorkCount(label);
+			labels.forEach(async (label) => {
+				await this.labelService.increaseWorkCount(label);
 			});
 		}
 
@@ -183,6 +179,7 @@ export class IllustrationService {
 			where: { id: workId },
 			relations: ['user', 'illustrator', 'labels', 'favorites'],
 		});
+		if (illustration.user.id !== userId) throw new hanaError(10502);
 
 		const user = illustration.user;
 		const illustrator = illustration.illustrator;
@@ -194,8 +191,6 @@ export class IllustrationService {
 		} else {
 			user.originCount--;
 		}
-		user.likeCount--;
-		user.collectCount--;
 		await this.userRepository.save(user);
 
 		if (illustrator) {
@@ -203,8 +198,8 @@ export class IllustrationService {
 			await this.illustratorRepository.save(illustrator);
 		}
 
-		labels.forEach((label) => {
-			this.labelService.decreaseWorkCount(label.value);
+		labels.forEach(async (label) => {
+			await this.labelService.decreaseWorkCount(label.value);
 		});
 
 		favorites.forEach(async (favorite) => {
@@ -212,10 +207,7 @@ export class IllustrationService {
 			await this.favoriteRepository.save(favorite);
 		});
 
-		if (illustration.user.id !== userId) throw new hanaError(10502);
-
 		await this.illustrationRepository.remove(illustration);
-
 		return;
 	}
 
