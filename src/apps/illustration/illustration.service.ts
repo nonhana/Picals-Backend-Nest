@@ -83,12 +83,6 @@ export class IllustrationService {
 	async submitForm(userId: string, uploadIllustrationDto: UploadIllustrationDto, workId?: string) {
 		const { labels, illustratorInfo, ...basicInfo } = uploadIllustrationDto;
 
-		// 从图片列表中选取第一张作为封面生成缩略图，将其作为封面
-		const coverSourceUrl = basicInfo.imgList[0];
-		const fileName = coverSourceUrl.split('/').pop().split('.')[0];
-		const imgBuffer = await downloadFile(coverSourceUrl);
-		const coverUrl = await this.imgHandlerService.generateThumbnail(imgBuffer, fileName);
-
 		const userEntity = await this.userService.getInfo(userId);
 		const labelsEntity = await this.labelService.createItems(labels);
 
@@ -96,7 +90,6 @@ export class IllustrationService {
 
 		const entityInfo: { [key: string]: any } = {
 			...basicInfo,
-			cover: coverUrl,
 			user: userEntity,
 			labels: labelsEntity,
 		};
@@ -107,6 +100,14 @@ export class IllustrationService {
 				where: { id: workId },
 				relations: ['illustrator', 'labels'],
 			});
+		}
+
+		if ((prevWork && prevWork.imgList[0] !== basicInfo.imgList[0]) || !prevWork) {
+			const coverSourceUrl = basicInfo.imgList[0];
+			const fileName = coverSourceUrl.split('/').pop().split('.')[0];
+			const imgBuffer = await downloadFile(coverSourceUrl);
+			const coverUrl = await this.imgHandlerService.generateThumbnail(imgBuffer, fileName);
+			entityInfo.cover = coverUrl;
 		}
 
 		// 处理包含插画家的情况
