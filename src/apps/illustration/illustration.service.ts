@@ -144,6 +144,7 @@ export class IllustrationService {
 			const fans = await this.userService.getFollowers(userId);
 			fans.forEach(async (fan) => {
 				await this.workTempRepository.save({
+					author: user,
 					user: fan,
 					illustration: newWork,
 				});

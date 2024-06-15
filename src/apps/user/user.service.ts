@@ -175,7 +175,7 @@ export class UserService {
 			user.followCount--;
 			target.fanCount--;
 			// 取消关注，删除用户的作品推送
-			await this.workTempRepository.delete({ user: target });
+			await this.workTempRepository.delete({ author: target, user });
 		} else {
 			user.following.push(target);
 			user.followCount++;
@@ -188,7 +188,8 @@ export class UserService {
 			});
 			illustrations.forEach(async (work) => {
 				await this.workTempRepository.save({
-					user: target,
+					author: target,
+					user,
 					illustration: work,
 				});
 			});

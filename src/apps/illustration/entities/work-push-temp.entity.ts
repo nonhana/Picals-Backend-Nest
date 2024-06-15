@@ -16,16 +16,21 @@ export class WorkPushTemp {
 	})
 	id: string;
 
-	// 这个用户指的是插画家发布新作之后推送给的粉丝
+	@ManyToOne(() => User, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn({ name: 'author_id' })
+	author: User;
+
 	@ManyToOne(() => User, (user) => user.recordWorks, {
-		onDelete: 'CASCADE', // 删除用户的同时删除推送记录
+		onDelete: 'CASCADE',
 	})
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 
 	// 插画指的是插画家发布的新作
 	@ManyToOne(() => Illustration, {
-		onDelete: 'CASCADE', // 删除插画的同时删除推送记录
+		onDelete: 'CASCADE',
 	})
 	@JoinColumn({ name: 'illustration_id' })
 	illustration: Illustration;
