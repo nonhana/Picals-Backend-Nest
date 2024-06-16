@@ -126,12 +126,24 @@ export class IllustrationService {
 
 		const illustration = this.illustrationRepository.create(entityInfo);
 
-		if (basicInfo.isReprinted) {
-			if (workId && prevWork.isReprinted === !basicInfo.isReprinted) user.originCount--;
-			user.reprintedCount++;
+		if (basicInfo.reprintType !== 0) {
+			if (workId) {
+				if (prevWork.reprintType === 0) {
+					user.originCount--;
+					user.reprintedCount++;
+				}
+			} else {
+				user.reprintedCount++;
+			}
 		} else {
-			if (workId && prevWork.isReprinted === !basicInfo.isReprinted) user.reprintedCount--;
-			user.originCount++;
+			if (workId) {
+				if (prevWork.reprintType !== 0) {
+					user.reprintedCount--;
+					user.originCount++;
+				}
+			} else {
+				user.originCount++;
+			}
 		}
 		await this.userRepository.save(user);
 
@@ -187,7 +199,7 @@ export class IllustrationService {
 		const labels = illustration.labels;
 		const favorites = illustration.favorites;
 
-		if (illustration.isReprinted) {
+		if (illustration.reprintType !== 0) {
 			user.reprintedCount--;
 		} else {
 			user.originCount--;

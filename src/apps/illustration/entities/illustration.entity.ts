@@ -45,10 +45,10 @@ export class Illustration {
 	intro: string;
 
 	@Column({
-		type: 'boolean',
-		comment: '是否为转载作品',
+		type: 'tinyint',
+		comment: '转载类型。0-原创，1-转载，2-合集',
 	})
-	isReprinted: boolean;
+	reprintType: number;
 
 	@Column({
 		type: 'boolean',

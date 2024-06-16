@@ -38,7 +38,7 @@ export class UploadIllustrationDto {
 	@IsNotEmpty({
 		message: '是否转载不能为空',
 	})
-	isReprinted: boolean;
+	reprintType: number;
 
 	@IsNotEmpty({
 		message: '是否开启评论不能为空',

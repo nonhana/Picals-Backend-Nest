@@ -66,9 +66,9 @@ export class IllustrationDetailVO {
 	 */
 	isLiked: boolean;
 	/**
-	 * 是否是转载作品
+	 * 转载作品。0-原创，1-转载，2-合集
 	 */
-	isReprinted: boolean;
+	reprintType: number;
 	/**
 	 * 标签列表
 	 */
@@ -130,9 +130,9 @@ export class IllustrationDetailVO {
 		this.likeNum = illustration.likeCount;
 		this.collectNum = illustration.collectCount;
 		this.commentNum = illustration.commentCount;
-		this.isReprinted = illustration.isReprinted;
+		this.reprintType = illustration.reprintType;
 		this.viewNum = illustration.viewCount;
-		if (this.isReprinted)
+		if (this.reprintType !== 0 && illustration.illustrator)
 			this.illustrator = {
 				id: illustration.illustrator.id,
 				name: illustration.illustrator.name,
@@ -141,7 +141,7 @@ export class IllustrationDetailVO {
 				homeUrl: illustration.illustrator.homeUrl,
 				workCount: illustration.illustrator.workCount,
 			};
-		if (this.isReprinted) this.workUrl = illustration.workUrl;
+		if (this.reprintType === 1) this.workUrl = illustration.workUrl;
 		if (isCollected)
 			this.favoriteIds = illustration.favorites
 				.filter((favorite) => favorite.user.id === userId)
