@@ -9,9 +9,10 @@ export class EmailService {
 
 	constructor(private readonly configService: ConfigService) {
 		this.transporter = createTransport({
+			service: 'QQex',
 			host: this.configService.get('NODEMAILER_HOST'),
 			port: this.configService.get('NODEMAILER_PORT'),
-			secure: false,
+			secure: true,
 			auth: {
 				user: this.configService.get('NODEMAILER_AUTH_USER'),
 				pass: this.configService.get('NODEMAILER_AUTH_PASS'),
