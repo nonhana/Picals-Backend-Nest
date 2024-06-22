@@ -14,7 +14,6 @@ import { UserItemVo } from './vo/user-item.vo';
 import { LabelItemVO } from '../label/vo/label-item.vo';
 import { IllustrationItemVO } from '../illustration/vo/illustration-item.vo';
 import { FavoriteItemVo } from '../favorite/vo/favorite-item.vo';
-import { HistoryItemVo } from '../history/vo/history-item.vo';
 
 @Controller('user')
 export class UserController {
@@ -223,20 +222,6 @@ export class UserController {
 	async getFavorites(@Query('id') id: string) {
 		const favorites = await this.userService.getFavorites(id);
 		return favorites.map((favorite) => new FavoriteItemVo(favorite));
-	}
-
-	@Get('history') // 分页获取用户的浏览记录
-	@RequireLogin()
-	async getHistory(
-		@UserInfo() userInfo: JwtUserData,
-		@Query('pageSize') pageSize: number,
-		@Query('current') current: number,
-	) {
-		if (current <= 0) throw new hanaError(10201);
-		if (pageSize <= 0) throw new hanaError(10202);
-		const { id } = userInfo;
-		const histories = await this.userService.getHistoryInPages(id, current, pageSize);
-		return histories.map((history) => new HistoryItemVo(history));
 	}
 
 	@Get('like-labels') // 获取用户喜欢的标签列表

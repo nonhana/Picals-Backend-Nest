@@ -3,7 +3,7 @@
 
 import { Illustration } from 'src/apps/illustration/entities/illustration.entity';
 import { User } from 'src/apps/user/entities/user.entity';
-import { CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity({
 	name: 'history',
@@ -16,7 +16,7 @@ export class History {
 	})
 	id: string;
 
-	@CreateDateColumn({
+	@UpdateDateColumn({
 		type: 'timestamp',
 		comment: '最后访问时间',
 		name: 'last_time',

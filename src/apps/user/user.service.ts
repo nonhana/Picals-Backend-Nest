@@ -102,22 +102,6 @@ export class UserService {
 		return await this.favoriteService.getFavoriteList(id);
 	}
 
-	// 分页获取用户的历史记录
-	async getHistoryInPages(id: string, current: number, pageSize: number) {
-		const user = await this.findUserById(id);
-		if (!user) throw new hanaError(10101);
-
-		const queryBuilder = this.historyRepository.createQueryBuilder('history');
-		queryBuilder.where('history.user = :user', { user });
-		queryBuilder.leftJoinAndSelect('history.illustration', 'illustration');
-		queryBuilder.orderBy('history.lastTime', 'DESC');
-
-		queryBuilder.skip((current - 1) * pageSize);
-		queryBuilder.take(pageSize);
-
-		return await queryBuilder.getMany();
-	}
-
 	// 获取用户喜欢的标签列表
 	async getLikeLabels(id: string) {
 		const user = await this.findUserById(id, ['likedLabels']);

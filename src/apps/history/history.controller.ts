@@ -10,15 +10,28 @@ export class HistoryController {
 	@Inject(HistoryService)
 	private readonly historyService: HistoryService;
 
-	@Get('list') // 分页获取用户历史记录
+	@Get('list') // 分页获取用户指定日期的历史记录
 	async getHistoryList(
 		@UserInfo() userInfo: JwtUserData,
+		@Query('date') date: string,
 		@Query('pageSize') pageSize: number = 1,
 		@Query('current') current: number = 10,
 	) {
 		const { id } = userInfo;
-		const historyList = await this.historyService.getHistoryListInPages(id, pageSize, current);
+		const historyList = await this.historyService.getHistoryListInPages(
+			id,
+			date,
+			pageSize,
+			current,
+		);
 		return historyList.map((history) => new HistoryItemVo(history));
+	}
+
+	@Get('count') // 获取用户指定日期的历史记录总数
+	async getHistoryCount(@UserInfo() userInfo: JwtUserData, @Query('date') date: string) {
+		const { id } = userInfo;
+		const count = await this.historyService.getHistoryCount(id, date);
+		return count;
 	}
 
 	@Post('new') // 新增用户历史记录
