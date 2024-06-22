@@ -11,6 +11,7 @@ import {
 	ManyToMany,
 	ManyToOne,
 	PrimaryColumn,
+	UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({
@@ -68,7 +69,7 @@ export class Favorite {
 	})
 	createdAt: Date;
 
-	@CreateDateColumn({
+	@UpdateDateColumn({
 		type: 'timestamp',
 		comment: '收藏夹更新时间',
 		name: 'updated_at',

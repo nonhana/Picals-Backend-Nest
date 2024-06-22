@@ -17,6 +17,7 @@ import {
 	ManyToOne,
 	OneToMany,
 	PrimaryColumn,
+	UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({
@@ -122,7 +123,7 @@ export class Illustration {
 	})
 	createdTime: Date;
 
-	@CreateDateColumn({
+	@UpdateDateColumn({
 		type: 'timestamp',
 		comment: '插画更新时间',
 		name: 'updated_time',

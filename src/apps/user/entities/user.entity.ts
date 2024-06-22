@@ -12,6 +12,7 @@ import {
 	ManyToMany,
 	OneToMany,
 	PrimaryColumn,
+	UpdateDateColumn,
 } from 'typeorm';
 import { History } from 'src/apps/history/entities/history.entity';
 import { Favorite } from 'src/apps/favorite/entities/favorite.entity';
@@ -145,7 +146,7 @@ export class User {
 	})
 	createdTime: Date;
 
-	@CreateDateColumn({
+	@UpdateDateColumn({
 		type: 'timestamp',
 		comment: '用户更新时间',
 		name: 'updated_time',

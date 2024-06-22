@@ -2,7 +2,14 @@
 // 插画家实体
 
 import { Illustration } from 'src/apps/illustration/entities/illustration.entity';
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import {
+	Column,
+	CreateDateColumn,
+	Entity,
+	OneToMany,
+	PrimaryColumn,
+	UpdateDateColumn,
+} from 'typeorm';
 
 @Entity({
 	name: 'illustrators',
@@ -61,7 +68,7 @@ export class Illustrator {
 	})
 	createdTime: Date;
 
-	@CreateDateColumn({
+	@UpdateDateColumn({
 		type: 'timestamp',
 		comment: '插画家更新时间',
 		name: 'updated_time',
