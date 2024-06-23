@@ -24,6 +24,7 @@ export class HistoryService {
 			.andWhere('history.lastTime < :endDate', { endDate })
 			.take(pageSize)
 			.skip(pageSize * (current - 1))
+			.orderBy('history.lastTime', 'DESC')
 			.getMany();
 	}
 
@@ -78,6 +79,7 @@ export class HistoryService {
 			.leftJoinAndSelect('illustration.user', 'author')
 			.where('user.id = :userId', { userId })
 			.andWhere('illustration.name LIKE :name', { name: `%${keyword}%` })
+			.orderBy('history.lastTime', 'DESC')
 			.getMany();
 	}
 }
