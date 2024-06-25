@@ -5,7 +5,6 @@ import { User } from './entities/user.entity';
 import { verifyPassword, hashPassword } from 'src/utils';
 import { hanaError } from 'src/error/hanaError';
 import type { UpdateUserDto, LoginUserDto } from './dto';
-import { History } from '../history/entities/history.entity';
 import { LabelService } from '../label/label.service';
 import { Illustration } from '../illustration/entities/illustration.entity';
 import type { Label } from '../label/entities/label.entity';
@@ -23,9 +22,6 @@ export class UserService {
 
 	@InjectRepository(User)
 	private readonly userRepository: Repository<User>;
-
-	@InjectRepository(History)
-	private readonly historyRepository: Repository<History>;
 
 	@InjectRepository(Illustration)
 	private readonly illustrationRepository: Repository<Illustration>;
@@ -259,6 +255,17 @@ export class UserService {
 					result.push(label);
 				}
 			}
+		}
+
+		// 3. 从中随机取 20 个标签返回，如果不到 20 个则全部返回
+		if (result.length > 20) {
+			const randomResult: Label[] = [];
+			while (randomResult.length < 20) {
+				const randomIndex = Math.floor(Math.random() * result.length);
+				randomResult.push(result[randomIndex]);
+				result.splice(randomIndex, 1);
+			}
+			return randomResult;
 		}
 
 		return result;
