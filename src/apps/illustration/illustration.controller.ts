@@ -37,7 +37,11 @@ export class IllustrationController {
 		@Query('pageSize') pageSize: number = 1,
 		@Query('current') current: number = 30,
 	) {
-		const works = await this.illustrationService.getItemsInPages(pageSize, current);
+		const works = await this.illustrationService.getItemsInPages(
+			pageSize,
+			current,
+			userInfo ? userInfo.id : undefined,
+		);
 		return await this.convertToIllustrationItemVO(works, userInfo);
 	}
 

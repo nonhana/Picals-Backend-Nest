@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Label } from './entities/label.entity';
 import { Repository } from 'typeorm';
 import { Illustration } from '../illustration/entities/illustration.entity';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 // 生成随机的hex颜色
 const randomColor = () => {
@@ -13,6 +14,9 @@ const randomColor = () => {
 
 @Injectable()
 export class LabelService {
+	@Inject(CACHE_MANAGER)
+	private readonly cacheManager: Cache;
+
 	@InjectRepository(Label)
 	private readonly labelRepository: Repository<Label>;
 
@@ -55,12 +59,37 @@ export class LabelService {
 
 	// 获取推荐标签列表
 	async getRecommendLabels() {
-		const recommendLabels = await this.labelRepository
-			.createQueryBuilder()
-			.orderBy('RAND()') // 随机排序
-			.limit(30)
-			.getMany();
-		return recommendLabels;
+		const countCacheKey = 'labels:count';
+
+		let count = await this.cacheManager.get<number>(countCacheKey);
+		if (!count) {
+			count = await this.labelRepository.count();
+			await this.cacheManager.set(countCacheKey, count, 1000 * 60 * 10);
+		}
+
+		const targetLength = 30;
+
+		const selectedLabels = [];
+		const result = [];
+
+		for (let i = 0; i < targetLength; i++) {
+			if (selectedLabels.length === count) break;
+
+			const randomIndex = Math.floor(Math.random() * count);
+			if (selectedLabels.includes(randomIndex)) {
+				i--;
+				continue;
+			}
+			selectedLabels.push(randomIndex);
+			const label = await this.labelRepository
+				.createQueryBuilder()
+				.skip(randomIndex)
+				.take(1)
+				.getOne();
+			result.push(label);
+		}
+
+		return result;
 	}
 
 	// 分页获取带有该标签的作品列表

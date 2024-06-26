@@ -11,9 +11,13 @@ import type { Label } from '../label/entities/label.entity';
 import { FavoriteService } from '../favorite/favorite.service';
 import { Favorite } from '../favorite/entities/favorite.entity';
 import { WorkPushTemp } from '../illustration/entities/work-push-temp.entity';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class UserService {
+	@Inject(CACHE_MANAGER)
+	private readonly cacheManager: Cache;
+
 	@Inject(LabelService)
 	private readonly labelService: LabelService;
 
@@ -406,14 +410,66 @@ export class UserService {
 	}
 
 	// 分页获取推荐用户列表
-	async getRecommendUserInPages(current: number, pageSize: number) {
-		const queryBuilder = this.userRepository.createQueryBuilder('user');
-		queryBuilder.leftJoin('user.illustrations', 'illustration');
-		queryBuilder.addSelect('illustration.id');
-		queryBuilder.orderBy('RAND()');
-		queryBuilder.skip((current - 1) * pageSize);
-		queryBuilder.take(pageSize);
+	async getRecommendUserInPages(current: number, pageSize: number, userId: string | undefined) {
+		if (userId) {
+			const countCacheKey = 'users:count';
+			const userCacheKey = `user:${userId}:recommended-users-indexes`;
 
-		return await queryBuilder.getMany();
+			if (Number(current) === 1) {
+				await this.cacheManager.del(userCacheKey);
+			}
+
+			let recommendedIndexes: number[] = await this.cacheManager.get(userCacheKey);
+			if (!recommendedIndexes) {
+				recommendedIndexes = [];
+			}
+
+			const results = [];
+
+			let totalCount: number = await this.cacheManager.get(countCacheKey);
+			if (!totalCount) {
+				totalCount = await this.userRepository.createQueryBuilder('user').getCount();
+				await this.cacheManager.set(countCacheKey, totalCount, 1000 * 60 * 10);
+			}
+
+			const totalCountList = new Array(totalCount).fill(0).map((_, index) => index);
+
+			while (results.length < pageSize) {
+				if (recommendedIndexes.length === totalCount) {
+					return results;
+				}
+
+				const diff = totalCountList.filter((index) => !recommendedIndexes.includes(index));
+
+				const randomOffset = diff[Math.floor(Math.random() * diff.length)];
+
+				const randomItem = await this.userRepository
+					.createQueryBuilder('user')
+					.leftJoin('user.illustrations', 'illustration')
+					.addSelect('illustration.id')
+					.skip(randomOffset)
+					.take(1)
+					.getOne();
+
+				if (!randomItem || recommendedIndexes.includes(randomOffset)) {
+					continue;
+				}
+
+				results.push(randomItem);
+				recommendedIndexes.push(randomOffset);
+
+				await this.cacheManager.set(userCacheKey, recommendedIndexes, 1000 * 60 * 30);
+			}
+
+			return results;
+		} else {
+			return await this.userRepository
+				.createQueryBuilder('user')
+				.leftJoin('user.illustrations', 'illustration')
+				.addSelect('illustration.id')
+				.skip((current - 1) * pageSize)
+				.take(pageSize)
+				.getMany();
+		}
 	}
 }

@@ -390,7 +390,11 @@ export class UserController {
 		@Query('pageSize') pageSize: number = 1,
 		@Query('current') current: number = 6,
 	) {
-		let userList = await this.userService.getRecommendUserInPages(current, pageSize);
+		let userList = await this.userService.getRecommendUserInPages(
+			current,
+			pageSize,
+			userInfo ? userInfo.id : undefined,
+		);
 		if (userInfo) userList = userList.filter((user) => user.id !== userInfo.id);
 		return await Promise.all(
 			userList.map(

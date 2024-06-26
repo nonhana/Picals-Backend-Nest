@@ -13,9 +13,13 @@ import { Illustrator } from '../illustrator/entities/illustrator.entity';
 import { Favorite } from '../favorite/entities/favorite.entity';
 import { downloadFile } from 'src/utils';
 import { ImgHandlerService } from 'src/img-handler/img-handler.service';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class IllustrationService {
+	@Inject(CACHE_MANAGER)
+	private readonly cacheManager: Cache;
+
 	@Inject(IllustratorService)
 	private readonly illustratorService: IllustratorService;
 
@@ -44,13 +48,67 @@ export class IllustrationService {
 	private readonly favoriteRepository: Repository<Favorite>;
 
 	// 分页随机获取推荐作品列表
-	async getItemsInPages(pageSize: number, current: number) {
-		return await this.illustrationRepository
-			.createQueryBuilder('illustration')
-			.leftJoinAndSelect('illustration.user', 'user')
-			.take(pageSize)
-			.skip(pageSize * (current - 1))
-			.getMany();
+	async getItemsInPages(pageSize: number, current: number, userId: string | undefined) {
+		if (userId) {
+			const countCacheKey = 'illustrations:count';
+			const userCacheKey = `user:${userId}:recommended-illustrations-indexes`;
+
+			if (Number(current) === 1) {
+				await this.cacheManager.del(userCacheKey);
+			}
+
+			let recommendedIndexes: number[] = await this.cacheManager.get(userCacheKey);
+			if (!recommendedIndexes) {
+				recommendedIndexes = [];
+			}
+
+			const results = [];
+
+			let totalCount: number = await this.cacheManager.get(countCacheKey);
+			if (!totalCount) {
+				totalCount = await this.illustrationRepository
+					.createQueryBuilder('illustration')
+					.getCount();
+				await this.cacheManager.set(countCacheKey, totalCount, 1000 * 60 * 10);
+			}
+
+			const totalCountList = new Array(totalCount).fill(0).map((_, index) => index);
+
+			while (results.length < pageSize) {
+				if (recommendedIndexes.length === totalCount) {
+					return results;
+				}
+
+				const diff = totalCountList.filter((index) => !recommendedIndexes.includes(index));
+
+				const randomOffset = diff[Math.floor(Math.random() * diff.length)];
+
+				const randomItem = await this.illustrationRepository
+					.createQueryBuilder('illustration')
+					.leftJoinAndSelect('illustration.user', 'user')
+					.skip(randomOffset)
+					.take(1)
+					.getOne();
+
+				if (!randomItem || recommendedIndexes.includes(randomOffset)) {
+					continue;
+				}
+
+				results.push(randomItem);
+				recommendedIndexes.push(randomOffset);
+
+				await this.cacheManager.set(userCacheKey, recommendedIndexes, 1000 * 60 * 30);
+			}
+
+			return results;
+		} else {
+			return await this.illustrationRepository
+				.createQueryBuilder('illustration')
+				.leftJoinAndSelect('illustration.user', 'user')
+				.skip(pageSize * (current - 1))
+				.take(pageSize)
+				.getMany();
+		}
 	}
 
 	// 获取已关注用户新作
