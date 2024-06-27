@@ -280,6 +280,7 @@ export class UserService {
 		return await this.illustrationRepository.find({
 			where: { user: { id } },
 			relations: ['user'],
+			order: { createdTime: 'DESC' },
 			skip: (current - 1) * pageSize,
 			take: pageSize,
 		});
@@ -435,7 +436,7 @@ export class UserService {
 			const totalCountList = new Array(totalCount).fill(0).map((_, index) => index);
 
 			while (results.length < pageSize) {
-				if (recommendedIndexes.length === totalCount) {
+				if (recommendedIndexes.length === totalCount - 1) {
 					return results;
 				}
 
@@ -450,6 +451,10 @@ export class UserService {
 					.skip(randomOffset)
 					.take(1)
 					.getOne();
+
+				if (randomItem.id === userId) {
+					continue;
+				}
 
 				if (!randomItem || recommendedIndexes.includes(randomOffset)) {
 					continue;
