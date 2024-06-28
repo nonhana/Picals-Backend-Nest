@@ -8,6 +8,7 @@ export class IllustratorDetailVo {
 	name: string;
 	updatedAt: string;
 	workNum: number;
+	homeUrl: string;
 
 	constructor(illustrator: Illustrator) {
 		this.id = illustrator.id;
@@ -17,5 +18,6 @@ export class IllustratorDetailVo {
 		this.name = illustrator.name;
 		this.updatedAt = illustrator.updatedTime.toISOString();
 		this.workNum = illustrator.workCount;
+		this.homeUrl = illustrator.homeUrl;
 	}
 }
