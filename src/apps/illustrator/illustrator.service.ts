@@ -39,6 +39,11 @@ export class IllustratorService {
 		return await this.illustratorRepository.save({ ...illustrator, ...editIllustratorDto });
 	}
 
+	// 获取插画家列表
+	async getIllustratorList() {
+		return await this.illustratorRepository.find();
+	}
+
 	// 分页获取该插画家的作品列表
 	async getIllustratorWorksInPages(id: string, current: number, size: number) {
 		return await this.illustrationRepository.find({

@@ -30,6 +30,13 @@ export class IllustratorController {
 		return '修改成功！';
 	}
 
+	@Get('list') // 获取插画家列表
+	@RequireLogin()
+	async getIllustratorList() {
+		const illustrators = await this.illustratorService.getIllustratorList();
+		return illustrators.map((illustrator) => new IllustratorDetailVo(illustrator));
+	}
+
 	@Get('detail') // 获取插画家详情信息
 	async getIllustratorDetail(@Query('id') id: string) {
 		const illustrator = await this.illustratorService.findItemById(id);
