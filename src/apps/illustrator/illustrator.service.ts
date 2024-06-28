@@ -6,6 +6,7 @@ import type { NewIllustratorDto } from './dto/new-illustrator.dto';
 import { hanaError } from 'src/error/hanaError';
 import type { EditIllustratorDto } from './dto/edit-illustrator.dto';
 import { Illustration } from '../illustration/entities/illustration.entity';
+import { Like } from 'typeorm';
 
 @Injectable()
 export class IllustratorService {
@@ -23,6 +24,11 @@ export class IllustratorService {
 	// 根据名字查找插画家
 	async findItemByName(name: string) {
 		return await this.illustratorRepository.findOne({ where: { name } });
+	}
+
+	// 搜索插画家
+	async searchIllustrators(keyword: string) {
+		return await this.illustratorRepository.find({ where: { name: Like(`%${keyword}%`) } });
 	}
 
 	// 创建插画家

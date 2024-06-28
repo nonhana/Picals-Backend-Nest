@@ -37,6 +37,13 @@ export class IllustratorController {
 		return illustrators.map((illustrator) => new IllustratorDetailVo(illustrator));
 	}
 
+	@Get('search') // 搜索插画家
+	@RequireLogin()
+	async searchIllustrators(@Query('keyword') keyword: string) {
+		const illustrators = await this.illustratorService.searchIllustrators(keyword);
+		return illustrators.map((illustrator) => new IllustratorDetailVo(illustrator));
+	}
+
 	@Get('detail') // 获取插画家详情信息
 	async getIllustratorDetail(@Query('id') id: string) {
 		const illustrator = await this.illustratorService.findItemById(id);
