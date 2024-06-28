@@ -10,10 +10,20 @@ import { EmailModule } from 'src/email/email.module';
 import { LabelModule } from '../label/label.module';
 import { FavoriteModule } from '../favorite/favorite.module';
 import { WorkPushTemp } from '../illustration/entities/work-push-temp.entity';
+import { LikeWorks } from './entities/like-works.entity';
+import { Follow } from './entities/follow.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([User, History, Illustration, Favorite, WorkPushTemp]),
+		TypeOrmModule.forFeature([
+			User,
+			History,
+			Illustration,
+			Favorite,
+			WorkPushTemp,
+			LikeWorks,
+			Follow,
+		]),
 		EmailModule,
 		forwardRef(() => LabelModule),
 		forwardRef(() => FavoriteModule),

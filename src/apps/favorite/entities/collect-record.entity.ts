@@ -4,6 +4,7 @@
 import { Illustration } from 'src/apps/illustration/entities/illustration.entity';
 import { User } from 'src/apps/user/entities/user.entity';
 import { CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Favorite } from './favorite.entity';
 
 @Entity({
 	name: 'collect_records',
@@ -16,13 +17,6 @@ export class CollectRecord {
 	})
 	id: string;
 
-	@CreateDateColumn({
-		type: 'timestamp',
-		comment: '收藏时间',
-		name: 'created_at',
-	})
-	createdAt: Date;
-
 	@ManyToOne(() => User, {
 		onDelete: 'CASCADE',
 	})
@@ -34,4 +28,17 @@ export class CollectRecord {
 	})
 	@JoinColumn({ name: 'illustration_id' })
 	illustration: Illustration;
+
+	@ManyToOne(() => Favorite, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn({ name: 'favorite_id' })
+	favorite: Favorite;
+
+	@CreateDateColumn({
+		type: 'timestamp',
+		comment: '收藏时间',
+		name: 'created_at',
+	})
+	createdAt: Date;
 }

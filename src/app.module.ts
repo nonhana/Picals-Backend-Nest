@@ -32,6 +32,8 @@ import { R2Service } from './r2/r2.service';
 import { R2Module } from './r2/r2.module';
 import { ImgHandlerModule } from './img-handler/img-handler.module';
 import * as path from 'node:path';
+import { LikeWorks } from './apps/user/entities/like-works.entity';
+import { Follow } from './apps/user/entities/follow.entity';
 
 @Module({
 	imports: [
@@ -60,6 +62,8 @@ import * as path from 'node:path';
 						Favorite,
 						WorkPushTemp,
 						CollectRecord,
+						LikeWorks,
+						Follow,
 					],
 					poolSize: 10,
 					connectorPackage: 'mysql2',

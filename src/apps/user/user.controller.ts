@@ -256,9 +256,9 @@ export class UserController {
 	) {
 		if (current <= 0) throw new hanaError(10201);
 		if (pageSize <= 0) throw new hanaError(10202);
-		const userList = await this.userService.getFollowingInPages(id, current, pageSize);
+		const records = await this.userService.getFollowingInPages(id, current, pageSize);
 
-		return userList.map((user) => new UserItemVo(user, true));
+		return records.map((record) => new UserItemVo(record.following, true));
 	}
 
 	@Get('following-count') // 获取用户的关注总数
@@ -274,11 +274,15 @@ export class UserController {
 	) {
 		if (current <= 0) throw new hanaError(10201);
 		if (pageSize <= 0) throw new hanaError(10202);
-		const userList = await this.userService.getFollowersInPages(id, current, pageSize);
+		const records = await this.userService.getFollowersInPages(id, current, pageSize);
 
 		return await Promise.all(
-			userList.map(
-				async (user) => new UserItemVo(user, await this.userService.isFollowed(id, user.id)),
+			records.map(
+				async (record) =>
+					new UserItemVo(
+						record.follower,
+						await this.userService.isFollowed(id, record.follower.id),
+					),
 			),
 		);
 	}
@@ -323,10 +327,14 @@ export class UserController {
 	) {
 		if (current <= 0) throw new hanaError(10201);
 		if (pageSize <= 0) throw new hanaError(10202);
-		const works = await this.userService.getLikeWorksInPages(id, current, pageSize);
+		const results = await this.userService.getLikeWorksInPages(id, current, pageSize);
 		return await Promise.all(
-			works.map(
-				async (work) => new IllustrationItemVO(work, await this.userService.isLiked(id, work.id)),
+			results.map(
+				async (item) =>
+					new IllustrationItemVO(
+						item.illustration,
+						await this.userService.isLiked(id, item.illustration.id),
+					),
 			),
 		);
 	}

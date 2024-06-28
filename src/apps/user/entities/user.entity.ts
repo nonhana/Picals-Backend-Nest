@@ -17,6 +17,8 @@ import {
 import { History } from 'src/apps/history/entities/history.entity';
 import { Favorite } from 'src/apps/favorite/entities/favorite.entity';
 import { WorkPushTemp } from 'src/apps/illustration/entities/work-push-temp.entity';
+import { LikeWorks } from './like-works.entity';
+import { Follow } from './follow.entity';
 
 @Entity({
 	name: 'users',
@@ -153,16 +155,10 @@ export class User {
 	})
 	updatedTime: Date;
 
-	@ManyToMany(() => User, (user) => user.followers, {
-		cascade: true,
-		onDelete: 'CASCADE',
-	})
-	@JoinTable()
+	@OneToMany(() => Follow, (follow) => follow.follower)
 	following: User[];
 
-	@ManyToMany(() => User, (user) => user.following, {
-		onDelete: 'CASCADE',
-	})
+	@OneToMany(() => Follow, (follow) => follow.following)
 	followers: User[];
 
 	@OneToMany(() => Illustration, (illustration) => illustration.user)
@@ -175,12 +171,8 @@ export class User {
 	@JoinTable()
 	likedLabels: Label[];
 
-	@ManyToMany(() => Illustration, (illustration) => illustration.likeUsers, {
-		cascade: true,
-		onDelete: 'CASCADE',
-	})
-	@JoinTable()
-	likeWorks: Illustration[];
+	@OneToMany(() => LikeWorks, (likeWorks) => likeWorks.user)
+	likeWorks: LikeWorks[];
 
 	@OneToMany(() => Comment, (comment) => comment.user)
 	comments: Comment[];

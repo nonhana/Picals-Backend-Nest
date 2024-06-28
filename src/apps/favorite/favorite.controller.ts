@@ -69,13 +69,13 @@ export class FavoriteController {
 		@Query('current') current: number,
 		@Query('pageSize') size: number,
 	) {
-		const works = await this.favoriteService.getFavoriteWorksInPages(favoriteId, current, size);
+		const records = await this.favoriteService.getFavoriteWorksInPages(favoriteId, current, size);
 		return await Promise.all(
-			works.map(
-				async (work) =>
+			records.map(
+				async (record) =>
 					new IllustrationItemVO(
-						work,
-						userInfo ? await this.userService.isLiked(userInfo.id, work.id) : false,
+						record.illustration,
+						userInfo ? await this.userService.isLiked(userInfo.id, record.illustration.id) : false,
 					),
 			),
 		);
@@ -90,7 +90,7 @@ export class FavoriteController {
 		@Query('current') current: number,
 		@Query('pageSize') size: number,
 	) {
-		const works = await this.favoriteService.searchWorksInFavorite(
+		const records = await this.favoriteService.searchWorksInFavorite(
 			favoriteId,
 			keyword,
 			current,
@@ -98,9 +98,12 @@ export class FavoriteController {
 		);
 
 		return await Promise.all(
-			works.map(
-				async (work) =>
-					new IllustrationItemVO(work, await this.userService.isLiked(userInfo.id, work.id)),
+			records.map(
+				async (record) =>
+					new IllustrationItemVO(
+						record.illustration,
+						await this.userService.isLiked(userInfo.id, record.illustration.id),
+					),
 			),
 		);
 	}

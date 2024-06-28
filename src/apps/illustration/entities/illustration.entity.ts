@@ -7,6 +7,7 @@ import { History } from 'src/apps/history/entities/history.entity';
 import { Illustrator } from 'src/apps/illustrator/entities/illustrator.entity';
 import { Label } from 'src/apps/label/entities/label.entity';
 import { User } from 'src/apps/user/entities/user.entity';
+import { LikeWorks } from 'src/apps/user/entities/like-works.entity';
 import {
 	Column,
 	CreateDateColumn,
@@ -151,10 +152,8 @@ export class Illustration {
 	@JoinTable()
 	labels: Label[];
 
-	@ManyToMany(() => User, (user) => user.likeWorks, {
-		onDelete: 'CASCADE',
-	})
-	likeUsers: User[];
+	@OneToMany(() => LikeWorks, (likeWorks) => likeWorks.illustration)
+	likeUsers: LikeWorks[];
 
 	@OneToMany(() => Comment, (comment) => comment.illustration)
 	comments: Comment[];

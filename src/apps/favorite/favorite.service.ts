@@ -40,35 +40,28 @@ export class FavoriteService {
 		return await this.favoriteRepository.save(favorite);
 	}
 
-	// 获取用户的插画收藏记录（作品id列表）
-	async getFavoriteRecords(id: string) {
-		const records = await this.collectRecordRepository.find({
-			select: {
-				illustration: {
-					id: true,
-				},
-			},
-			where: {
-				user: { id },
-			},
-			relations: ['illustration'],
+	// 根据用户id和插画id获取收藏记录列表
+	async getFavoriteRecords(userId: string, illustrationId: string) {
+		return await this.collectRecordRepository.find({
+			where: { user: { id: userId }, illustration: { id: illustrationId } },
 		});
-		return records.map((record) => record.illustration.id);
 	}
 
 	// 添加用户的插画收藏记录
-	async addFavoriteRecord(userId: string, illustrationId: string) {
+	async addFavoriteRecord(userId: string, illustrationId: string, favoriteId: string) {
 		const record = new CollectRecord();
 		record.user = { id: userId } as User;
 		record.illustration = { id: illustrationId } as Illustration;
+		record.favorite = { id: favoriteId } as Favorite;
 		return await this.collectRecordRepository.save(record);
 	}
 
 	// 移除用户的插画收藏记录
-	async removeFavoriteRecord(userId: string, illustrationId: string) {
+	async removeFavoriteRecord(userId: string, illustrationId: string, favoriteId: string) {
 		return await this.collectRecordRepository.delete({
 			user: { id: userId },
 			illustration: { id: illustrationId },
+			favorite: { id: favoriteId },
 		});
 	}
 
@@ -95,11 +88,10 @@ export class FavoriteService {
 		if (!favorite) throw new hanaError(10601);
 
 		// 删除收藏夹内的所有收藏记录
+		await this.collectRecordRepository.delete({
+			favorite: { id: favoriteId },
+		});
 		favorite.illustrations.forEach(async (work) => {
-			await this.collectRecordRepository.delete({
-				user: { id: userId },
-				illustration: { id: work.id },
-			});
 			work.collectCount--;
 			await this.illustrationRepository.save(work);
 		});
@@ -130,9 +122,10 @@ export class FavoriteService {
 
 	// 分页获取某个收藏夹的插画列表
 	async getFavoriteWorksInPages(favoriteId: string, current: number, pageSize: number) {
-		return this.illustrationRepository.find({
-			where: { favorites: { id: favoriteId } },
-			relations: ['user'],
+		return await this.collectRecordRepository.find({
+			where: { favorite: { id: favoriteId } },
+			relations: ['illustration', 'illustration.user'],
+			order: { createdAt: 'DESC' },
 			take: pageSize,
 			skip: (current - 1) * pageSize,
 		});
@@ -145,12 +138,13 @@ export class FavoriteService {
 		current: number,
 		pageSize: number,
 	) {
-		return await this.illustrationRepository.find({
+		return await this.collectRecordRepository.find({
 			where: {
-				favorites: { id: favoriteId },
-				name: Like(`%${keyword}%`),
+				favorite: { id: favoriteId },
+				illustration: { name: Like(`%${keyword}%`) },
 			},
-			relations: ['user'],
+			relations: ['illustration', 'illustration.user'],
+			order: { createdAt: 'DESC' },
 			take: pageSize,
 			skip: (current - 1) * pageSize,
 		});
@@ -158,11 +152,12 @@ export class FavoriteService {
 
 	// 获取搜索结果数量
 	async searchWorksCountInFavorite(favoriteId: string, keyword: string) {
-		return await this.illustrationRepository.count({
+		return await this.collectRecordRepository.count({
 			where: {
-				favorites: { id: favoriteId },
-				name: Like(`%${keyword}%`),
+				favorite: { id: favoriteId },
+				illustration: { name: Like(`%${keyword}%`) },
 			},
+			relations: ['illustration'],
 		});
 	}
 
@@ -194,7 +189,7 @@ export class FavoriteService {
 			user.collectCount--;
 			work.collectCount--;
 			await this.illustrationRepository.save(work);
-			await this.removeFavoriteRecord(userId, work.id);
+			await this.removeFavoriteRecord(userId, work.id, fromId);
 
 			if (toExist) continue; // 如果目标收藏夹已存在该作品，则跳过
 
@@ -204,7 +199,7 @@ export class FavoriteService {
 			user.collectCount++;
 			work.collectCount++;
 			await this.illustrationRepository.save(work);
-			await this.addFavoriteRecord(userId, work.id);
+			await this.addFavoriteRecord(userId, work.id, toId);
 		}
 
 		await this.favoriteRepository.save(fromFavorite);
@@ -235,7 +230,7 @@ export class FavoriteService {
 			user.collectCount++;
 			work.collectCount++;
 			await this.illustrationRepository.save(work);
-			await this.addFavoriteRecord(userId, work.id);
+			await this.addFavoriteRecord(userId, work.id, toId);
 		}
 
 		await this.favoriteRepository.save(toFavorite);
