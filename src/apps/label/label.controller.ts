@@ -27,6 +27,12 @@ export class LabelController {
 		return source.map((label) => new LabelItemVO(label));
 	}
 
+	@Get('search') // 搜索标签
+	async searchLabels(@Query('keyword') keyword: string) {
+		const source = await this.labelService.searchLabels(keyword);
+		return source.map((label) => new LabelItemVO(label));
+	}
+
 	@Get('list') // 分页获取标签列表
 	async getLabelList(@Query('pageSize') pageSize: number, @Query('current') current: number) {
 		const source = await this.labelService.getLabelsInPages(pageSize, current);

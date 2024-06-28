@@ -4,6 +4,7 @@ import { Label } from './entities/label.entity';
 import { Repository } from 'typeorm';
 import { Illustration } from '../illustration/entities/illustration.entity';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { Like } from 'typeorm';
 
 // 生成随机的hex颜色
 const randomColor = () => {
@@ -55,6 +56,13 @@ export class LabelService {
 			.leftJoin('label.illustrations', 'illustration')
 			.where('illustration.id = :id', { id })
 			.getMany();
+	}
+
+	// 搜索标签
+	async searchLabels(keyword: string) {
+		return await this.labelRepository.find({
+			where: { value: Like(`%${keyword}%`) },
+		});
 	}
 
 	// 获取推荐标签列表
