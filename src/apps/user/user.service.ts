@@ -402,35 +402,51 @@ export class UserService {
 		const user = await this.findUserById(userId);
 		if (!user) throw new hanaError(10101);
 
-		const illustration = await this.illustrationRepository.findOne({ where: { id: workId } });
+		const illustration = await this.illustrationRepository.findOne({
+			where: { id: workId },
+			relations: ['favorites'],
+		});
 		if (!illustration) throw new hanaError(10501);
 
-		const favorites = await this.favoriteRepository.find({
-			where: { id: In(favoriteIds), user: { id: userId } },
+		const needAddFavoritesIds = favoriteIds.filter(
+			(id) => !illustration.favorites.some((item) => item.id === id),
+		);
+		const needAddFavorites = await this.favoriteRepository.find({
+			where: { id: In(needAddFavoritesIds), user: { id: userId } },
 			relations: ['illustrations'],
 		});
 
-		for (const favorite of favorites) {
-			if (!favorite) throw new hanaError(10601);
-			const isCollected = favorite.illustrations.some((item) => item.id === workId);
-			if (isCollected) {
-				favorite.illustrations = favorite.illustrations.filter((item) => item.id !== workId);
-				user.collectCount--;
-				favorite.workCount--;
-				illustration.collectCount--;
-				await this.favoriteService.removeFavoriteRecord(userId, workId, favorite.id);
-			} else {
-				favorite.illustrations.push(illustration);
-				user.collectCount++;
-				favorite.workCount++;
-				illustration.collectCount++;
-				await this.favoriteService.addFavoriteRecord(userId, workId, favorite.id);
-			}
+		const needRemoveFavoritesIds = illustration.favorites.filter(
+			(item) => !favoriteIds.some((id) => item.id === id),
+		);
+		const needRemoveFavorites = await this.favoriteRepository.find({
+			where: { id: In(needRemoveFavoritesIds.map((item) => item.id)), user: { id: userId } },
+			relations: ['illustrations'],
+		});
 
-			await this.userRepository.save(user);
-			await this.illustrationRepository.save(illustration);
-			await this.favoriteRepository.save(favorite);
+		for (const addFavorite of needAddFavorites) {
+			addFavorite.illustrations.push(illustration);
+			user.collectCount++;
+			addFavorite.workCount++;
+			illustration.collectCount++;
+			await this.favoriteService.addFavoriteRecord(userId, workId, addFavorite.id);
 		}
+
+		for (const removeFavorite of needRemoveFavorites) {
+			removeFavorite.illustrations = removeFavorite.illustrations.filter(
+				(item) => item.id !== workId,
+			);
+			user.collectCount--;
+			removeFavorite.workCount--;
+			illustration.collectCount--;
+			await this.favoriteService.removeFavoriteRecord(userId, workId, removeFavorite.id);
+		}
+
+		await this.userRepository.save(user);
+		await this.illustrationRepository.save(illustration);
+		await this.favoriteRepository.save(needAddFavorites);
+		await this.favoriteRepository.save(needRemoveFavorites);
+
 		return;
 	}
 
