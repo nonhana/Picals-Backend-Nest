@@ -34,7 +34,7 @@ export class IllustratorService {
 	// 创建插画家
 	async createItem(newIllustratorDto: NewIllustratorDto) {
 		const existedIllustrator = await this.findItemByName(newIllustratorDto.name);
-		if (existedIllustrator) return existedIllustrator;
+		if (existedIllustrator) throw new hanaError(10902);
 		return await this.illustratorRepository.save(newIllustratorDto);
 	}
 
@@ -45,9 +45,12 @@ export class IllustratorService {
 		return await this.illustratorRepository.save({ ...illustrator, ...editIllustratorDto });
 	}
 
-	// 获取插画家列表
-	async getIllustratorList() {
-		return await this.illustratorRepository.find();
+	// 分页获取插画家列表
+	async getIllustratorList(current: number, size: number) {
+		return await this.illustratorRepository.find({
+			take: size,
+			skip: (current - 1) * size,
+		});
 	}
 
 	// 分页获取该插画家的作品列表

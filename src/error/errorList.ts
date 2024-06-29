@@ -53,6 +53,7 @@ export const errorMessages: Map<number, string> = new Map([
 
 	// 插画家相关错误
 	[10901, 'Illustrator not found'],
+	[10902, 'Illustrator already exists'],
 
 	// 文件上传错误
 	[11001, 'File upload failed'],

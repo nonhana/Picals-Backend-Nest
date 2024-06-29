@@ -30,10 +30,10 @@ export class IllustratorController {
 		return '修改成功！';
 	}
 
-	@Get('list') // 获取插画家列表
+	@Get('list') // 分页获取插画家列表
 	@RequireLogin()
-	async getIllustratorList() {
-		const illustrators = await this.illustratorService.getIllustratorList();
+	async getIllustratorList(@Query('current') current: number, @Query('pageSize') size: number) {
+		const illustrators = await this.illustratorService.getIllustratorList(current, size);
 		return illustrators.map((illustrator) => new IllustratorDetailVo(illustrator));
 	}
 

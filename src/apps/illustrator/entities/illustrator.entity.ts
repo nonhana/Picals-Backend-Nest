@@ -33,7 +33,7 @@ export class Illustrator {
 		type: 'varchar',
 		length: 255,
 		comment: '插画家头像地址URL',
-		default: 'https://dummyimage.com/400',
+		nullable: true,
 	})
 	avatar: string;
 
@@ -41,7 +41,7 @@ export class Illustrator {
 		type: 'varchar',
 		length: 255,
 		comment: '插画家简介',
-		default: '默认简介',
+		default: '暂无简介',
 	})
 	intro: string;
 
