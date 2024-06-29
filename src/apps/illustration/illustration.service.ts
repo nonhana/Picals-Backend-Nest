@@ -166,7 +166,7 @@ export class IllustrationService {
 
 		// 处理包含插画家的情况
 		if (illustratorInfo) {
-			const illustratorEntity = await this.illustratorService.createItem(illustratorInfo);
+			const illustratorEntity = await this.illustratorService.findItemByName(illustratorInfo.name);
 			if (workId) {
 				if (!prevWork.illustrator) {
 					illustratorEntity.workCount++;
