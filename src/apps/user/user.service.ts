@@ -240,9 +240,10 @@ export class UserService {
 
 	// 获取用户的全部粉丝列表
 	async getFollowers(id: string) {
-		const user = await this.findUserById(id, ['followers']);
-		if (!user) throw new hanaError(10101);
-		return user.followers;
+		return await this.followRepository.find({
+			where: { following: { id } },
+			relations: ['follower'],
+		});
 	}
 
 	// 获取用户的粉丝总数

@@ -211,11 +211,11 @@ export class IllustrationService {
 
 		if (!workId) {
 			// 将新作品推送给粉丝
-			const fans = await this.userService.getFollowers(userId);
-			fans.forEach(async (fan) => {
+			const records = await this.userService.getFollowers(userId);
+			records.forEach(async (record) => {
 				await this.workTempRepository.save({
 					author: user,
-					user: fan,
+					user: record.follower,
 					illustration: newWork,
 				});
 			});
