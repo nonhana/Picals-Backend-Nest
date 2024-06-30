@@ -1,4 +1,5 @@
 import type { Illustration } from 'src/apps/illustration/entities/illustration.entity';
+import * as dayjs from 'dayjs';
 
 export class IllustrationItemVO {
 	authorAvatar: string;
@@ -9,6 +10,7 @@ export class IllustrationItemVO {
 	cover: string;
 	name: string;
 	isLiked: boolean;
+	createdAt: string;
 
 	constructor(illustration: Illustration, isLiked: boolean) {
 		this.authorAvatar = illustration.user.avatar;
@@ -19,5 +21,6 @@ export class IllustrationItemVO {
 		this.cover = illustration.cover;
 		this.name = illustration.name;
 		this.isLiked = isLiked;
+		this.createdAt = dayjs(illustration.createdTime).format('YYYY-MM-DD');
 	}
 }

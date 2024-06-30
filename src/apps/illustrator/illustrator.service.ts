@@ -57,6 +57,7 @@ export class IllustratorService {
 	async getIllustratorWorksInPages(id: string, current: number, size: number) {
 		return await this.illustrationRepository.find({
 			where: { illustrator: { id } },
+			relations: ['user'],
 			order: { createdTime: 'DESC' },
 			take: size,
 			skip: (current - 1) * size,
