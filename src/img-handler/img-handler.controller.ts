@@ -14,8 +14,8 @@ export class ImgHandlerController {
 		return await this.imgHandlerService.generateThumbnail(imageBuffer, fileName);
 	}
 
-	@Get('get-default-image')
-	async getDefaultImage(@Query('text') text: string, @Query('color') color?: string) {
-		return await this.imgHandlerService.getDefaultImage(text, color);
-	}
+	// @Get('get-default-image')
+	// async getDefaultImage(@Query('text') text: string, @Query('color') color?: string) {
+	// 	return await this.imgHandlerService.getDefaultImage(text, color);
+	// }
 }
