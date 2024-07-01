@@ -50,7 +50,7 @@ export class ImgHandlerService {
 		fileName: string,
 		type: 'cover' | 'detail' = 'cover',
 	) {
-		const outputPath = path.join(__dirname, 'uploads', fileName + '-thumbnail.jpg');
+		const outputPath = path.join(__dirname, 'uploads', fileName + '-' + type + '-thumbnail.jpg');
 
 		// 确保目录存在
 		if (!fs.existsSync(path.dirname(outputPath))) {

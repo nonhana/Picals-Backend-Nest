@@ -391,7 +391,7 @@ export class IllustrationService {
 		const countCacheKey = 'illustrations:count';
 
 		const result: string[] = [];
-		const targetCount = 5;
+		const targetCount = 8;
 		let prevWorkId: number;
 
 		// 从全部的作品列表中随机选取一张
@@ -449,7 +449,7 @@ export class IllustrationService {
 				newImage.originHeight = metadata.height;
 
 				// 将图片压缩为缩略图
-				const fileName = imgUrl.split('/').pop().split('.')[0].split('-').pop();
+				const fileName = imgUrl.split('/').pop().split('.')[0];
 				const result = (await this.imgHandlerService.generateThumbnail(
 					response.data,
 					fileName,
