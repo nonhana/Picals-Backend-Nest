@@ -387,12 +387,12 @@ export class IllustrationService {
 	}
 
 	// 获取背景图
-	async getBackground() {
+	async getBackground(idList: number[]) {
+		const chosenIdList = idList;
+
 		const countCacheKey = 'illustrations:count';
 
 		const result: string[] = [];
-		const targetCount = 8;
-		let prevWorkId: number;
 
 		// 从全部的作品列表中随机选取一张
 		let totalCount: number = await this.cacheManager.get(countCacheKey);
@@ -401,9 +401,9 @@ export class IllustrationService {
 			await this.cacheManager.set(countCacheKey, totalCount, 1000 * 60 * 10);
 		}
 
-		while (result.length < targetCount) {
+		while (result.length === 0) {
 			const randomOffset = Math.floor(Math.random() * totalCount);
-			if (prevWorkId === randomOffset) {
+			if (chosenIdList.includes(randomOffset)) {
 				continue;
 			}
 			const randomItem = await this.illustrationRepository
@@ -414,16 +414,18 @@ export class IllustrationService {
 				.getOne();
 
 			if (randomItem) {
-				prevWorkId = randomOffset;
 				for (const img of randomItem.images) {
 					if (img.originWidth / img.originHeight > 1.5 && img.originWidth > 1440) {
 						result.push(img.originUrl);
+						if (!chosenIdList.includes(randomOffset)) {
+							chosenIdList.push(randomOffset);
+						}
 					}
 				}
 			}
 		}
 
-		return result;
+		return { result, chosenIdList };
 	}
 
 	// 遍历目前数据库中所有的插画列表，将其中的图片信息读取后存入Image表中

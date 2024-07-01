@@ -137,9 +137,9 @@ export class IllustrationController {
 		return '浏览量增加成功！';
 	}
 
-	@Get('background') // 获取背景图
-	async getBackground() {
-		return await this.illustrationService.getBackground();
+	@Post('background') // 获取背景图
+	async getBackground(@Body('chosenIdList') idList: number[]) {
+		return await this.illustrationService.getBackground(idList);
 	}
 
 	@Post('url-to-image') // 将图片url转为Image实体存入数据库
