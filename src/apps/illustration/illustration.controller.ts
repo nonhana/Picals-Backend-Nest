@@ -136,4 +136,15 @@ export class IllustrationController {
 		await this.illustrationService.addView(workId);
 		return '浏览量增加成功！';
 	}
+
+	@Get('background') // 获取背景图
+	async getBackground() {
+		return await this.illustrationService.getBackground();
+	}
+
+	@Post('url-to-image') // 将图片url转为Image实体存入数据库
+	async urlToImage() {
+		await this.illustrationService.urlToImage();
+		return '转换成功！';
+	}
 }

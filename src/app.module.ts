@@ -34,6 +34,7 @@ import { ImgHandlerModule } from './img-handler/img-handler.module';
 import * as path from 'node:path';
 import { LikeWorks } from './apps/user/entities/like-works.entity';
 import { Follow } from './apps/user/entities/follow.entity';
+import { Image } from './apps/illustration/entities/image.entity';
 
 @Module({
 	imports: [
@@ -64,6 +65,7 @@ import { Follow } from './apps/user/entities/follow.entity';
 						CollectRecord,
 						LikeWorks,
 						Follow,
+						Image,
 					],
 					poolSize: 10,
 					connectorPackage: 'mysql2',

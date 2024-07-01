@@ -1,5 +1,6 @@
 import type { Illustration } from 'src/apps/illustration/entities/illustration.entity';
 import * as dayjs from 'dayjs';
+import type { Image } from '../entities/image.entity';
 
 export interface LabelItem {
 	/**
@@ -45,6 +46,10 @@ export class IllustrationDetailVO {
 	 * 作品图片url列表
 	 */
 	imgList: string[];
+	/**
+	 * 图片详细信息列表
+	 */
+	images: Image[];
 	/**
 	 * 作品简介
 	 */
@@ -113,6 +118,7 @@ export class IllustrationDetailVO {
 		this.id = illustration.id;
 		this.authorId = illustration.user.id;
 		this.imgList = illustration.imgList;
+		this.images = illustration.images;
 		this.intro = illustration.intro;
 		this.isAIGenerated = illustration.isAIGenerated;
 		this.isCollected = isCollected;

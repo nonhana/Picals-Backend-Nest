@@ -1,6 +1,7 @@
 // /src/illustration/entities/illustration.entity.ts
 // 插画实体
 
+import { Image } from 'src/apps/illustration/entities/image.entity';
 import { Comment } from 'src/apps/comment/entities/comment.entity';
 import { Favorite } from 'src/apps/favorite/entities/favorite.entity';
 import { History } from 'src/apps/history/entities/history.entity';
@@ -65,9 +66,12 @@ export class Illustration {
 	isAIGenerated: boolean;
 
 	@Column('simple-array', {
-		comment: '插画的作品列表',
+		comment: '插画的作品原图地址列表',
 	})
 	imgList: string[];
+
+	@OneToMany(() => Image, (image) => image.illustration)
+	images: Image[];
 
 	@Column({
 		type: 'varchar',

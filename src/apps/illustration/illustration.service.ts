@@ -14,6 +14,9 @@ import { Favorite } from '../favorite/entities/favorite.entity';
 import { downloadFile } from 'src/utils';
 import { ImgHandlerService } from 'src/img-handler/img-handler.service';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import * as sharp from 'sharp';
+import axios from 'axios';
+import { Image } from './entities/image.entity';
 
 @Injectable()
 export class IllustrationService {
@@ -47,6 +50,9 @@ export class IllustrationService {
 	@InjectRepository(Favorite)
 	private readonly favoriteRepository: Repository<Favorite>;
 
+	@InjectRepository(Image)
+	private readonly imageRepository: Repository<Image>;
+
 	// 分页随机获取推荐作品列表
 	async getItemsInPages(pageSize: number, current: number, userId: string | undefined) {
 		if (userId) {
@@ -66,9 +72,7 @@ export class IllustrationService {
 
 			let totalCount: number = await this.cacheManager.get(countCacheKey);
 			if (!totalCount) {
-				totalCount = await this.illustrationRepository
-					.createQueryBuilder('illustration')
-					.getCount();
+				totalCount = await this.illustrationRepository.count();
 				await this.cacheManager.set(countCacheKey, totalCount, 1000 * 60 * 10);
 			}
 
@@ -156,6 +160,7 @@ export class IllustrationService {
 			});
 		}
 
+		// 处理封面
 		if ((prevWork && prevWork.imgList[0] !== basicInfo.imgList[0]) || !prevWork) {
 			const coverSourceUrl = basicInfo.imgList[0];
 			const fileName = coverSourceUrl.split('/').pop().split('.')[0];
@@ -208,6 +213,30 @@ export class IllustrationService {
 		const newWork = await this.illustrationRepository.save(
 			workId ? { id: workId, ...illustration } : illustration,
 		);
+
+		// 处理图片列表
+		if (workId) {
+			// 如果是编辑作品，先找出新增的图片和移除的图片
+			const prevImgList = prevWork.imgList;
+			const newImgList = basicInfo.imgList.filter((img) => !prevImgList.includes(img));
+			const delImgList = prevImgList.filter((img) => !basicInfo.imgList.includes(img));
+
+			// 将新的图片存入Image表中
+			for (const imgUrl of newImgList) {
+				await this.singleUrlToImage(imgUrl, workId);
+			}
+
+			// 删除不再使用的图片
+			for (const imgUrl of delImgList) {
+				const image = await this.imageRepository.findOneBy({ originUrl: imgUrl });
+				await this.imageRepository.remove(image);
+			}
+		} else {
+			// 遍历imgList中的每个url，将其存入Image表中
+			for (const imgUrl of basicInfo.imgList) {
+				await this.singleUrlToImage(imgUrl, newWork.id);
+			}
+		}
 
 		if (!workId) {
 			// 将新作品推送给粉丝
@@ -286,7 +315,7 @@ export class IllustrationService {
 	async getDetail(id: string) {
 		const work = await this.illustrationRepository.findOne({
 			where: { id },
-			relations: ['user', 'labels', 'favorites', 'favorites.user', 'illustrator'],
+			relations: ['user', 'images', 'labels', 'favorites', 'favorites.user', 'illustrator'],
 		});
 		if (!work) return null;
 		return work;
@@ -300,6 +329,7 @@ export class IllustrationService {
 		});
 	}
 
+	// 根据标签搜索作品
 	async getItemsByLabelInPages(
 		labelName: string,
 		sortType: string,
@@ -354,5 +384,126 @@ export class IllustrationService {
 				await this.illustrationRepository.decrement({ id }, 'commentCount', count);
 				break;
 		}
+	}
+
+	// 获取背景图
+	async getBackground() {
+		const countCacheKey = 'illustrations:count';
+
+		const result: string[] = [];
+		const targetCount = 5;
+		let prevWorkId: number;
+
+		// 从全部的作品列表中随机选取一张
+		let totalCount: number = await this.cacheManager.get(countCacheKey);
+		if (!totalCount) {
+			totalCount = await this.illustrationRepository.count();
+			await this.cacheManager.set(countCacheKey, totalCount, 1000 * 60 * 10);
+		}
+
+		while (result.length < targetCount) {
+			const randomOffset = Math.floor(Math.random() * totalCount);
+			if (prevWorkId === randomOffset) {
+				continue;
+			}
+			const randomItem = await this.illustrationRepository
+				.createQueryBuilder('illustration')
+				.leftJoinAndSelect('illustration.images', 'image')
+				.skip(randomOffset)
+				.take(1)
+				.getOne();
+
+			if (randomItem) {
+				prevWorkId = randomOffset;
+				for (const img of randomItem.images) {
+					if (img.originWidth / img.originHeight > 1.5 && img.originWidth > 1440) {
+						result.push(img.originUrl);
+					}
+				}
+			}
+		}
+
+		return result;
+	}
+
+	// 遍历目前数据库中所有的插画列表，将其中的图片信息读取后存入Image表中
+	async urlToImage() {
+		const illustrations = await this.illustrationRepository.find();
+
+		for (const illustration of illustrations) {
+			const { imgList } = illustration;
+			for (const imgUrl of imgList) {
+				const imageRecord = await this.imageRepository.findOneBy({ originUrl: imgUrl });
+				if (imageRecord) continue; // 如果已经存在则跳过
+
+				const newImage = this.imageRepository.create({
+					originUrl: imgUrl,
+				});
+
+				// 通过 axios + sharp 获取图片的宽高信息
+				const response = await axios.get(imgUrl, { responseType: 'arraybuffer' });
+				const image = sharp(response.data);
+				const metadata = await image.metadata();
+
+				newImage.originWidth = metadata.width;
+				newImage.originHeight = metadata.height;
+
+				// 将图片压缩为缩略图
+				const fileName = imgUrl.split('/').pop().split('.')[0].split('-').pop();
+				const result = (await this.imgHandlerService.generateThumbnail(
+					response.data,
+					fileName,
+					'detail',
+				)) as {
+					url: string;
+					width: number;
+					height: number;
+				};
+				newImage.thumbnailUrl = result.url;
+				newImage.thumbnailWidth = result.width;
+				newImage.thumbnailHeight = result.height;
+
+				newImage.illustration = illustration;
+
+				await this.imageRepository.save(newImage);
+			}
+		}
+	}
+
+	// 根据插画的原图地址，将图片信息读取后存入Image表中
+	async singleUrlToImage(url: string, illustrationId: string) {
+		const imageRecord = await this.imageRepository.findOneBy({ originUrl: url });
+		if (imageRecord) return; // 如果已经存在则跳过
+
+		const newImage = this.imageRepository.create({
+			originUrl: url,
+		});
+
+		// 通过 axios + sharp 获取图片的宽高信息
+		const response = await axios.get(url, { responseType: 'arraybuffer' });
+		const image = sharp(response.data);
+		const metadata = await image.metadata();
+
+		newImage.originWidth = metadata.width;
+		newImage.originHeight = metadata.height;
+
+		// 将图片压缩为缩略图
+		const fileName = url.split('/').pop().split('.')[0].split('-').pop();
+		const result = (await this.imgHandlerService.generateThumbnail(
+			response.data,
+			fileName,
+			'detail',
+		)) as {
+			url: string;
+			width: number;
+			height: number;
+		};
+		newImage.thumbnailUrl = result.url;
+		newImage.thumbnailWidth = result.width;
+		newImage.thumbnailHeight = result.height;
+
+		newImage.illustration = await this.illustrationRepository.findOneBy({ id: illustrationId });
+
+		return await this.imageRepository.save(newImage);
 	}
 }
