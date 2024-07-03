@@ -63,4 +63,13 @@ export class IllustratorService {
 			skip: (current - 1) * size,
 		});
 	}
+
+	// 获取该插画家的作品id列表
+	async getIllustratorWorksIdList(id: string) {
+		const works = await this.illustrationRepository.find({
+			where: { illustrator: { id } },
+			order: { createdTime: 'DESC' },
+		});
+		return works.map((work) => work.id);
+	}
 }

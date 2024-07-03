@@ -303,6 +303,15 @@ export class UserService {
 		});
 	}
 
+	// 获取用户发布的全部作品的id列表
+	async getWorksId(id: string) {
+		const results = await this.illustrationRepository.find({
+			where: { user: { id } },
+			order: { createdTime: 'DESC' },
+		});
+		return results.map((item) => item.id);
+	}
+
 	// 判断用户是否喜欢了某个插画
 	async isLiked(userId: string, illustrationId: string) {
 		const likedWorks = await this.likeWorksRepository.find({
@@ -336,6 +345,15 @@ export class UserService {
 			skip: (current - 1) * pageSize,
 			take: pageSize,
 		});
+	}
+
+	// 获取用户喜欢的作品的id列表
+	async getLikeWorksId(id: string) {
+		const results = await this.likeWorksRepository.find({
+			where: { user: { id } },
+			order: { likeTime: 'DESC' },
+		});
+		return results.map((item) => item.illustration.id);
 	}
 
 	// 获取用户喜欢的作品总数

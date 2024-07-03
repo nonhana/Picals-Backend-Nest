@@ -131,6 +131,15 @@ export class FavoriteService {
 		});
 	}
 
+	// 获取某个收藏夹的插画的id列表
+	async getFavoriteWorksIdList(favoriteId: string) {
+		const records = await this.collectRecordRepository.find({
+			where: { favorite: { id: favoriteId } },
+			order: { createdAt: 'DESC' },
+		});
+		return records.map((record) => record.illustration.id);
+	}
+
 	// 搜索收藏夹内的作品
 	async searchWorksInFavorite(
 		favoriteId: string,

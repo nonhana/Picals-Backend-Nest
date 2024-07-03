@@ -68,4 +68,9 @@ export class IllustratorController {
 			),
 		);
 	}
+
+	@Get('works-id') // 获取该插画家的作品id列表
+	async getIllustratorWorksId(@Query('id') id: string) {
+		return await this.illustratorService.getIllustratorWorksIdList(id);
+	}
 }

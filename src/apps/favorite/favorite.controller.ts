@@ -81,6 +81,11 @@ export class FavoriteController {
 		);
 	}
 
+	@Get('works-id') // 获取某收藏夹的作品id列表
+	async getFavoriteWorksId(@Query('id') favoriteId: string) {
+		return await this.favoriteService.getFavoriteWorksIdList(favoriteId);
+	}
+
 	@Get('search') // 搜索收藏夹内的作品
 	@AllowVisitor()
 	async searchWorksInFavorite(

@@ -128,6 +128,18 @@ export class IllustrationService {
 		});
 	}
 
+	// 获取已关注用户新作id列表
+	async getFollowingWorksId(id: string) {
+		const records = await this.workTempRepository.find({
+			where: { user: { id } },
+			relations: ['illustration'],
+			order: {
+				illustration: { createdTime: 'DESC' },
+			},
+		});
+		return records.map((record) => record.illustration.id);
+	}
+
 	// 获取已关注用户新作总数
 	async getFollowingWorksCount(id: string) {
 		return await this.workTempRepository.count({
@@ -367,6 +379,40 @@ export class IllustrationService {
 			.skip((current - 1) * pageSize)
 			.take(pageSize)
 			.getMany();
+	}
+
+	// 根据标签搜索作品，返回作品id列表
+	async getItemsIdByLabel(labelName: string, sortType: string) {
+		const label = await this.labelService.findItemByValue(labelName);
+		if (!label) throw new hanaError(10403);
+
+		// 根据 sortType 进行排序
+		let orderByClause: { [key: string]: 'ASC' | 'DESC' };
+		switch (sortType) {
+			case 'new':
+				orderByClause = { 'illustration.createdTime': 'DESC' }; // 按创建时间倒序排列
+				break;
+			case 'old':
+				orderByClause = { 'illustration.createdTime': 'ASC' }; // 按创建时间正序排列
+				break;
+			case 'like':
+				orderByClause = { 'illustration.likeCount': 'DESC' }; // 按喜欢数倒序排列
+				break;
+			case 'collect':
+				orderByClause = { 'illustration.collectCount': 'DESC' }; // 按收藏数倒序排列
+				break;
+			default:
+				throw new hanaError(10404); // 无效的排序类型
+		}
+
+		const illustrations = await this.illustrationRepository
+			.createQueryBuilder('illustration')
+			.leftJoinAndSelect('illustration.labels', 'label')
+			.where('label.id = :labelId', { labelId: label.id })
+			.orderBy(orderByClause) // 动态排序
+			.getMany();
+
+		return illustrations.map((illustration) => illustration.id);
 	}
 
 	// 增加作品浏览量

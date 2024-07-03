@@ -314,6 +314,11 @@ export class UserController {
 		);
 	}
 
+	@Get('works-id') // 获取用户发布的全部作品的id列表
+	async getWorksId(@Query('id') id: string) {
+		return await this.userService.getWorksId(id);
+	}
+
 	@Get('works-count') // 获取用户发布的作品总数
 	async getWorksCount(@Query('id') id: string) {
 		return await this.userService.getWorksCount(id);
@@ -337,6 +342,11 @@ export class UserController {
 					),
 			),
 		);
+	}
+
+	@Get('like-works-id') // 获取用户喜欢的作品id列表
+	async getLikeWorksId(@Query('id') id: string) {
+		return await this.userService.getLikeWorksId(id);
 	}
 
 	@Get('like-works-count') // 获取用户喜欢的作品总数

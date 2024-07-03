@@ -58,6 +58,13 @@ export class IllustrationController {
 		return await this.convertToIllustrationItemVO(works, userInfo);
 	}
 
+	@Get('following-id') // 获取已关注用户新作id列表
+	@RequireLogin()
+	async getFollowingWorksId(@UserInfo() userInfo: JwtUserData) {
+		const { id } = userInfo;
+		return await this.illustrationService.getFollowingWorksId(id);
+	}
+
 	@Get('following-count') // 获取已关注用户新作总数
 	@RequireLogin()
 	async getFollowingWorksCount(@UserInfo() userInfo: JwtUserData) {
@@ -129,6 +136,15 @@ export class IllustrationController {
 			current,
 		);
 		return await this.convertToIllustrationItemVO(works, userInfo);
+	}
+
+	@Get('search-id') // 搜索作品id列表
+	@AllowVisitor()
+	async getWorksIdByLabel(
+		@Query('labelName') labelName: string,
+		@Query('sortType') sortType: string,
+	) {
+		return await this.illustrationService.getItemsIdByLabel(labelName, sortType);
 	}
 
 	@Post('view') // 增加作品浏览量
