@@ -135,6 +135,7 @@ export class FavoriteService {
 	async getFavoriteWorksIdList(favoriteId: string) {
 		const records = await this.collectRecordRepository.find({
 			where: { favorite: { id: favoriteId } },
+			relations: ['illustration'],
 			order: { createdAt: 'DESC' },
 		});
 		return records.map((record) => record.illustration.id);

@@ -351,6 +351,7 @@ export class UserService {
 	async getLikeWorksId(id: string) {
 		const results = await this.likeWorksRepository.find({
 			where: { user: { id } },
+			relations: ['illustration'],
 			order: { likeTime: 'DESC' },
 		});
 		return results.map((item) => item.illustration.id);
