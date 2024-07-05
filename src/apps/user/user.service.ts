@@ -532,6 +532,7 @@ export class UserService {
 				.createQueryBuilder('user')
 				.leftJoin('user.illustrations', 'illustration')
 				.addSelect('illustration.id')
+				.orderBy('user.createdTime', 'DESC')
 				.skip((current - 1) * pageSize)
 				.take(pageSize)
 				.getMany();

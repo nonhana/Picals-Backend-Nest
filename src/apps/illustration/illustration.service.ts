@@ -109,6 +109,7 @@ export class IllustrationService {
 			return await this.illustrationRepository
 				.createQueryBuilder('illustration')
 				.leftJoinAndSelect('illustration.user', 'user')
+				.orderBy('illustration.createdTime', 'DESC')
 				.skip(pageSize * (current - 1))
 				.take(pageSize)
 				.getMany();
