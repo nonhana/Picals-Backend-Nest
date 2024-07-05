@@ -37,6 +37,7 @@ export class Illustration {
 		type: 'varchar',
 		length: 63,
 		comment: '插画名',
+		default: '',
 	})
 	name: string;
 
@@ -44,6 +45,7 @@ export class Illustration {
 		type: 'varchar',
 		length: 2047,
 		comment: '插画简介',
+		default: '',
 	})
 	intro: string;
 

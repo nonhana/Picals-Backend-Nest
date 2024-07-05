@@ -1,25 +1,21 @@
 import {
 	IsNotEmpty,
-	Length,
 	IsOptional,
 	ArrayMinSize,
 	ArrayMaxSize,
 	Matches,
+	MaxLength,
 } from 'class-validator';
 
 export class UploadIllustrationDto {
-	@IsNotEmpty({
-		message: '作品名称不能为空',
-	})
-	@Length(1, 63, {
+	@IsOptional()
+	@MaxLength(63, {
 		message: '作品名称长度不能大于63',
 	})
 	name: string;
 
-	@IsNotEmpty({
-		message: '作品简介不能为空',
-	})
-	@Length(1, 2047, {
+	@IsOptional()
+	@MaxLength(2047, {
 		message: '作品简介长度不能大于2047',
 	})
 	intro: string;
@@ -30,8 +26,8 @@ export class UploadIllustrationDto {
 	@ArrayMinSize(1, {
 		message: '至少需要一个标签',
 	})
-	@ArrayMaxSize(20, {
-		message: '标签数量不能超过20个',
+	@ArrayMaxSize(50, {
+		message: '标签数量不能超过50个',
 	})
 	labels: string[];
 
