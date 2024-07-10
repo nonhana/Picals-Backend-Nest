@@ -437,14 +437,14 @@ export class IllustrationService {
 	async getBackground(idList: number[]) {
 		const chosenIdList = idList;
 
-		const countCacheKey = 'illustrations:count';
+		const countCacheKey = 'images:count';
 
 		const result: string[] = [];
 
-		// 从全部的作品列表中随机选取一张
+		// 从全部的图片列表中随机选取一张
 		let totalCount: number = await this.cacheManager.get(countCacheKey);
 		if (!totalCount) {
-			totalCount = await this.illustrationRepository.count();
+			totalCount = await this.imageRepository.count();
 			await this.cacheManager.set(countCacheKey, totalCount, 1000 * 60 * 10);
 		}
 
@@ -453,20 +453,20 @@ export class IllustrationService {
 			if (chosenIdList.includes(randomOffset)) {
 				continue;
 			}
-			const randomItem = await this.illustrationRepository
-				.createQueryBuilder('illustration')
-				.leftJoinAndSelect('illustration.images', 'image')
+			const randomItem = await this.imageRepository
+				.createQueryBuilder('image')
 				.skip(randomOffset)
 				.take(1)
 				.getOne();
 
 			if (randomItem) {
-				for (const img of randomItem.images) {
-					if (img.originWidth / img.originHeight > 1.5 && img.originWidth > 1440) {
-						result.push(img.originUrl);
-						if (!chosenIdList.includes(randomOffset)) {
-							chosenIdList.push(randomOffset);
-						}
+				if (
+					randomItem.originWidth / randomItem.originHeight > 1.5 &&
+					randomItem.originWidth > 1440
+				) {
+					result.push(randomItem.originUrl);
+					if (!chosenIdList.includes(randomOffset)) {
+						chosenIdList.push(randomOffset);
 					}
 				}
 			}
