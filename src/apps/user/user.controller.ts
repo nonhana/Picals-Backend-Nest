@@ -249,7 +249,9 @@ export class UserController {
 	}
 
 	@Get('following') // 分页获取某用户的关注列表
+	@AllowVisitor()
 	async getFollowing(
+		@UserInfo() userInfo: JwtUserData,
 		@Query('id') id: string,
 		@Query('pageSize') pageSize: number,
 		@Query('current') current: number,
@@ -258,7 +260,15 @@ export class UserController {
 		if (pageSize <= 0) throw new hanaError(10202);
 		const records = await this.userService.getFollowingInPages(id, current, pageSize);
 
-		return records.map((record) => new UserItemVo(record.following, true));
+		return await Promise.all(
+			records.map(
+				async (record) =>
+					new UserItemVo(
+						record.follower,
+						userInfo ? await this.userService.isFollowed(userInfo.id, record.follower.id) : false,
+					),
+			),
+		);
 	}
 
 	@Get('following-count') // 获取用户的关注总数
@@ -267,7 +277,9 @@ export class UserController {
 	}
 
 	@Get('followers') // 分页获取用户的粉丝列表
+	@AllowVisitor()
 	async getFollowers(
+		@UserInfo() userInfo: JwtUserData,
 		@Query('id') id: string,
 		@Query('pageSize') pageSize: number,
 		@Query('current') current: number,
@@ -281,7 +293,7 @@ export class UserController {
 				async (record) =>
 					new UserItemVo(
 						record.follower,
-						await this.userService.isFollowed(id, record.follower.id),
+						userInfo ? await this.userService.isFollowed(userInfo.id, record.follower.id) : false,
 					),
 			),
 		);
