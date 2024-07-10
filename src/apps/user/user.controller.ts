@@ -264,8 +264,8 @@ export class UserController {
 			records.map(
 				async (record) =>
 					new UserItemVo(
-						record.follower,
-						userInfo ? await this.userService.isFollowed(userInfo.id, record.follower.id) : false,
+						record.following,
+						userInfo ? await this.userService.isFollowed(userInfo.id, record.following.id) : false,
 					),
 			),
 		);
