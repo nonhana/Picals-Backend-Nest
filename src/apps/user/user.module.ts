@@ -12,6 +12,7 @@ import { FavoriteModule } from '../favorite/favorite.module';
 import { WorkPushTemp } from '../illustration/entities/work-push-temp.entity';
 import { LikeWorks } from './entities/like-works.entity';
 import { Follow } from './entities/follow.entity';
+import { ImgHandlerModule } from 'src/img-handler/img-handler.module';
 
 @Module({
 	imports: [
@@ -25,6 +26,7 @@ import { Follow } from './entities/follow.entity';
 			Follow,
 		]),
 		EmailModule,
+		ImgHandlerModule,
 		forwardRef(() => LabelModule),
 		forwardRef(() => FavoriteModule),
 	],

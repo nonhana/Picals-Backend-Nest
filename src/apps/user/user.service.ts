@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { verifyPassword, hashPassword } from 'src/utils';
+import { verifyPassword, hashPassword, downloadFile, suffixGenerator } from 'src/utils';
 import { hanaError } from 'src/error/hanaError';
 import type { UpdateUserDto, LoginUserDto } from './dto';
 import { LabelService } from '../label/label.service';
@@ -14,6 +14,7 @@ import { WorkPushTemp } from '../illustration/entities/work-push-temp.entity';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { LikeWorks } from './entities/like-works.entity';
 import { Follow } from './entities/follow.entity';
+import { ImgHandlerService } from 'src/img-handler/img-handler.service';
 
 @Injectable()
 export class UserService {
@@ -25,6 +26,9 @@ export class UserService {
 
 	@Inject(FavoriteService)
 	private readonly favoriteService: FavoriteService;
+
+	@Inject(ImgHandlerService)
+	private readonly imgHandlerService: ImgHandlerService;
 
 	@InjectRepository(User)
 	private readonly userRepository: Repository<User>;
@@ -91,6 +95,31 @@ export class UserService {
 	// 更新用户信息
 	async updateInfo(id: string, updateUserDto: UpdateUserDto) {
 		if (!(await this.findUserById(id))) throw new hanaError(10101);
+
+		if (updateUserDto.avatar) {
+			const imgBuffer = await downloadFile(updateUserDto.avatar);
+			const fileName = suffixGenerator('little-avatar.jpg');
+			const thumbnail = (await this.imgHandlerService.generateThumbnail(
+				imgBuffer,
+				fileName,
+				'avatar',
+			)) as string;
+			await this.userRepository.save({ id, littleAvatar: thumbnail, ...updateUserDto });
+			return;
+		}
+
+		if (updateUserDto.backgroundImg) {
+			const imgBuffer = await downloadFile(updateUserDto.backgroundImg);
+			const fileName = suffixGenerator('background.jpg');
+			const thumbnail = (await this.imgHandlerService.generateThumbnail(
+				imgBuffer,
+				fileName,
+				'background',
+			)) as string;
+			await this.userRepository.save({ id, backgroundImg: thumbnail, ...updateUserDto });
+			return;
+		}
+
 		await this.userRepository.save({ id, ...updateUserDto });
 		return;
 	}

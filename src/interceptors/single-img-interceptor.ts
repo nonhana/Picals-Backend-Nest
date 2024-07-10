@@ -3,6 +3,7 @@ import * as multer from 'multer';
 import * as fs from 'fs';
 import * as path from 'path';
 import { hanaError } from 'src/error/hanaError';
+import { suffixGenerator } from 'src/utils';
 
 const SingleImgInterceptor = FileInterceptor('image', {
 	storage: multer.diskStorage({
@@ -17,9 +18,7 @@ const SingleImgInterceptor = FileInterceptor('image', {
 			cb(null, path.join(process.cwd(), 'uploads'));
 		},
 		filename: (_, file, cb) => {
-			const uniqueSuffix =
-				Date.now() + '-' + Math.round(Math.random() * 1e9) + '-' + file.originalname;
-			cb(null, file.fieldname + '-' + uniqueSuffix);
+			cb(null, file.fieldname + '-' + suffixGenerator(file.originalname));
 		},
 	}),
 	fileFilter: (_, file: Express.Multer.File, cb: multer.FileFilterCallback) => {

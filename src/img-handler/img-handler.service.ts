@@ -48,7 +48,7 @@ export class ImgHandlerService {
 	async generateThumbnail(
 		imageBuffer: Buffer,
 		fileName: string,
-		type: 'cover' | 'detail' = 'cover',
+		type: 'cover' | 'detail' | 'avatar' | 'background' = 'cover',
 	) {
 		const outputPath = path.join(__dirname, 'uploads', fileName + '-' + type + '-thumbnail.jpg');
 
@@ -64,9 +64,14 @@ export class ImgHandlerService {
 		if (type === 'cover') {
 			const maxSide = Math.max(metadata.width, metadata.height);
 			leastLength = maxSide < 400 ? maxSide : 400;
-		} else {
+		} else if (type === 'detail') {
 			const maxSide = Math.max(metadata.width, metadata.height);
 			leastLength = maxSide < 800 ? maxSide : 800;
+		} else if (type === 'background') {
+			const maxSide = Math.max(metadata.width, metadata.height);
+			leastLength = maxSide < 1200 ? maxSide : 1200;
+		} else {
+			leastLength = 200;
 		}
 
 		const newWidth = metadata.width > metadata.height ? null : leastLength;
@@ -75,13 +80,13 @@ export class ImgHandlerService {
 		// 使用sharp调整尺寸并压缩质量
 		const file = await sharp(imageBuffer)
 			.resize(newWidth, newHeight) // 按比例调整尺寸
-			.jpeg({ quality: 80 }) // 调整压缩质量，这里以JPEG格式为例，质量设为80
+			.jpeg({ quality: 80 })
 			.toFile(outputPath);
 
 		const targetPath = 'images' + outputPath.split('uploads')[1].replace(/\\/g, '/');
 
 		const resultUrl = await this.r2Service.uploadFileToR2(outputPath, targetPath);
-		if (type === 'cover') {
+		if (type === 'cover' || type === 'avatar') {
 			return resultUrl;
 		} else {
 			return {

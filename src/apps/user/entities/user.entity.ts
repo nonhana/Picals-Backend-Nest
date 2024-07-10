@@ -72,6 +72,15 @@ export class User {
 
 	@Column({
 		type: 'varchar',
+		length: 127,
+		comment: '用户小头像图片URL地址',
+		name: 'little_avatar',
+		default: 'https://moe.nonhana.pics/images/image-1718290795662-173119738-default-avatar.jpg',
+	})
+	littleAvatar: string;
+
+	@Column({
+		type: 'varchar',
 		length: 255,
 		comment: '用户签名',
 		default: '请多多指教！~',
