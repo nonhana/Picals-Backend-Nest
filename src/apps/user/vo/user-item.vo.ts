@@ -13,7 +13,7 @@ export class UserItemVo {
 		this.id = user.id;
 		this.username = user.username;
 		this.email = user.email;
-		this.avatar = user.avatar;
+		this.avatar = user.littleAvatar;
 		this.intro = user.signature;
 		this.isFollowing = isFollowing;
 		if (user.illustrations) this.works = user.illustrations.map((item) => item.id);

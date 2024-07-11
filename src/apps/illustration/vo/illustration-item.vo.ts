@@ -13,7 +13,7 @@ export class IllustrationItemVO {
 	createdAt: string;
 
 	constructor(illustration: Illustration, isLiked: boolean) {
-		this.authorAvatar = illustration.user.avatar;
+		this.authorAvatar = illustration.user.littleAvatar;
 		this.authorId = illustration.user.id;
 		this.authorName = illustration.user.username;
 		this.id = illustration.id;

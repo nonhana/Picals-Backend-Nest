@@ -7,6 +7,7 @@ export class userLoginInfoVo {
 	email: string;
 	backgroundImg: string;
 	avatar: string;
+	littleAvatar: string;
 	signature: string;
 	gender: number;
 	fanCount: number;
@@ -26,6 +27,7 @@ export class userLoginInfoVo {
 		this.email = user.email;
 		this.backgroundImg = user.backgroundImg;
 		this.avatar = user.avatar;
+		this.littleAvatar = user.littleAvatar;
 		this.signature = user.signature;
 		this.gender = user.gender;
 		this.fanCount = user.fanCount;

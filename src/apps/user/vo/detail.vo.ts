@@ -7,6 +7,10 @@ export class DetailUserVo {
 	 */
 	avatar: string;
 	/**
+	 * 用户头像缩略图
+	 */
+	littleAvatar: string;
+	/**
 	 * 用户背景图
 	 */
 	backgroundImg: string;
@@ -72,6 +76,7 @@ export class DetailUserVo {
 		this.username = user.username;
 		this.email = user.email;
 		this.avatar = user.avatar;
+		this.littleAvatar = user.littleAvatar;
 		this.backgroundImg = user.backgroundImg;
 		this.gender = user.gender;
 		this.likeCount = user.likeCount;

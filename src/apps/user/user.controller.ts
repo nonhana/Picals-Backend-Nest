@@ -311,7 +311,9 @@ export class UserController {
 	}
 
 	@Get('works') // 分页获取用户发布的作品列表
+	@AllowVisitor()
 	async getWorks(
+		@UserInfo() userInfo: JwtUserData,
 		@Query('id') id: string,
 		@Query('pageSize') pageSize: number,
 		@Query('current') current: number,
@@ -321,7 +323,11 @@ export class UserController {
 		const works = await this.userService.getWorksInPages(id, current, pageSize);
 		return await Promise.all(
 			works.map(
-				async (work) => new IllustrationItemVO(work, await this.userService.isLiked(id, work.id)),
+				async (work) =>
+					new IllustrationItemVO(
+						work,
+						userInfo ? await this.userService.isLiked(userInfo.id, work.id) : false,
+					),
 			),
 		);
 	}
@@ -337,7 +343,9 @@ export class UserController {
 	}
 
 	@Get('like-works') // 分页获取用户喜欢的作品列表
+	@AllowVisitor()
 	async getLikeWorks(
+		@UserInfo() userInfo: JwtUserData,
 		@Query('id') id: string,
 		@Query('pageSize') pageSize: number,
 		@Query('current') current: number,
@@ -350,7 +358,7 @@ export class UserController {
 				async (item) =>
 					new IllustrationItemVO(
 						item.illustration,
-						await this.userService.isLiked(id, item.illustration.id),
+						userInfo ? await this.userService.isLiked(userInfo.id, item.illustration.id) : false,
 					),
 			),
 		);
