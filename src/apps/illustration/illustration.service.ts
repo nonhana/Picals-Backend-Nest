@@ -537,7 +537,8 @@ export class IllustrationService {
 		newImage.originHeight = metadata.height;
 
 		// 将图片压缩为缩略图
-		const fileName = url.split('/').pop().split('.')[0].split('-').pop();
+		const fileName = url.split('/').pop().split('.')[0];
+		console.log('fileName', fileName);
 		const result = (await this.imgHandlerService.generateThumbnail(
 			response.data,
 			fileName,
