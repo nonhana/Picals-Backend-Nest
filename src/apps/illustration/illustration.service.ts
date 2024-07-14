@@ -17,6 +17,10 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import * as sharp from 'sharp';
 import axios from 'axios';
 import { Image } from './entities/image.entity';
+import * as fs from 'fs';
+import * as puppeteer from 'puppeteer';
+import { R2Service } from 'src/r2/r2.service';
+import { suffixGenerator } from 'src/utils';
 
 @Injectable()
 export class IllustrationService {
@@ -34,6 +38,9 @@ export class IllustrationService {
 
 	@Inject(ImgHandlerService)
 	private readonly imgHandlerService: ImgHandlerService;
+
+	@Inject(R2Service)
+	private readonly r2Service: R2Service;
 
 	@InjectRepository(Illustration)
 	private readonly illustrationRepository: Repository<Illustration>;
@@ -538,7 +545,6 @@ export class IllustrationService {
 
 		// 将图片压缩为缩略图
 		const fileName = url.split('/').pop().split('.')[0];
-		console.log('fileName', fileName);
 		const result = (await this.imgHandlerService.generateThumbnail(
 			response.data,
 			fileName,
@@ -555,5 +561,68 @@ export class IllustrationService {
 		newImage.illustration = await this.illustrationRepository.findOneBy({ id: illustrationId });
 
 		return await this.imageRepository.save(newImage);
+	}
+
+	// 根据指定的文件路径，读取其中的图片信息并上传
+	async uploadDir(dirPath: string, userId: string) {
+		console.log('当前上传用户的id', userId);
+		if (!fs.existsSync(dirPath)) throw new hanaError(10507);
+
+		const illustratorId = dirPath.split('\\').pop();
+		const illustratorHomeUrl = `https://www.pixiv.net/users/${illustratorId}`;
+		let illustratorName = '';
+		const browser = await puppeteer.launch();
+		const page = await browser.newPage();
+		await page.goto(illustratorHomeUrl);
+		await page.waitForSelector('.sc-1bcui9t-5');
+		illustratorName = await page.$eval('.sc-1bcui9t-5', (el) => el.textContent);
+		await browser.close();
+		const illustratorEntity = await this.illustratorService.findItemByName(illustratorName);
+		if (!illustratorEntity)
+			await this.illustratorService.createItem({
+				name: illustratorName,
+				homeUrl: illustratorHomeUrl,
+			});
+
+		const pixivIdObj: { [key: string]: string[] } = {};
+		const files = fs.readdirSync(dirPath);
+		files.forEach((file) => {
+			if (file.endsWith('.jpg') || file.endsWith('.png')) {
+				const pixivId = file.split('_')[0];
+				if (!pixivIdObj[pixivId]) {
+					pixivIdObj[pixivId] = [];
+				}
+				pixivIdObj[pixivId].push(`${dirPath}\\${file}`);
+			}
+		});
+
+		const tagsFilePath = `${dirPath}\\tags.json`;
+		if (!fs.existsSync(tagsFilePath)) throw new hanaError(10508);
+		const tagsFileContent = fs.readFileSync(tagsFilePath, 'utf-8');
+		const tagsObj = JSON.parse(tagsFileContent);
+
+		for (const pixivWorkId of Object.keys(pixivIdObj)) {
+			const workUrl = `https://www.pixiv.net/artworks/${pixivWorkId}`;
+			const uploadForm: UploadIllustrationDto = {
+				labels: tagsObj[pixivWorkId],
+				reprintType: 1,
+				openComment: true,
+				isAIGenerated: false,
+				imgList: [],
+				workUrl,
+				illustratorInfo: {
+					name: illustratorName,
+					homeUrl: illustratorHomeUrl,
+				},
+			};
+			for (const imgPath of pixivIdObj[pixivWorkId]) {
+				const targetPath = 'images-' + suffixGenerator(imgPath.split('\\').pop());
+				const result = await this.r2Service.uploadFileToR2(imgPath, targetPath);
+				uploadForm.imgList.push(result);
+			}
+			await this.submitForm(userId, uploadForm);
+			console.log(`作品 ${pixivWorkId} 上传成功`);
+		}
+		return;
 	}
 }

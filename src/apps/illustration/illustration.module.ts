@@ -16,7 +16,15 @@ import { ImgHandlerModule } from 'src/img-handler/img-handler.module';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([Illustration, WorkPushTemp, Illustrator, User, Favorite, Image]),
+		TypeOrmModule.forFeature([
+			Illustration,
+			WorkPushTemp,
+			Illustrator,
+			User,
+			Favorite,
+			Image,
+			R2Module,
+		]),
 		UserModule,
 		LabelModule,
 		IllustratorModule,

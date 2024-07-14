@@ -21,7 +21,7 @@ export class R2Service {
 	}
 
 	// 上传单个文件至 Cloudflare R2
-	uploadFileToR2 = (filePath: string, targetPath: string): Promise<string> => {
+	uploadFileToR2 = (filePath: string, targetPath: string, deleteSource = true): Promise<string> => {
 		return new Promise((resolve, reject) => {
 			const putCommand = new PutObjectCommand({
 				Bucket: this.bucket,
@@ -31,7 +31,7 @@ export class R2Service {
 			this.S3.send(putCommand)
 				.then(() => {
 					resolve(`https://${this.configService.get('R2_DOMAIN')}/${targetPath}`);
-					fs.unlinkSync(filePath);
+					if (deleteSource) fs.unlinkSync(filePath);
 				})
 				.catch((error) => {
 					reject(error);

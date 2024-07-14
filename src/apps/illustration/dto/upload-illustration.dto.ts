@@ -12,13 +12,13 @@ export class UploadIllustrationDto {
 	@MaxLength(63, {
 		message: '作品名称长度不能大于63',
 	})
-	name: string;
+	name?: string;
 
 	@IsOptional()
 	@MaxLength(2047, {
 		message: '作品简介长度不能大于2047',
 	})
-	intro: string;
+	intro?: string;
 
 	@IsNotEmpty({
 		message: '作品标签不能为空',

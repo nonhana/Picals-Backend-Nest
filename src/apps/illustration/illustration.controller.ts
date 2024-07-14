@@ -163,4 +163,17 @@ export class IllustrationController {
 		await this.illustrationService.urlToImage();
 		return '转换成功！';
 	}
+
+	/**
+	 * 将指定路径下的图片上传到数据库。
+	 * 该接口属 **内部测试** 接口，不对外开放。
+	 * 对应的目录是由 Pixiv 爬虫项目 [PixivCrawler](https://github.com/CWHer/PixivCrawler)生成的。
+	 * @param id - 用户id
+	 * @param dirPath - 指定的文件夹路径
+	 */
+	@Post('upload-dir')
+	async uploadDir(@Body('user_id') id: string, @Body('path') dirPath: string) {
+		await this.illustrationService.uploadDir(dirPath, id);
+		return '上传文件夹成功！';
+	}
 }

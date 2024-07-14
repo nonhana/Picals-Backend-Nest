@@ -38,6 +38,7 @@ export const errorMessages: Map<number, string> = new Map([
 	[10504, 'This work can not been found as a liked work'],
 	[10505, 'This work has already been collected'],
 	[10506, 'This work can not been found as a collected work'],
+	[10507, 'Unable to find the corresponding directory based on the path'],
 
 	// 收藏相关错误
 	[10601, 'Favorite not found'],

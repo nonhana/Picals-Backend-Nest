@@ -39,6 +39,7 @@
 		"dayjs": "^1.11.11",
 		"mysql2": "^3.9.2",
 		"nodemailer": "^6.9.12",
+		"puppeteer": "^22.13.0",
 		"redis": "^4.6.13",
 		"reflect-metadata": "^0.1.13",
 		"rxjs": "^7.8.1",
