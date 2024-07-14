@@ -45,6 +45,17 @@ export class IllustrationController {
 		return await this.convertToIllustrationItemVO(works, userInfo);
 	}
 
+	@Get('latest') // 分页获取最新作品列表
+	@AllowVisitor()
+	async getLatest(
+		@UserInfo() userInfo: JwtUserData,
+		@Query('pageSize') pageSize: number = 1,
+		@Query('current') current: number = 30,
+	) {
+		const works = await this.illustrationService.getLatestItemsInPages(pageSize, current);
+		return await this.convertToIllustrationItemVO(works, userInfo);
+	}
+
 	@Get('following') // 分页获取已关注用户新作
 	@RequireLogin()
 	async getFollowingWorks(
@@ -175,5 +186,10 @@ export class IllustrationController {
 	async uploadDir(@Body('user_id') id: string, @Body('path') dirPath: string) {
 		await this.illustrationService.uploadDir(dirPath, id);
 		return '上传文件夹成功！';
+	}
+
+	@Get('work-count') // 获取目前数据库内的作品总数
+	async getWorkCount() {
+		return await this.illustrationService.getWorkCount();
 	}
 }

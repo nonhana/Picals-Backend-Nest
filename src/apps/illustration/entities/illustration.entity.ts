@@ -13,6 +13,7 @@ import {
 	Column,
 	CreateDateColumn,
 	Entity,
+	Index,
 	JoinColumn,
 	JoinTable,
 	ManyToMany,
@@ -128,6 +129,7 @@ export class Illustration {
 		comment: '插画创建时间',
 		name: 'created_time',
 	})
+	@Index()
 	createdTime: Date;
 
 	@UpdateDateColumn({

@@ -231,16 +231,27 @@ export class UserService {
 		const user = await this.findUserById(id);
 		if (!user) throw new hanaError(10101);
 
-		return await this.followRepository
+		const followings = await this.followRepository
 			.createQueryBuilder('follow')
 			.leftJoinAndSelect('follow.following', 'following')
-			.leftJoin('following.illustrations', 'illustration')
-			.addSelect('illustration.id')
 			.where('follow.follower = :id', { id })
 			.orderBy('follow.followTime', 'DESC')
 			.skip((current - 1) * pageSize)
 			.take(pageSize)
 			.getMany();
+
+		for (const follow of followings) {
+			const latestIllustrations = await this.illustrationRepository.find({
+				where: { user: { id: follow.following.id } },
+				relations: ['user'],
+				order: { createdTime: 'DESC' },
+				take: 4,
+			});
+
+			follow.following.illustrations = latestIllustrations;
+		}
+
+		return followings;
 	}
 
 	// 获取用户的关注用户总数
@@ -255,16 +266,27 @@ export class UserService {
 		const user = await this.findUserById(id);
 		if (!user) throw new hanaError(10101);
 
-		return await this.followRepository
+		const followers = await this.followRepository
 			.createQueryBuilder('follow')
 			.leftJoinAndSelect('follow.follower', 'follower')
-			.leftJoin('follower.illustrations', 'illustration')
-			.addSelect('illustration.id')
 			.where('follow.following = :id', { id })
 			.orderBy('follow.followTime', 'DESC')
 			.skip((current - 1) * pageSize)
 			.take(pageSize)
 			.getMany();
+
+		for (const follow of followers) {
+			const latestIllustrations = await this.illustrationRepository.find({
+				where: { user: { id: follow.follower.id } },
+				relations: ['user'],
+				order: { createdTime: 'DESC' },
+				take: 4,
+			});
+
+			follow.follower.illustrations = latestIllustrations;
+		}
+
+		return followers;
 	}
 
 	// 获取用户的全部粉丝列表
@@ -395,16 +417,25 @@ export class UserService {
 
 	// 分页搜索用户
 	async searchUser(keyword: string, current: number, pageSize: number) {
-		const queryBuilder = this.userRepository.createQueryBuilder('user');
-		queryBuilder
+		const users = await this.userRepository
+			.createQueryBuilder('user')
 			.where('user.username like :keyword', { keyword: `%${keyword}%` })
-			.leftJoin('user.illustrations', 'illustration')
-			.addSelect('illustration.id')
 			.skip((current - 1) * pageSize)
 			.take(pageSize)
-			.orderBy('user.username', 'ASC');
+			.getMany();
 
-		return await queryBuilder.getMany();
+		for (const user of users) {
+			const latestIllustrations = await this.illustrationRepository.find({
+				where: { user: { id: user.id } },
+				relations: ['user'],
+				order: { createdTime: 'DESC' },
+				take: 4,
+			});
+
+			user.illustrations = latestIllustrations;
+		}
+
+		return users;
 	}
 
 	// 获取搜索到的用户总数
@@ -535,11 +566,18 @@ export class UserService {
 
 				const randomItem = await this.userRepository
 					.createQueryBuilder('user')
-					.leftJoin('user.illustrations', 'illustration')
-					.addSelect('illustration.id')
 					.skip(randomOffset)
 					.take(1)
 					.getOne();
+
+				const latestIllustrations = await this.illustrationRepository.find({
+					where: { user: { id: randomItem.id } },
+					relations: ['user'],
+					order: { createdTime: 'DESC' },
+					take: 4,
+				});
+
+				randomItem.illustrations = latestIllustrations;
 
 				if (randomItem.id === userId) {
 					continue;

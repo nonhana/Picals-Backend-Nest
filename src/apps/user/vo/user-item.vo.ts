@@ -1,4 +1,5 @@
 import type { User } from '../entities/user.entity';
+import { IllustrationItemVO } from 'src/apps/illustration/vo/illustration-item.vo';
 
 export class UserItemVo {
 	id: string;
@@ -7,7 +8,7 @@ export class UserItemVo {
 	avatar: string;
 	intro: string;
 	isFollowing: boolean;
-	works?: string[]; // 作品id列表
+	works?: IllustrationItemVO[];
 
 	constructor(user: User, isFollowing: boolean) {
 		this.id = user.id;
@@ -16,6 +17,7 @@ export class UserItemVo {
 		this.avatar = user.littleAvatar;
 		this.intro = user.signature;
 		this.isFollowing = isFollowing;
-		if (user.illustrations) this.works = user.illustrations.map((item) => item.id);
+		if (user.illustrations)
+			this.works = user.illustrations.map((work) => new IllustrationItemVO(work, false));
 	}
 }

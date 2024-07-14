@@ -63,7 +63,6 @@ export class IllustrationService {
 	// 分页随机获取推荐作品列表
 	async getItemsInPages(pageSize: number, current: number, userId: string | undefined) {
 		if (userId) {
-			const countCacheKey = 'illustrations:count';
 			const userCacheKey = `user:${userId}:recommended-illustrations-indexes`;
 
 			if (Number(current) === 1) {
@@ -76,13 +75,7 @@ export class IllustrationService {
 			}
 
 			const results = [];
-
-			let totalCount: number = await this.cacheManager.get(countCacheKey);
-			if (!totalCount) {
-				totalCount = await this.illustrationRepository.count();
-				await this.cacheManager.set(countCacheKey, totalCount, 1000 * 60 * 10);
-			}
-
+			const totalCount = await this.getWorkCount();
 			const totalCountList = new Array(totalCount).fill(0).map((_, index) => index);
 
 			while (results.length < pageSize) {
@@ -113,14 +106,19 @@ export class IllustrationService {
 
 			return results;
 		} else {
-			return await this.illustrationRepository
-				.createQueryBuilder('illustration')
-				.leftJoinAndSelect('illustration.user', 'user')
-				.orderBy('illustration.createdTime', 'DESC')
-				.skip(pageSize * (current - 1))
-				.take(pageSize)
-				.getMany();
+			return await this.getLatestItemsInPages(pageSize, current);
 		}
+	}
+
+	// 分页获取最新作品列表
+	async getLatestItemsInPages(pageSize: number, current: number) {
+		return await this.illustrationRepository
+			.createQueryBuilder('illustration')
+			.leftJoinAndSelect('illustration.user', 'user')
+			.orderBy('illustration.createdTime', 'DESC')
+			.skip(pageSize * (current - 1))
+			.take(pageSize)
+			.getMany();
 	}
 
 	// 获取已关注用户新作
@@ -624,5 +622,16 @@ export class IllustrationService {
 			console.log(`作品 ${pixivWorkId} 上传成功`);
 		}
 		return;
+	}
+
+	// 获取数据库内部的作品总数
+	async getWorkCount() {
+		const countCacheKey = 'illustrations:count';
+		let totalCount: number = await this.cacheManager.get(countCacheKey);
+		if (!totalCount) {
+			totalCount = await this.illustrationRepository.count();
+			await this.cacheManager.set(countCacheKey, totalCount, 1000 * 60 * 10);
+		}
+		return totalCount;
 	}
 }
