@@ -425,13 +425,14 @@ export class UserController {
 	@AllowVisitor()
 	async getRecommendUser(
 		@UserInfo() userInfo: JwtUserData,
+		@Query('id') tempId: string,
 		@Query('pageSize') pageSize: number = 1,
 		@Query('current') current: number = 6,
 	) {
 		const userList = await this.userService.getRecommendUserInPages(
 			current,
 			pageSize,
-			userInfo ? userInfo.id : undefined,
+			userInfo ? userInfo.id : tempId,
 		);
 		return await Promise.all(
 			userList.map(

@@ -531,78 +531,67 @@ export class UserService {
 	}
 
 	// 分页获取推荐用户列表
-	async getRecommendUserInPages(current: number, pageSize: number, userId: string | undefined) {
-		if (userId) {
-			const countCacheKey = 'users:count';
-			const userCacheKey = `user:${userId}:recommended-users-indexes`;
+	async getRecommendUserInPages(current: number, pageSize: number, userId: string) {
+		const countCacheKey = 'users:count';
+		const userCacheKey = `user:${userId}:recommended-users-indexes`;
 
-			if (Number(current) === 1) {
-				await this.cacheManager.del(userCacheKey);
-			}
-
-			let recommendedIndexes: number[] = await this.cacheManager.get(userCacheKey);
-			if (!recommendedIndexes) {
-				recommendedIndexes = [];
-			}
-
-			const results = [];
-
-			let totalCount: number = await this.cacheManager.get(countCacheKey);
-			if (!totalCount) {
-				totalCount = await this.userRepository.createQueryBuilder('user').getCount();
-				await this.cacheManager.set(countCacheKey, totalCount, 1000 * 60 * 10);
-			}
-
-			const totalCountList = new Array(totalCount).fill(0).map((_, index) => index);
-
-			while (results.length < pageSize) {
-				if (recommendedIndexes.length === totalCount - 1) {
-					return results;
-				}
-
-				const diff = totalCountList.filter((index) => !recommendedIndexes.includes(index));
-
-				const randomOffset = diff[Math.floor(Math.random() * diff.length)];
-
-				const randomItem = await this.userRepository
-					.createQueryBuilder('user')
-					.skip(randomOffset)
-					.take(1)
-					.getOne();
-
-				const latestIllustrations = await this.illustrationRepository.find({
-					where: { user: { id: randomItem.id } },
-					relations: ['user'],
-					order: { createdTime: 'DESC' },
-					take: 4,
-				});
-
-				randomItem.illustrations = latestIllustrations;
-
-				if (randomItem.id === userId) {
-					continue;
-				}
-
-				if (!randomItem || recommendedIndexes.includes(randomOffset)) {
-					continue;
-				}
-
-				results.push(randomItem);
-				recommendedIndexes.push(randomOffset);
-
-				await this.cacheManager.set(userCacheKey, recommendedIndexes, 1000 * 60 * 30);
-			}
-
-			return results;
-		} else {
-			return await this.userRepository
-				.createQueryBuilder('user')
-				.leftJoin('user.illustrations', 'illustration')
-				.addSelect('illustration.id')
-				.orderBy('user.createdTime', 'DESC')
-				.skip((current - 1) * pageSize)
-				.take(pageSize)
-				.getMany();
+		if (Number(current) === 1) {
+			await this.cacheManager.del(userCacheKey);
 		}
+
+		let recommendedIndexes: number[] = await this.cacheManager.get(userCacheKey);
+		if (!recommendedIndexes) {
+			recommendedIndexes = [];
+		}
+
+		const results = [];
+
+		let totalCount: number = await this.cacheManager.get(countCacheKey);
+		if (!totalCount) {
+			totalCount = await this.userRepository.createQueryBuilder('user').getCount();
+			await this.cacheManager.set(countCacheKey, totalCount, 1000 * 60 * 10);
+		}
+
+		const totalCountList = new Array(totalCount).fill(0).map((_, index) => index);
+
+		while (results.length < pageSize) {
+			if (recommendedIndexes.length === totalCount - 1) {
+				return results;
+			}
+
+			const diff = totalCountList.filter((index) => !recommendedIndexes.includes(index));
+
+			const randomOffset = diff[Math.floor(Math.random() * diff.length)];
+
+			const randomItem = await this.userRepository
+				.createQueryBuilder('user')
+				.skip(randomOffset)
+				.take(1)
+				.getOne();
+
+			const latestIllustrations = await this.illustrationRepository.find({
+				where: { user: { id: randomItem.id } },
+				relations: ['user'],
+				order: { createdTime: 'DESC' },
+				take: 4,
+			});
+
+			randomItem.illustrations = latestIllustrations;
+
+			if (randomItem.id === userId) {
+				continue;
+			}
+
+			if (!randomItem || recommendedIndexes.includes(randomOffset)) {
+				continue;
+			}
+
+			results.push(randomItem);
+			recommendedIndexes.push(randomOffset);
+
+			await this.cacheManager.set(userCacheKey, recommendedIndexes, 1000 * 60 * 30);
+		}
+
+		return results;
 	}
 }

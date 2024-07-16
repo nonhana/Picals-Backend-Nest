@@ -34,13 +34,14 @@ export class IllustrationController {
 	@AllowVisitor()
 	async getRecommend(
 		@UserInfo() userInfo: JwtUserData,
+		@Query('id') tempId: string,
 		@Query('pageSize') pageSize: number = 1,
 		@Query('current') current: number = 30,
 	) {
 		const works = await this.illustrationService.getItemsInPages(
 			pageSize,
 			current,
-			userInfo ? userInfo.id : undefined,
+			userInfo ? userInfo.id : tempId,
 		);
 		return await this.convertToIllustrationItemVO(works, userInfo);
 	}

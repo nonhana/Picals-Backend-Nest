@@ -61,53 +61,49 @@ export class IllustrationService {
 	private readonly imageRepository: Repository<Image>;
 
 	// 分页随机获取推荐作品列表
-	async getItemsInPages(pageSize: number, current: number, userId: string | undefined) {
-		if (userId) {
-			const userCacheKey = `user:${userId}:recommended-illustrations-indexes`;
+	async getItemsInPages(pageSize: number, current: number, userId: string) {
+		const userCacheKey = `user:${userId}:recommended-illustrations-indexes`;
 
-			if (Number(current) === 1) {
-				await this.cacheManager.del(userCacheKey);
-			}
-
-			let recommendedIndexes: number[] = await this.cacheManager.get(userCacheKey);
-			if (!recommendedIndexes) {
-				recommendedIndexes = [];
-			}
-
-			const results = [];
-			const totalCount = await this.getWorkCount();
-			const totalCountList = new Array(totalCount).fill(0).map((_, index) => index);
-
-			while (results.length < pageSize) {
-				if (recommendedIndexes.length === totalCount) {
-					return results;
-				}
-
-				const diff = totalCountList.filter((index) => !recommendedIndexes.includes(index));
-
-				const randomOffset = diff[Math.floor(Math.random() * diff.length)];
-
-				const randomItem = await this.illustrationRepository
-					.createQueryBuilder('illustration')
-					.leftJoinAndSelect('illustration.user', 'user')
-					.skip(randomOffset)
-					.take(1)
-					.getOne();
-
-				if (!randomItem || recommendedIndexes.includes(randomOffset)) {
-					continue;
-				}
-
-				results.push(randomItem);
-				recommendedIndexes.push(randomOffset);
-
-				await this.cacheManager.set(userCacheKey, recommendedIndexes, 1000 * 60 * 30);
-			}
-
-			return results;
-		} else {
-			return await this.getLatestItemsInPages(pageSize, current);
+		if (Number(current) === 1) {
+			await this.cacheManager.del(userCacheKey);
 		}
+
+		let recommendedIndexes: number[] = await this.cacheManager.get(userCacheKey);
+		if (!recommendedIndexes) {
+			recommendedIndexes = [];
+		}
+
+		const results = [];
+		const totalCount = await this.getWorkCount();
+		const totalCountList = new Array(totalCount).fill(0).map((_, index) => index);
+
+		while (results.length < pageSize) {
+			if (recommendedIndexes.length === totalCount) {
+				return results;
+			}
+
+			const diff = totalCountList.filter((index) => !recommendedIndexes.includes(index));
+
+			const randomOffset = diff[Math.floor(Math.random() * diff.length)];
+
+			const randomItem = await this.illustrationRepository
+				.createQueryBuilder('illustration')
+				.leftJoinAndSelect('illustration.user', 'user')
+				.skip(randomOffset)
+				.take(1)
+				.getOne();
+
+			if (!randomItem || recommendedIndexes.includes(randomOffset)) {
+				continue;
+			}
+
+			results.push(randomItem);
+			recommendedIndexes.push(randomOffset);
+
+			await this.cacheManager.set(userCacheKey, recommendedIndexes, 1000 * 60 * 30);
+		}
+
+		return results;
 	}
 
 	// 分页获取最新作品列表
