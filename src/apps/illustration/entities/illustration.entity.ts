@@ -124,6 +124,14 @@ export class Illustration {
 	})
 	commentCount: number;
 
+	@Column({
+		type: 'tinyint',
+		comment: '插画状态。0-审核中，1-已发布，2-已删除',
+		name: 'status',
+		default: 0,
+	})
+	status: number;
+
 	@CreateDateColumn({
 		type: 'timestamp',
 		comment: '插画创建时间',

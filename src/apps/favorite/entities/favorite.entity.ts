@@ -62,6 +62,14 @@ export class Favorite {
 	})
 	workCount: number;
 
+	@Column({
+		type: 'boolean',
+		comment: '收藏夹状态，0-正常，1-删除',
+		name: 'status',
+		default: 0,
+	})
+	status: number;
+
 	@CreateDateColumn({
 		type: 'timestamp',
 		comment: '收藏夹创建时间',

@@ -150,6 +150,14 @@ export class User {
 	})
 	favoriteCount: number;
 
+	@Column({
+		type: 'boolean',
+		comment: '用户状态，0-正常，1-删除',
+		name: 'status',
+		default: 0,
+	})
+	status: number;
+
 	@CreateDateColumn({
 		type: 'timestamp',
 		comment: '用户创建时间',
