@@ -40,6 +40,16 @@ export class Illustrator {
 	@Column({
 		type: 'varchar',
 		length: 255,
+		comment: '插画家头像缩略图地址URL',
+		name: 'little_avatar',
+		nullable: true,
+		default: null,
+	})
+	littleAvatar: string;
+
+	@Column({
+		type: 'varchar',
+		length: 255,
 		comment: '插画家简介',
 		default: '暂无简介',
 	})

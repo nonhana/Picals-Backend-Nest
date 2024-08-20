@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Illustrator } from './entities/illustrator.entity';
 import { Repository } from 'typeorm';
@@ -7,9 +7,14 @@ import { hanaError } from 'src/error/hanaError';
 import type { EditIllustratorDto } from './dto/edit-illustrator.dto';
 import { Illustration } from '../illustration/entities/illustration.entity';
 import { Like } from 'typeorm';
+import { downloadFile, suffixGenerator } from 'src/utils';
+import { ImgHandlerService } from 'src/img-handler/img-handler.service';
 
 @Injectable()
 export class IllustratorService {
+	@Inject()
+	private readonly imgHandlerService: ImgHandlerService;
+
 	@InjectRepository(Illustrator)
 	private readonly illustratorRepository: Repository<Illustrator>;
 
@@ -35,6 +40,21 @@ export class IllustratorService {
 	async createItem(newIllustratorDto: NewIllustratorDto) {
 		const existedIllustrator = await this.findItemByName(newIllustratorDto.name);
 		if (existedIllustrator) throw new hanaError(10902);
+
+		if (newIllustratorDto.avatar) {
+			const imgBuffer = await downloadFile(newIllustratorDto.avatar);
+			const fileName = suffixGenerator('little-avatar.jpg');
+			const thumbnail = (await this.imgHandlerService.generateThumbnail(
+				imgBuffer,
+				fileName,
+				'avatar',
+			)) as string;
+			return await this.illustratorRepository.save({
+				...newIllustratorDto,
+				littleAvatar: thumbnail,
+			});
+		}
+
 		return await this.illustratorRepository.save(newIllustratorDto);
 	}
 
@@ -42,6 +62,22 @@ export class IllustratorService {
 	async editItem(id: string, editIllustratorDto: EditIllustratorDto) {
 		const illustrator = await this.findItemById(id);
 		if (!illustrator) throw new hanaError(10901);
+
+		if (editIllustratorDto.avatar && illustrator.avatar !== editIllustratorDto.avatar) {
+			const imgBuffer = await downloadFile(editIllustratorDto.avatar);
+			const fileName = suffixGenerator('little-avatar.jpg');
+			const thumbnail = (await this.imgHandlerService.generateThumbnail(
+				imgBuffer,
+				fileName,
+				'avatar',
+			)) as string;
+			return await this.illustratorRepository.save({
+				...illustrator,
+				...editIllustratorDto,
+				littleAvatar: thumbnail,
+			});
+		}
+
 		return await this.illustratorRepository.save({ ...illustrator, ...editIllustratorDto });
 	}
 
