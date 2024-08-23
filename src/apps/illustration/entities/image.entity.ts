@@ -37,6 +37,14 @@ export class Image {
 	originHeight: number;
 
 	@Column({
+		type: 'int',
+		width: 11,
+		comment: '原图大小，以KB为单位',
+		default: 0,
+	})
+	originSize: number;
+
+	@Column({
 		type: 'varchar',
 		length: 255,
 		comment: '缩略图地址',
@@ -56,6 +64,14 @@ export class Image {
 		comment: '缩略图高度',
 	})
 	thumbnailHeight: number;
+
+	@Column({
+		type: 'int',
+		width: 11,
+		comment: '缩略图大小，以KB为单位',
+		default: 0,
+	})
+	thumbnailSize: number;
 
 	@ManyToOne(() => Illustration, (Illustration) => Illustration.images, {
 		onDelete: 'CASCADE',

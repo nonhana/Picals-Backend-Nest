@@ -495,6 +495,7 @@ export class IllustrationService {
 				const image = sharp(response.data);
 				const metadata = await image.metadata();
 
+				newImage.originSize = response.headers['content-length'] / 1024;
 				newImage.originWidth = metadata.width;
 				newImage.originHeight = metadata.height;
 
@@ -508,7 +509,9 @@ export class IllustrationService {
 					url: string;
 					width: number;
 					height: number;
+					size: number;
 				};
+				newImage.thumbnailSize = result.size / 1024;
 				newImage.thumbnailUrl = result.url;
 				newImage.thumbnailWidth = result.width;
 				newImage.thumbnailHeight = result.height;
@@ -534,6 +537,7 @@ export class IllustrationService {
 		const image = sharp(response.data);
 		const metadata = await image.metadata();
 
+		newImage.originSize = response.headers['content-length'] / 1024;
 		newImage.originWidth = metadata.width;
 		newImage.originHeight = metadata.height;
 
@@ -547,7 +551,9 @@ export class IllustrationService {
 			url: string;
 			width: number;
 			height: number;
+			size: number;
 		};
+		newImage.thumbnailSize = result.size / 1024;
 		newImage.thumbnailUrl = result.url;
 		newImage.thumbnailWidth = result.width;
 		newImage.thumbnailHeight = result.height;
@@ -629,5 +635,25 @@ export class IllustrationService {
 			await this.cacheManager.set(countCacheKey, totalCount, 1000 * 60 * 10);
 		}
 		return totalCount;
+	}
+
+	// 更新数据库所有的图片大小信息
+	async updateImageSize() {
+		const imgList = await this.imageRepository.find();
+		let imgCount = imgList.length;
+		for (const img of imgList) {
+			const { originUrl, thumbnailUrl, originSize, thumbnailSize } = img;
+			if (originSize && thumbnailSize) {
+				console.log(`已更新 ${originUrl} 的大小信息，剩余 ${--imgCount} 张图片`);
+				continue;
+			}
+			const originResponse = await axios.get(originUrl, { responseType: 'arraybuffer' });
+			img.originSize = originResponse.headers['content-length'] / 1024;
+			const thumbnailResponse = await axios.get(thumbnailUrl, { responseType: 'arraybuffer' });
+			img.thumbnailSize = thumbnailResponse.headers['content-length'] / 1024;
+			await this.imageRepository.save(img);
+			console.log(`已更新 ${img.originUrl} 的大小信息，剩余 ${--imgCount} 张图片`);
+		}
+		return '更新成功';
 	}
 }

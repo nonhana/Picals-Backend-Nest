@@ -193,4 +193,10 @@ export class IllustrationController {
 	async getWorkCount() {
 		return await this.illustrationService.getWorkCount();
 	}
+
+	@Get('update-image-size')
+	async updateImageSize() {
+		await this.illustrationService.updateImageSize();
+		return '更新成功！';
+	}
 }

@@ -58,6 +58,7 @@ export class ImgHandlerService {
 				url: resultUrl,
 				width: file.width,
 				height: file.height,
+				size: file.size,
 			};
 		}
 	}
