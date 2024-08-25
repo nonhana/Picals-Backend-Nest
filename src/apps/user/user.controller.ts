@@ -149,9 +149,17 @@ export class UserController {
 	@AllowVisitor()
 	async getUserSimpleInfo(@UserInfo() userInfo: JwtUserData, @Query('id') id: string) {
 		const user = await this.userService.getSimpleInfo(id);
+		const workLikeList: boolean[] = [];
+		if (userInfo && user.illustrations) {
+			for (const work of user.illustrations) {
+				const status = await this.userService.isLiked(userInfo.id, work.id);
+				workLikeList.push(status);
+			}
+		}
 		return new UserItemVo(
 			user,
 			userInfo ? await this.userService.isFollowed(userInfo.id, id) : false,
+			workLikeList,
 		);
 	}
 
@@ -261,13 +269,20 @@ export class UserController {
 		const records = await this.userService.getFollowingInPages(id, current, pageSize);
 
 		return await Promise.all(
-			records.map(
-				async (record) =>
-					new UserItemVo(
-						record.following,
-						userInfo ? await this.userService.isFollowed(userInfo.id, record.following.id) : false,
-					),
-			),
+			records.map(async (record) => {
+				const workLikeList: boolean[] = [];
+				if (userInfo && record.following.illustrations) {
+					for (const work of record.following.illustrations) {
+						const status = await this.userService.isLiked(userInfo.id, work.id);
+						workLikeList.push(status);
+					}
+				}
+				new UserItemVo(
+					record.following,
+					userInfo ? await this.userService.isFollowed(userInfo.id, record.following.id) : false,
+					workLikeList,
+				);
+			}),
 		);
 	}
 
@@ -289,13 +304,20 @@ export class UserController {
 		const records = await this.userService.getFollowersInPages(id, current, pageSize);
 
 		return await Promise.all(
-			records.map(
-				async (record) =>
-					new UserItemVo(
-						record.follower,
-						userInfo ? await this.userService.isFollowed(userInfo.id, record.follower.id) : false,
-					),
-			),
+			records.map(async (record) => {
+				const workLikeList: boolean[] = [];
+				if (userInfo && record.follower.illustrations) {
+					for (const work of record.follower.illustrations) {
+						const status = await this.userService.isLiked(userInfo.id, work.id);
+						workLikeList.push(status);
+					}
+				}
+				new UserItemVo(
+					record.follower,
+					userInfo ? await this.userService.isFollowed(userInfo.id, record.follower.id) : false,
+					workLikeList,
+				);
+			}),
 		);
 	}
 
@@ -386,13 +408,20 @@ export class UserController {
 		if (pageSize <= 0) throw new hanaError(10202);
 		const userList = await this.userService.searchUser(keyword, current, pageSize);
 		return await Promise.all(
-			userList.map(
-				async (user) =>
-					new UserItemVo(
-						user,
-						userInfo ? await this.userService.isFollowed(userInfo.id, user.id) : false,
-					),
-			),
+			userList.map(async (user) => {
+				const workLikeList: boolean[] = [];
+				if (userInfo && user.illustrations) {
+					for (const work of user.illustrations) {
+						const status = await this.userService.isLiked(userInfo.id, work.id);
+						workLikeList.push(status);
+					}
+				}
+				new UserItemVo(
+					user,
+					userInfo ? await this.userService.isFollowed(userInfo.id, user.id) : false,
+					workLikeList,
+				);
+			}),
 		);
 	}
 
@@ -435,13 +464,20 @@ export class UserController {
 			userInfo ? userInfo.id : tempId,
 		);
 		return await Promise.all(
-			userList.map(
-				async (user) =>
-					new UserItemVo(
-						user,
-						userInfo ? await this.userService.isFollowed(userInfo.id, user.id) : false,
-					),
-			),
+			userList.map(async (user) => {
+				const workLikeList: boolean[] = [];
+				if (userInfo && user.illustrations) {
+					for (const work of user.illustrations) {
+						const status = await this.userService.isLiked(userInfo.id, work.id);
+						workLikeList.push(status);
+					}
+				}
+				new UserItemVo(
+					user,
+					userInfo ? await this.userService.isFollowed(userInfo.id, user.id) : false,
+					workLikeList,
+				);
+			}),
 		);
 	}
 }
