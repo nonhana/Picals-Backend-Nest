@@ -277,7 +277,7 @@ export class UserController {
 						workLikeList.push(status);
 					}
 				}
-				new UserItemVo(
+				return new UserItemVo(
 					record.following,
 					userInfo ? await this.userService.isFollowed(userInfo.id, record.following.id) : false,
 					workLikeList,
@@ -312,7 +312,7 @@ export class UserController {
 						workLikeList.push(status);
 					}
 				}
-				new UserItemVo(
+				return new UserItemVo(
 					record.follower,
 					userInfo ? await this.userService.isFollowed(userInfo.id, record.follower.id) : false,
 					workLikeList,
@@ -416,7 +416,7 @@ export class UserController {
 						workLikeList.push(status);
 					}
 				}
-				new UserItemVo(
+				return new UserItemVo(
 					user,
 					userInfo ? await this.userService.isFollowed(userInfo.id, user.id) : false,
 					workLikeList,
@@ -472,7 +472,7 @@ export class UserController {
 						workLikeList.push(status);
 					}
 				}
-				new UserItemVo(
+				return new UserItemVo(
 					user,
 					userInfo ? await this.userService.isFollowed(userInfo.id, user.id) : false,
 					workLikeList,
