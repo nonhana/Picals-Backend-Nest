@@ -6,8 +6,8 @@ import {
 	UploadedFiles,
 	UseInterceptors,
 } from '@nestjs/common';
-import { SingleImgInterceptor } from './interceptors/single-img-interceptor';
-import { MultipleImgsInterceptor } from './interceptors/multiple-imgs-interceptor';
+import { SingleImgInterceptor } from './interceptors/single-img.interceptor';
+import { MultipleImgsInterceptor } from './interceptors/multiple-imgs.interceptor';
 import { R2Service } from './r2/r2.service';
 import { hanaError } from './error/hanaError';
 
