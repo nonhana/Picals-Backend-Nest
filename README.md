@@ -2,7 +2,7 @@
 
 [Picals-Frontend-React](https://github.com/nonhana/Picals-Frontend-React)配套的后端项目，采用的技术栈为：
 
-Nest.js + TypeScript + TypeOrm + pm2 + MySQL + Redis。
+Nest.js + TypeScript + TypeOrm + MySQL + Redis。
 
 ### 项目介绍
 
@@ -90,10 +90,11 @@ picals-backend
 - **`app.module.ts`**: 主应用模块，定义了应用的主要模块和依赖关系。
 
 - **`apps`**: 这里是各个应用模块的存放位置，每个应用模块可能代表一个功能子系统。
+
   - **`各个应用模块`**: 具体模块应该包含业务逻辑、控制器、服务等文件。每个应用模块都对应着一个实体相关的所有信息。
-  
+
     以 user 模块举例，每一个应用模块的目录结构如下：
-  
+
     ```
     user
     ├─ dto
@@ -111,54 +112,48 @@ picals-backend
        ├─ login.vo.ts
        └─ user-item.vo.ts
     ```
-  
+
     - `dto` 文件夹用于定义数据传输对象，用于数据验证和传输。
     - `entities` 文件夹定义了数据库实体类，描述用户表的结构和字段。如果一个模块包含多个实体，那么需要新建多个 `entity` 。
     - `user.controller.ts` 定义了控制器，处理用户的 HTTP 请求。
     - `user.module.ts` 定义了用户模块的配置和依赖。
     - `user.service.ts` 包含了用户模块的业务逻辑和数据处理。
     - `vo` 文件夹定义了视图对象，用于统一返回给客户端的数据格式。
-  
+
 - **`decorators`**: 存放自定义装饰器的文件夹。
-  
-  - **`login.decorator.ts`**: 自定义的登录装饰器，可能用于在方法或类上添加登录验证逻辑。
-  
+
+  - **`login.decorator.ts`**: 自定义的登录装饰器，用于验证用户身份。
+
 - **`email`**: 电子邮件相关功能模块。
   - **`email.module.ts`**: 定义电子邮件功能模块。
   - **`email.service.ts`**: 提供电子邮件服务的业务逻辑。
-  
 - **`error`**: 错误处理相关的文件夹。
-  
+
   - **`error.filter.ts`**: 全局错误过滤器，用于捕获和处理应用中的错误。
-  - **`errorList.ts`**: 错误列表，可能定义了一些错误类型和信息。
-  - **`hanaError.ts`**: 自定义的错误处理类或逻辑。
-  
+  - **`errorList.ts`**: 错误列表，定义了一些具体的错误类型和信息。
+  - **`hanaError.ts`**: 自定义错误处理逻辑。
+
 - **`guards`**: 守卫文件夹，存放用于路由保护的守卫。
-  - **`auth.guard.ts`**: 鉴权守卫，通常用于保护路由，只有通过身份验证的请求才能访问。
-  
+  - **`auth.guard.ts`**: 鉴权守卫，只有通过身份验证的请求才能访问。
 - **`img-handler`**: 图像处理模块。
   - **`img-handler.module.ts`**: 图像处理功能模块。
   - **`img-handler.service.ts`**: 提供图像处理服务的业务逻辑。
-  
 - **`interceptors`**: 拦截器文件夹，存放各种请求或响应拦截器。
-  - **`invoke-record.interceptor.ts`**: 请求调用记录拦截器，可能用于记录请求信息。
+  - **`invoke-record.interceptor.ts`**: 请求调用记录拦截器，主要用来记录日志。
   - **`multiple-imgs-interceptor.ts`**: 处理多张图片的拦截器。
-  - **`response.interceptor.ts`**: 响应拦截器，可能用于统一格式化响应数据。
+  - **`response.interceptor.ts`**: 响应拦截器，统一格式化响应数据。
   - **`single-img-interceptor.ts`**: 处理单张图片的拦截器。
-  
-- **`main.ts`**: 应用入口文件，通常包含启动应用的代码。
+- **`main.ts`**: 应用入口文件，包含启动应用的代码。
 
-- **`r2`**: R2 相关模块，R2 可能是你们项目中一个特定的服务或功能模块。
+- **`r2`**: 本项目的图床采用 Cloudflare R2 服务。
   - **`r2.module.ts`**: R2 功能模块。
-  - **`r2.service.ts`**: 提供 R2 服务的业务逻辑。
-  
+  - **`r2.service.ts`**: 提供 R2 服务的业务逻辑，如上传图片等功能。
 - **`types`**: 类型定义文件夹，存放 TypeScript 类型定义文件。
-  - **`express.d.ts`**: Express 类型定义文件，可能是自定义或扩展的 Express 类型定义。
-  
+  - **`express.d.ts`**: Express 类型定义文件，根据需求扩展 Express 类型定义。
 - **`utils`**: 工具类文件夹，存放各种工具函数。
   - **`downloadFile.ts`**: 文件下载工具函数。
-  - **`index.ts`**: 工具函数的索引文件。
   - **`password.ts`**: 密码处理相关工具函数。
+  - **`index.ts`**: 索引文件，统一导出。
 
 可见，本项目的目录结构较为清晰：
 
