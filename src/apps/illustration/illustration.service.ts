@@ -75,7 +75,9 @@ export class IllustrationService {
 
 		const results = [];
 		const totalCount = await this.getWorkCount();
-		const totalCountList = new Array(totalCount).fill(0).map((_, index) => index);
+		const totalCountList = Array.from({ length: totalCount })
+			.fill(0)
+			.map((_, index) => index);
 
 		while (results.length < pageSize) {
 			if (recommendedIndexes.length === totalCount) {
@@ -160,7 +162,7 @@ export class IllustrationService {
 
 		const user = await this.userRepository.findOneBy({ id: userId });
 
-		const entityInfo: { [key: string]: any } = {
+		const entityInfo: Record<string, any> = {
 			...basicInfo,
 			user: userEntity,
 			labels: labelsEntity,

@@ -179,7 +179,7 @@ export class IllustrationController {
 	/**
 	 * 将指定路径下的图片上传到数据库。
 	 * 该接口属 **内部测试** 接口，不对外开放。
-	 * 对应的目录是由 Pixiv 爬虫项目 [PixivCrawler](https://github.com/CWHer/PixivCrawler)生成的。
+	 * 对应的目录是由 Pixiv 爬虫项目 [PixivCrawler](https://github.com/CWHer/PixivCrawler) 生成的。
 	 * @param id - 用户id
 	 * @param dirPath - 指定的文件夹路径
 	 */
@@ -194,7 +194,7 @@ export class IllustrationController {
 		return await this.illustrationService.getWorkCount();
 	}
 
-	@Get('update-image-size')
+	@Get('update-image-size') // 更新数据库所有的图片大小信息
 	async updateImageSize() {
 		await this.illustrationService.updateImageSize();
 		return '更新成功！';

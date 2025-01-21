@@ -35,6 +35,7 @@ import * as path from 'node:path';
 import { LikeWorks } from './apps/user/entities/like-works.entity';
 import { Follow } from './apps/user/entities/follow.entity';
 import { Image } from './apps/illustration/entities/image.entity';
+import { InitsModule } from './inits/inits.module';
 
 @Module({
 	imports: [
@@ -114,6 +115,7 @@ import { Image } from './apps/illustration/entities/image.entity';
 		FavoriteModule,
 		R2Module,
 		ImgHandlerModule,
+		InitsModule,
 	],
 	providers: [
 		// 全局错误过滤器
