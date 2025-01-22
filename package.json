@@ -21,7 +21,7 @@
 		"test:e2e": "jest --config ./test/jest-e2e.json"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "^3.726.1",
+		"@aws-sdk/client-s3": "^3.732.0",
 		"@nestjs/cache-manager": "^2.3.0",
 		"@nestjs/common": "^10.4.15",
 		"@nestjs/config": "^3.3.0",
@@ -54,7 +54,7 @@
 		"@types/express": "^4.17.21",
 		"@types/jest": "^29.5.14",
 		"@types/multer": "^1.4.12",
-		"@types/node": "^20.17.13",
+		"@types/node": "^20.17.14",
 		"@types/nodemailer": "^6.4.17",
 		"@types/shelljs": "^0.8.15",
 		"@types/supertest": "^2.0.16",
@@ -62,7 +62,7 @@
 		"@typescript-eslint/parser": "^6.21.0",
 		"eslint": "^8.57.1",
 		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-prettier": "^5.2.2",
+		"eslint-plugin-prettier": "^5.2.3",
 		"jest": "^29.7.0",
 		"prettier": "^3.4.2",
 		"shelljs": "^0.8.5",
