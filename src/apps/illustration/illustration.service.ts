@@ -21,6 +21,7 @@ import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
 import { R2Service } from 'src/r2/r2.service';
 import { suffixGenerator } from 'src/utils';
+import type { DEVICES_TYPE } from '@/types';
 
 @Injectable()
 export class IllustrationService {
@@ -437,7 +438,7 @@ export class IllustrationService {
 	}
 
 	// 获取背景图
-	async getBackground(idList: number[]) {
+	async getBackground(idList: number[], device: DEVICES_TYPE) {
 		const chosenIdList = idList;
 
 		const countCacheKey = 'images:count';
@@ -453,25 +454,26 @@ export class IllustrationService {
 
 		while (result.length === 0) {
 			const randomOffset = Math.floor(Math.random() * totalCount);
-			if (chosenIdList.includes(randomOffset)) {
-				continue;
-			}
+			if (chosenIdList.includes(randomOffset)) continue;
 			const randomItem = await this.imageRepository
 				.createQueryBuilder('image')
 				.skip(randomOffset)
 				.take(1)
 				.getOne();
 
-			if (randomItem) {
-				if (
-					randomItem.originWidth / randomItem.originHeight > 1.5 &&
-					randomItem.originWidth > 1440
-				) {
-					result.push(randomItem.originUrl);
-					if (!chosenIdList.includes(randomOffset)) {
-						chosenIdList.push(randomOffset);
-					}
-				}
+			if (!randomItem) continue;
+
+			const isDesktop = device === 'desktop';
+			const isValidImage = isDesktop
+				? randomItem.originWidth / randomItem.originHeight > 1.5 && randomItem.originWidth > 1440
+				: randomItem.originHeight / randomItem.originWidth > 1.5 && randomItem.originWidth > 720;
+
+			if (!isValidImage) return;
+
+			result.push(randomItem.originUrl);
+
+			if (!chosenIdList.includes(randomOffset)) {
+				chosenIdList.push(randomOffset);
 			}
 		}
 

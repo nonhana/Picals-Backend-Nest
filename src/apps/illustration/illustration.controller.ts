@@ -1,12 +1,13 @@
 import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import { IllustrationService } from './illustration.service';
 import { UploadIllustrationDto } from './dto/upload-illustration.dto';
-import { RequireLogin, UserInfo, AllowVisitor } from 'src/decorators/login.decorator';
-import { JwtUserData } from 'src/guards/auth.guard';
-import { UserService } from '../user/user.service';
+import { RequireLogin, UserInfo, AllowVisitor } from '@/decorators/login.decorator';
+import { JwtUserData } from '@/guards/auth.guard';
+import { UserService } from '@/apps/user/user.service';
 import { IllustrationItemVO } from './vo/illustration-item.vo';
 import type { Illustration } from './entities/illustration.entity';
 import { IllustrationDetailVO } from './vo/illustration-detail.vo';
+import { DEVICES_TYPE } from '@/types';
 
 @Controller('illustration')
 export class IllustrationController {
@@ -166,8 +167,11 @@ export class IllustrationController {
 	}
 
 	@Post('background') // 获取背景图
-	async getBackground(@Body('chosenIdList') idList: number[]) {
-		return await this.illustrationService.getBackground(idList);
+	async getBackground(
+		@Body('chosenIdList') idList: number[],
+		@Body('device') device: DEVICES_TYPE = 'desktop',
+	) {
+		return await this.illustrationService.getBackground(idList, device);
 	}
 
 	@Post('url-to-image') // 将图片url转为Image实体存入数据库
