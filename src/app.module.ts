@@ -21,7 +21,7 @@ import { Comment } from './apps/comment/entities/comment.entity';
 import { AuthGuard } from './guards/auth.guard';
 import { EmailModule } from './email/email.module';
 import type { RedisClientOptions } from 'redis';
-import { redisStore } from 'cache-manager-redis-yet';
+import { createKeyv } from '@keyv/redis';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Favorite } from './apps/favorite/entities/favorite.entity';
 import { WorkPushTemp } from './apps/illustration/entities/work-push-temp.entity';
@@ -91,16 +91,17 @@ import { InitsModule } from './inits/inits.module';
 		}),
 		CacheModule.registerAsync<RedisClientOptions>({
 			isGlobal: true,
-			useFactory(configService: ConfigService) {
+			useFactory: async (configService: ConfigService) => {
 				return {
-					store: async () =>
-						await redisStore({
+					stores: [
+						createKeyv({
 							socket: {
 								host: configService.get('REDIS_HOST'),
 								port: configService.get('REDIS_PORT'),
 							},
 							database: configService.get('REDIS_DB'),
 						}),
+					],
 				};
 			},
 			inject: [ConfigService],
