@@ -31,8 +31,8 @@
 		"@nestjs/mapped-types": "*",
 		"@nestjs/platform-express": "^11.0.9",
 		"@nestjs/typeorm": "^11.0.0",
+		"argon2": "^0.41.1",
 		"axios": "^1.7.9",
-		"bcrypt": "^5.1.1",
 		"cache-manager": "^6.4.0",
 		"class-transformer": "^0.5.1",
 		"class-validator": "^0.14.1",
@@ -50,7 +50,6 @@
 		"@nestjs/cli": "^11.0.2",
 		"@nestjs/schematics": "^11.0.0",
 		"@nestjs/testing": "^11.0.9",
-		"@types/bcrypt": "^5.0.2",
 		"@types/express": "^5.0.0",
 		"@types/jest": "^29.5.14",
 		"@types/multer": "^1.4.12",
@@ -90,5 +89,10 @@
 		],
 		"coverageDirectory": "../coverage",
 		"testEnvironment": "node"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"argon2"
+		]
 	}
 }
