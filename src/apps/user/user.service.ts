@@ -552,7 +552,7 @@ export class UserService {
 			await this.cacheManager.set(countCacheKey, totalCount, 1000 * 60 * 10);
 		}
 
-		const totalCountList = new Array(totalCount).fill(0).map((_, index) => index);
+		const totalCountList = Array.from({ length: totalCount }, (_, index) => index);
 
 		while (results.length < pageSize) {
 			if (recommendedIndexes.length === totalCount - 1) {
