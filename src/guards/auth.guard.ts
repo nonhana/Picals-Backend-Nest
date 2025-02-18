@@ -3,7 +3,7 @@ import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { Observable } from 'rxjs';
 import { Reflector } from '@nestjs/core';
-import type { AuthenticatedRequest } from 'express';
+import type { AuthenticatedRequest } from '@/types';
 
 export interface JwtUserData {
 	id: string;
@@ -40,7 +40,7 @@ export class AuthGuard implements CanActivate {
 					request.user = info;
 				}
 				return true;
-			} catch (error) {
+			} catch {
 				throw new UnauthorizedException('Token expired, please log in again');
 			}
 		}
@@ -58,7 +58,7 @@ export class AuthGuard implements CanActivate {
 			const info = this.jwtService.verify(token);
 			request.user = info;
 			return true;
-		} catch (error) {
+		} catch {
 			throw new UnauthorizedException('Token expired, please log in again');
 		}
 	}

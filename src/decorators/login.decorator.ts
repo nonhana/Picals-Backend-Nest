@@ -1,6 +1,6 @@
 import type { ExecutionContext } from '@nestjs/common';
 import { SetMetadata, createParamDecorator } from '@nestjs/common';
-import type { AuthenticatedRequest } from 'express';
+import type { AuthenticatedRequest } from '@/types';
 
 // RequireLogin 装饰器，用于指定哪个接口需要登录
 export const RequireLogin = () => SetMetadata('require-login', true);
