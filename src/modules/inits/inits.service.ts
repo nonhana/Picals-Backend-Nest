@@ -59,6 +59,13 @@ export class InitsService {
 	}
 
 	async mock() {
+		const existedCount = await this.illustrationRepository.count();
+
+		if (existedCount > 0) {
+			console.log('已经存在数据，无需初始化');
+			return;
+		}
+
 		console.log('用户 email:', this.email);
 
 		const targetUser = await this.userService.findUserByEmail(this.email);

@@ -9,7 +9,8 @@ import {
 	Logger,
 } from '@nestjs/common';
 import { tap, type Observable } from 'rxjs';
-import type { AuthenticatedRequest, Response } from 'express';
+import type { Response } from 'express';
+import type { AuthenticatedRequest } from '@/types';
 
 @Injectable()
 export class InvokeRecordInterceptor implements NestInterceptor {

@@ -31,7 +31,6 @@ import { AppController } from './app.controller';
 import { R2Service } from './r2/r2.service';
 import { R2Module } from './r2/r2.module';
 import { ImgHandlerModule } from './img-handler/img-handler.module';
-import * as path from 'node:path';
 import { LikeWorks } from './modules/user/entities/like-works.entity';
 import { Follow } from './modules/user/entities/follow.entity';
 import { Image } from './modules/illustration/entities/image.entity';
@@ -39,10 +38,7 @@ import { InitsModule } from './modules/inits/inits.module';
 
 @Module({
 	imports: [
-		ConfigModule.forRoot({
-			isGlobal: true,
-			envFilePath: path.join(__dirname, '../.env'),
-		}),
+		ConfigModule.forRoot({ isGlobal: true }),
 		TypeOrmModule.forRootAsync({
 			useFactory(configService: ConfigService) {
 				return {
