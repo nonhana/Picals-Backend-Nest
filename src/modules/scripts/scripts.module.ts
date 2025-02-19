@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { InitsService } from './inits.service';
+import { ScriptsService } from './scripts.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '@/modules/user/entities/user.entity';
 import { Illustrator } from '@/modules/illustrator/entities/illustrator.entity';
@@ -16,6 +16,8 @@ import { Image } from '@/modules/illustration/entities/image.entity';
 import { UserModule } from '@/modules/user/user.module';
 import { LabelModule } from '@/modules/label/label.module';
 import { IllustratorModule } from '@/modules/illustrator/illustrator.module';
+import { IllustrationModule } from '@/modules/illustration/illustration.module';
+import { R2Module } from '@/r2/r2.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { createKeyv, type RedisClientOptions } from '@keyv/redis';
@@ -91,7 +93,9 @@ import { JwtModule } from '@nestjs/jwt';
 		UserModule,
 		LabelModule,
 		IllustratorModule,
+		IllustrationModule,
+		R2Module,
 	],
-	providers: [InitsService],
+	providers: [ScriptsService],
 })
-export class InitsModule {}
+export class ScriptsModule {}

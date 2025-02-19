@@ -34,7 +34,6 @@ import { ImgHandlerModule } from './img-handler/img-handler.module';
 import { LikeWorks } from './modules/user/entities/like-works.entity';
 import { Follow } from './modules/user/entities/follow.entity';
 import { Image } from './modules/illustration/entities/image.entity';
-import { InitsModule } from './modules/inits/inits.module';
 
 @Module({
 	imports: [
@@ -112,7 +111,6 @@ import { InitsModule } from './modules/inits/inits.module';
 		FavoriteModule,
 		R2Module,
 		ImgHandlerModule,
-		InitsModule,
 	],
 	providers: [
 		// 全局错误过滤器

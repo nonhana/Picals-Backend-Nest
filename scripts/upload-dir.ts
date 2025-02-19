@@ -4,9 +4,20 @@ import { ScriptsService } from '@/modules/scripts/scripts.service';
 
 async function bootstrap() {
 	const app = await NestFactory.createApplicationContext(ScriptsModule);
-	const ScriptService = app.get(ScriptsService);
+	const scriptsService = app.get(ScriptsService);
 
-	await ScriptService.mock();
+	let targetDir = '';
+	let email = '';
+
+	// 从命令行参数中获取目标目录和用户邮箱
+	if (process.argv.length > 2) {
+		targetDir = process.argv[2];
+	}
+	if (process.argv.length > 3) {
+		email = process.argv[3];
+	}
+
+	await scriptsService.uploadDir(targetDir, email);
 	await app.close();
 }
 
