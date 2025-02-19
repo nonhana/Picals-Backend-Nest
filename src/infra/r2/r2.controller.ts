@@ -6,13 +6,13 @@ import {
 	UploadedFiles,
 	UseInterceptors,
 } from '@nestjs/common';
-import { SingleImgInterceptor } from './interceptors/single-img.interceptor';
-import { MultipleImgsInterceptor } from './interceptors/multiple-imgs.interceptor';
-import { R2Service } from './r2/r2.service';
-import { hanaError } from './error/hanaError';
+import { SingleImgInterceptor } from '@/common/interceptors/single-img.interceptor';
+import { MultipleImgsInterceptor } from '@/common/interceptors/multiple-imgs.interceptor';
+import { R2Service } from '@/infra/r2/r2.service';
+import { hanaError } from '@/common/error/hanaError';
 
-@Controller('tool')
-export class AppController {
+@Controller('r2')
+export class R2Controller {
 	@Inject()
 	private readonly r2Service: R2Service;
 

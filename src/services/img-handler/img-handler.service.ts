@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as sharp from 'sharp';
 import * as fs from 'fs';
 import * as path from 'path';
-import { R2Service } from 'src/r2/r2.service';
+import { R2Service } from '@/infra/r2/r2.service';
 
 @Injectable()
 export class ImgHandlerService {

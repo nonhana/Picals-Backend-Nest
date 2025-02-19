@@ -17,7 +17,7 @@ import { UserModule } from '@/modules/user/user.module';
 import { LabelModule } from '@/modules/label/label.module';
 import { IllustratorModule } from '@/modules/illustrator/illustrator.module';
 import { IllustrationModule } from '@/modules/illustration/illustration.module';
-import { R2Module } from '@/r2/r2.module';
+import { R2Module } from '@/infra/r2/r2.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { createKeyv, type RedisClientOptions } from '@keyv/redis';

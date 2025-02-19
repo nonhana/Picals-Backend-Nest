@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Inject, Query } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
-import { JwtUserData } from 'src/guards/auth.guard';
+import { RequireLogin, UserInfo } from '@/common/decorators/login.decorator';
+import { JwtUserData } from '@/common/guards/auth.guard';
 import { CommentItemVO } from './vo/comment-item.vo';
 
 @Controller('comment')

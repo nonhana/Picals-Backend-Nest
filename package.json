@@ -7,7 +7,7 @@
 	"license": "UNLICENSED",
 	"scripts": {
 		"build": "nest build && npm run copy",
-		"copy": "ts-node copy.ts",
+		"copy": "ts-node scripts/copy.ts",
 		"start": "nest start",
 		"start:dev": "nest start --watch",
 		"start:debug": "nest start --debug --watch",

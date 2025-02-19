@@ -2,14 +2,14 @@ import { Controller, Post, Body, Inject, Get, Query, UnauthorizedException } fro
 import { UserService } from './user.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto, RegisterUserDto, UpdateUserDto } from './dto';
-import { hanaError } from 'src/error/hanaError';
+import { hanaError } from '@/common/error/hanaError';
 import { ConfigService } from '@nestjs/config';
-import { EmailService } from 'src/email/email.service';
+import { EmailService } from '@/infra/email/email.service';
 import { DetailUserVo } from './vo/detail.vo';
 import { LoginUserVo, userLoginInfoVo } from './vo/login.vo';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { JwtUserData } from 'src/guards/auth.guard';
-import { RequireLogin, UserInfo, AllowVisitor } from 'src/decorators/login.decorator';
+import { JwtUserData } from '@/common/guards/auth.guard';
+import { RequireLogin, UserInfo, AllowVisitor } from '@/common/decorators/login.decorator';
 import { UserItemVo } from './vo/user-item.vo';
 import { LabelItemVO } from '../label/vo/label-item.vo';
 import { IllustrationItemVO } from '../illustration/vo/illustration-item.vo';

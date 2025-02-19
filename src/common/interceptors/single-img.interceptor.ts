@@ -2,7 +2,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import * as fs from 'fs';
 import * as path from 'path';
-import { hanaError } from 'src/error/hanaError';
+import { hanaError } from '@/common/error/hanaError';
 import { suffixGenerator } from 'src/utils';
 
 const SingleImgInterceptor = FileInterceptor('image', {

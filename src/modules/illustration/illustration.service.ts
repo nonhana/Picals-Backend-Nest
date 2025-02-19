@@ -7,17 +7,17 @@ import { LabelService } from '../label/label.service';
 import { UserService } from '../user/user.service';
 import type { UploadIllustrationDto } from './dto/upload-illustration.dto';
 import { WorkPushTemp } from './entities/work-push-temp.entity';
-import { hanaError } from 'src/error/hanaError';
+import { hanaError } from '@/common/error/hanaError';
 import { User } from '../user/entities/user.entity';
 import { Illustrator } from '../illustrator/entities/illustrator.entity';
 import { Favorite } from '../favorite/entities/favorite.entity';
 import { downloadFile } from 'src/utils';
-import { ImgHandlerService } from 'src/img-handler/img-handler.service';
+import { ImgHandlerService } from '@/services/img-handler/img-handler.service';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import * as sharp from 'sharp';
 import axios from 'axios';
 import { Image } from './entities/image.entity';
-import { R2Service } from 'src/r2/r2.service';
+import { R2Service } from '@/infra/r2/r2.service';
 import type { DEVICES_TYPE } from '@/types';
 
 @Injectable()

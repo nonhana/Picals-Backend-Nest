@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Inject, Query, Body } from '@nestjs/common';
 import { HistoryService } from './history.service';
-import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
-import { JwtUserData } from 'src/guards/auth.guard';
+import { RequireLogin, UserInfo } from '@/common/decorators/login.decorator';
+import { JwtUserData } from '@/common/guards/auth.guard';
 import { HistoryItemVo } from './vo/history-item.vo';
 
 @Controller('history')

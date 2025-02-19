@@ -8,7 +8,7 @@ import { Illustration } from '../illustration/entities/illustration.entity';
 import type { CreateFavoriteDto } from './dto/create-favorite.dto';
 import type { EditFavoriteDto } from './dto/edit-favorite.dto';
 import type { ChangeOrderDto } from './dto/change-order.dto';
-import { hanaError } from 'src/error/hanaError';
+import { hanaError } from '@/common/error/hanaError';
 
 @Injectable()
 export class FavoriteService {

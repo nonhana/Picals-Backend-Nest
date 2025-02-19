@@ -2,7 +2,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import * as fs from 'fs';
 import * as path from 'path';
-import { hanaError } from 'src/error/hanaError';
+import { hanaError } from '@/common/error/hanaError';
 
 const MultipleImgsInterceptor = FilesInterceptor('images', 50, {
 	storage: multer.diskStorage({

@@ -4,7 +4,7 @@ import { UserService } from '@/modules/user/user.service';
 import { LabelService } from '@/modules/label/label.service';
 import { IllustratorService } from '@/modules/illustrator/illustrator.service';
 import { IllustrationService } from '@/modules/illustration/illustration.service';
-import { R2Service } from '@/r2/r2.service';
+import { R2Service } from '@/infra/r2/r2.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Illustrator } from '@/modules/illustrator/entities/illustrator.entity';
 import { Repository } from 'typeorm';
@@ -14,7 +14,7 @@ import { Image } from '@/modules/illustration/entities/image.entity';
 import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
 import { suffixGenerator } from 'src/utils';
-import { hanaError } from '@/error/hanaError';
+import { hanaError } from '@/common/error/hanaError';
 import axios from 'axios';
 
 @Injectable()

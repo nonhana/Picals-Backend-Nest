@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { verifyPassword, hashPassword, downloadFile, suffixGenerator } from 'src/utils';
-import { hanaError } from 'src/error/hanaError';
+import { hanaError } from '@/common/error/hanaError';
 import type { UpdateUserDto, LoginUserDto } from './dto';
 import { LabelService } from '../label/label.service';
 import { Illustration } from '../illustration/entities/illustration.entity';
@@ -14,7 +14,7 @@ import { WorkPushTemp } from '../illustration/entities/work-push-temp.entity';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { LikeWorks } from './entities/like-works.entity';
 import { Follow } from './entities/follow.entity';
-import { ImgHandlerService } from 'src/img-handler/img-handler.service';
+import { ImgHandlerService } from '@/services/img-handler/img-handler.service';
 
 @Injectable()
 export class UserService {

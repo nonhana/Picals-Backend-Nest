@@ -5,7 +5,7 @@ import { Comment } from './entities/comment.entity';
 import type { CreateCommentDto } from './dto/create-comment.dto';
 import { User } from '../user/entities/user.entity';
 import { Illustration } from '../illustration/entities/illustration.entity';
-import { hanaError } from 'src/error/hanaError';
+import { hanaError } from '@/common/error/hanaError';
 import { IllustrationService } from '../illustration/illustration.service';
 
 @Injectable()

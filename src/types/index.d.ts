@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import type { JwtUserData } from '@/guards/auth.guard';
+import type { JwtUserData } from '@/common/guards/auth.guard';
 
 export type DEVICES_TYPE = 'mobile' | 'desktop';
 

@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import { ScriptsModule } from '@/modules/scripts/scripts.module';
-import { ScriptsService } from '@/modules/scripts/scripts.service';
+import { ScriptsModule } from '@/services/scripts/scripts.module';
+import { ScriptsService } from '@/services/scripts/scripts.service';
 
 async function bootstrap() {
 	const app = await NestFactory.createApplicationContext(ScriptsModule);

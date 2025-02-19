@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import { IllustrationService } from './illustration.service';
 import { UploadIllustrationDto } from './dto/upload-illustration.dto';
-import { RequireLogin, UserInfo, AllowVisitor } from '@/decorators/login.decorator';
-import { JwtUserData } from '@/guards/auth.guard';
+import { RequireLogin, UserInfo, AllowVisitor } from '@/common/decorators/login.decorator';
+import { JwtUserData } from '@/common/guards/auth.guard';
 import { UserService } from '@/modules/user/user.service';
 import { IllustrationItemVO } from './vo/illustration-item.vo';
 import type { Illustration } from './entities/illustration.entity';

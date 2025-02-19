@@ -3,8 +3,8 @@ import { IllustratorService } from './illustrator.service';
 import { NewIllustratorDto } from './dto/new-illustrator.dto';
 import { EditIllustratorDto } from './dto/edit-illustrator.dto';
 import { IllustratorDetailVo } from './vo/illustrator-detail.vo';
-import { RequireLogin, UserInfo } from 'src/decorators/login.decorator';
-import { JwtUserData } from 'src/guards/auth.guard';
+import { RequireLogin, UserInfo } from '@/common/decorators/login.decorator';
+import { JwtUserData } from '@/common/guards/auth.guard';
 import { IllustrationItemVO } from '../illustration/vo/illustration-item.vo';
 import { UserService } from '../user/user.service';
 

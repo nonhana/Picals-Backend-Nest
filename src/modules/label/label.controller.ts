@@ -2,8 +2,8 @@ import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import { LabelService } from './label.service';
 import type { NewLabelDto } from './dto/new-label.dto';
 import { LabelItemVO } from './vo/label-item.vo';
-import { AllowVisitor, RequireLogin, UserInfo } from 'src/decorators/login.decorator';
-import { JwtUserData } from 'src/guards/auth.guard';
+import { AllowVisitor, RequireLogin, UserInfo } from '@/common/decorators/login.decorator';
+import { JwtUserData } from '@/common/guards/auth.guard';
 import { UserService } from '../user/user.service';
 import { LabelDetailVO } from './vo/label-detail.vo';
 

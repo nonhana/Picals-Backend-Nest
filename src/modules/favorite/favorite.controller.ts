@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
-import { RequireLogin, UserInfo, AllowVisitor } from 'src/decorators/login.decorator';
-import { JwtUserData } from 'src/guards/auth.guard';
+import { RequireLogin, UserInfo, AllowVisitor } from '@/common/decorators/login.decorator';
+import { JwtUserData } from '@/common/guards/auth.guard';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { EditFavoriteDto } from './dto/edit-favorite.dto';
 import { ChangeOrderDto } from './dto/change-order.dto';
