@@ -465,7 +465,7 @@ export class IllustrationService {
 				? randomItem.originWidth / randomItem.originHeight > 1.5 && randomItem.originWidth > 1440
 				: randomItem.originHeight / randomItem.originWidth > 1.5 && randomItem.originWidth > 720;
 
-			if (!isValidImage) return;
+			if (!isValidImage) continue;
 
 			result.push(randomItem.originUrl);
 
