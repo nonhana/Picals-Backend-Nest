@@ -20,7 +20,8 @@
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
 		"test:e2e": "jest --config ./test/jest-e2e.json",
 		"script:seed": "node -r ./tsconfig-paths-bootstrap.js -r ts-node/register scripts/seed-data.ts",
-		"script:upload": "node -r ./tsconfig-paths-bootstrap.js -r ts-node/register scripts/upload-dir.ts"
+		"script:upload": "node -r ./tsconfig-paths-bootstrap.js -r ts-node/register scripts/upload-dir.ts",
+		"script:password": "node -r ./tsconfig-paths-bootstrap.js -r ts-node/register scripts/password.ts"
 	},
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.749.0",
