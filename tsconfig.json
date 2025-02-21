@@ -8,7 +8,7 @@
 		"allowSyntheticDefaultImports": true,
 		"target": "ES2021",
 		"sourceMap": true,
-		"outDir": "./dist/src",
+		"outDir": "./dist",
 		"baseUrl": "./",
 		"paths": {
 			"@/*": ["src/*"]
