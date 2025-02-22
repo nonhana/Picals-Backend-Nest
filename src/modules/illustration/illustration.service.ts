@@ -17,7 +17,6 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import * as sharp from 'sharp';
 import axios from 'axios';
 import { Image } from './entities/image.entity';
-import { R2Service } from '@/infra/r2/r2.service';
 import type { DEVICES_TYPE } from '@/types';
 
 @Injectable()
@@ -36,9 +35,6 @@ export class IllustrationService {
 
 	@Inject(ImgHandlerService)
 	private readonly imgHandlerService: ImgHandlerService;
-
-	@Inject(R2Service)
-	private readonly r2Service: R2Service;
 
 	@InjectRepository(Illustration)
 	private readonly illustrationRepository: Repository<Illustration>;
