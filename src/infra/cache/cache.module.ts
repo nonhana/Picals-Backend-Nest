@@ -1,10 +1,9 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import type { RedisClientOptions } from 'redis';
 import { createKeyv } from '@keyv/redis';
 import { CacheModule as cacheModule } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 
-@Global()
 @Module({
 	imports: [
 		cacheModule.registerAsync<RedisClientOptions>({

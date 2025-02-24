@@ -10,11 +10,10 @@ import { User } from '@/modules/user/entities/user.entity';
 import { Comment } from '@/modules/comment/entities/comment.entity';
 import { History } from '@/modules/history/entities/history.entity';
 import { Image } from '@/modules/illustration/entities/image.entity';
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-@Global()
 @Module({
 	imports: [
 		TypeOrmModule.forRootAsync({

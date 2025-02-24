@@ -11,25 +11,13 @@ import { UserModule } from '../user/user.module';
 import { LabelModule } from '../label/label.module';
 import { IllustratorModule } from '../illustrator/illustrator.module';
 import { Favorite } from '../favorite/entities/favorite.entity';
-import { R2Module } from '@/infra/r2/r2.module';
-import { ImgHandlerModule } from '@/services/img-handler/img-handler.module';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([
-			Illustration,
-			WorkPushTemp,
-			Illustrator,
-			User,
-			Favorite,
-			Image,
-			R2Module,
-		]),
+		TypeOrmModule.forFeature([Illustration, WorkPushTemp, Illustrator, User, Favorite, Image]),
 		UserModule,
 		LabelModule,
 		IllustratorModule,
-		R2Module,
-		ImgHandlerModule,
 	],
 	controllers: [IllustrationController],
 	providers: [IllustrationService],

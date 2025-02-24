@@ -10,7 +10,6 @@ import { CommentModule } from './modules/comment/comment.module';
 import { HistoryModule } from './modules/history/history.module';
 import { FavoriteModule } from './modules/favorite/favorite.module';
 import { AuthGuard } from './common/guards/auth.guard';
-import { EmailModule } from './infra/email/email.module';
 import { InvokeRecordInterceptor } from './common/interceptors/invoke-record.interceptor';
 import { R2Module } from './infra/r2/r2.module';
 import { ImgHandlerModule } from './services/img-handler/img-handler.module';
@@ -18,6 +17,7 @@ import { DatabaseModule } from './infra/database/database.module';
 import { JwtModule } from './infra/jwt/jwt.module';
 import { CacheModule } from './infra/cache/cache.module';
 import { ConfigModule } from './infra/config/config.module';
+import { EmailModule } from './infra/email/email.module';
 
 @Module({
 	imports: [
@@ -27,6 +27,7 @@ import { ConfigModule } from './infra/config/config.module';
 		JwtModule,
 		CacheModule,
 		R2Module,
+		EmailModule,
 
 		// 数据库实体
 		UserModule,
@@ -35,7 +36,6 @@ import { ConfigModule } from './infra/config/config.module';
 		LabelModule,
 		CommentModule,
 		HistoryModule,
-		EmailModule,
 		FavoriteModule,
 
 		// 自定义服务

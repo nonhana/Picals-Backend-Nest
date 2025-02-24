@@ -6,13 +6,11 @@ import { User } from './entities/user.entity';
 import { Favorite } from '../favorite/entities/favorite.entity';
 import { History } from '../history/entities/history.entity';
 import { Illustration } from '../illustration/entities/illustration.entity';
-import { EmailModule } from '@/infra/email/email.module';
 import { LabelModule } from '../label/label.module';
 import { FavoriteModule } from '../favorite/favorite.module';
 import { WorkPushTemp } from '../illustration/entities/work-push-temp.entity';
 import { LikeWorks } from './entities/like-works.entity';
 import { Follow } from './entities/follow.entity';
-import { ImgHandlerModule } from '@/services/img-handler/img-handler.module';
 
 @Module({
 	imports: [
@@ -25,8 +23,6 @@ import { ImgHandlerModule } from '@/services/img-handler/img-handler.module';
 			LikeWorks,
 			Follow,
 		]),
-		EmailModule,
-		ImgHandlerModule,
 		forwardRef(() => LabelModule),
 		forwardRef(() => FavoriteModule),
 	],
